@@ -1,0 +1,7 @@
+#!/bin/bash
+PREFIX="KL422041"
+
+if ! grep -q "^$PREFIX" "$1"; then
+    echo "Wiadomość commita musi zaczynać się od: $PREFIX"
+    exit 1
+fi
