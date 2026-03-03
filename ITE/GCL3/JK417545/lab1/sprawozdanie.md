@@ -12,3 +12,9 @@ if [[ ! $commit_msg =~ "JK417545" ]]; then
   exit 1
 fi
 ```
+
+# # # Screeny
+
+!(zdj1.png)
+
+!(zdj2.png)
