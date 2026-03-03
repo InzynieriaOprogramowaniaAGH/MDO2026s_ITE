@@ -1,0 +1,63 @@
+    1  ls
+    2  cd .
+    3  cd ..
+    4  cd 
+    5  cd ..
+    6  ls
+    7  cd admin/
+    8  ls
+    9  sudo dnf install git -y
+   10  git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git repo_https
+   11  lsa
+   12  ls
+   13  cd repo_https/
+   14  ls
+   15  cd ..
+   16  ssh-keygen -t ed25519 -C "klew200420042004@gmail.com" -f ~/.ssh/id_ed25519
+   17  ssh-keygen -t ecdsa -b 521 -C "klew200420042004@gmail.com" -f ~/.ssh/id_ecdsa_bez_hasla
+   18  cat ~/.ssh/id_ed25519.pub
+   19  git clone git@github.com:InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git repo_ssh
+   20  ls
+   21  cd repo_ssh/
+   22  ls
+   23  git checkout main
+   24  git pull
+   25  git log --graph --oneline --all
+   26  git checkout KL422041
+   27  git branch -a
+   28  git log --graph --oneline --all --decorate
+   29  checkout GCL3
+   30  git checkout GCL3 
+   31  git checkout -b 422041
+   32  git branch -m KL422041
+   33  git log --oneline --decorate -5
+   34  ls
+   35  mkdir KL422041
+   36  ls
+   37  cd Kl
+   38  cd KL422041/
+   39  ls
+   40  code .git/hooks/commit-msg
+   41  cd ..
+   42  ls
+   43  code .git/hooks/commit-msg
+   44  chmod +x .git/hooks/commit-msg
+   45  cp .git/hooks/commit-msg KL422041/
+   46  ls
+   47  cd KL422041/
+   48  ls
+   49  git status
+   50  cd ..
+   51  git status
+   52  git commit -m "hook test"
+   53  git add .
+   54  git commit -m "hook test"
+   55  git commit -m "KL42041: Dodaj hooka"
+   56  git commit -m "KL422041: Dodaj hooka"
+   57  git add.
+   58  git add .
+   59  git commit -m "KL4222041: Popraw strukturę plików"
+   60  git commit -m "KL422041: Popraw strukturę plików"
+   61  cmd/bash/PowerShell)
+   62  cmd/bash/PowerShell
+   63  history
