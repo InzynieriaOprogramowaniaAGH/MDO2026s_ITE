@@ -13,8 +13,8 @@ if [[ ! $commit_msg =~ "JK417545" ]]; then
 fi
 ```
 
-# # # Screeny
+### Screeny
 
-!(zdj1.png)
+![](zdj1.png)
 
-!(zdj2.png)
+![](zdj2.png)
