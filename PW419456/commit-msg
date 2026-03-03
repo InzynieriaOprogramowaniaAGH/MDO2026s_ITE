@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+COMMIT_MSG_FILE=$1
+
+if ! head -n 1 "$COMMIT_MSG_FILE" | grep -q "^PW419456"; then
+  echo "Commit msg has to start with: $PREFIX"
+  exit 1
+fi
