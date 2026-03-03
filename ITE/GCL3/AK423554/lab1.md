@@ -1,6 +1,7 @@
 AMELIA KURSA | ITE GR.3 | 423554| LAB 1
 
 SKRYPT:
+```
 #!/bin/bash
 commit_msg=$(cat "$1")
 pattern="^AK423554"
@@ -9,7 +10,7 @@ if [[ ! $commit_msg =~ $pattern ]]; then
   echo "Blad: wiadomosc musi sie zaczynac od AK423554"
   exit 1
 fi
-
+```
 SCREENY:
 <img width="958" height="271" alt="image" src="https://github.com/user-attachments/assets/d3c4612e-45af-40b3-b0ae-3b37288cc559" />
 
