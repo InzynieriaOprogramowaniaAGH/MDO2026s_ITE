@@ -11,12 +11,12 @@ Stworzyłem klucze szyfrowane ed25519 z hasłem oraz ECDSA bez hasła, ich publi
 ## Git Hook
 ```bash
 #!/bin/bash
-commit_msg=$(cat "1")
+commit_msg=$(cat $1)
 required_start="SK419875"
 if [[ ! $commit_msg =~ ^$required_start ]]; then
     echo "ERROR: Commit message must start with $required_start"
     exit 1
 fi
 ```
-![alt text](image-2.png)
+![alt text](image-4.png)
 ![alt text](image-3.png)
