@@ -1,9 +1,0 @@
-SKRYPT:
-#!/bin/bash
-commit_msg=$(cat "$1")
-pattern="^AK423554"
-
-if [[ ! $commit_msg =~ $pattern ]]; then
-  echo "Blad: wiadomosc musi sie zaczynac od AK423554"
-  exit 1
-fi
