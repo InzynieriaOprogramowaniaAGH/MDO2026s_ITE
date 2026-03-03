@@ -11,3 +11,9 @@ echo "$MSG" | grep -q "^$PREFIX" || {
 
 exit 0
 ```
+
+## Zrzuty ekranu
+
+![VM](Screenshot%202026-03-03%20at%2009.27.05.png)
+
+![Klonowanie repozytorium po SSH](Screenshot%202026-03-03%20at%2009.38.40.png)
