@@ -18,9 +18,12 @@ case "$FIRST_LINE" in
 esac
 
 ```
-Screenshots:
 
-![alt text](image.png)
+Hook:
+![Hook](image.png)
 
-![alt text](image-1.png)
+Maszyna wirtualna:
+![Maszyna wirtualna](image-1.png)
 
+PR do GCL3:
+![PR do GCL3](image-2.png)
