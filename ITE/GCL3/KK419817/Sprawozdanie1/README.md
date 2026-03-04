@@ -27,3 +27,11 @@ Maszyna wirtualna:
 
 PR do GCL3:
 ![PR do GCL3](image-2.png)
+
+Użyte komendy po setupie
+```
+git checkout -b KK419817
+git push --set-upstream origin KK419817
+git commit -m 'add hook'
+git push
+```
