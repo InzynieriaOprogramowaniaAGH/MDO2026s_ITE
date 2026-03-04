@@ -1,0 +1,7 @@
+#!/bin/bash
+
+msg=$(cat "$1")
+if [[ ! $msg =~ ^FP422032 ]]; then
+    echo "Wiadomość musi zaczynać się od inicjalu i nr indeksu!"
+    exit 1
+fi
