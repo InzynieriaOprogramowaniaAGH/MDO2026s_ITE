@@ -1,0 +1,8 @@
+#!/bin/bash
+commit_msg=$(cat "$1")
+pattern="^KS423304"
+
+if [[ ! $commit_msg =~ $pattern ]]; then
+  echo "BŁĄD: Wiadomość commita musi zaczynać się od KS423304!"
+  exit 1
+fi
