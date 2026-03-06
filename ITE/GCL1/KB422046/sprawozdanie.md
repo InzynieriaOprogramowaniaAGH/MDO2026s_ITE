@@ -24,3 +24,6 @@ Dodanie sprawozdania i zrzutow ekranu:
 
 Efekt dzialania hook'a:
 ![Efekt dzialania hook'a: ](screenshots/1.9_niepoprawny_commit.png)
+
+Proba wciagniecia wlasnej galezi do grupowej:
+![Proba wciagniecia wlasnej galezi do grupowej: ](screenshots/1.10_proba_merge.png)
