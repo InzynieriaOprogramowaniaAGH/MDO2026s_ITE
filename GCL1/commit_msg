@@ -1,0 +1,9 @@
+#!/bin/bash
+
+commit_message=$(cat "$1")
+pattern="^PD420765"
+
+if [[ ! $commit_message =~ $pattern ]]; then
+    echo "BŁĄD: Twoja wiadomość commita musi zaczynać się od 'PD123456'!"
+    exit 1
+fi
