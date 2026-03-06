@@ -19,3 +19,12 @@ fi
 
 ![ss1](img/L1-01.png)
 ![ss2](img/L1-02.png)
+
+## 2. Pull request'u
+Utworzono Pull Request z gałęzi MD419430 do gałęzi grupowej GCL1.
+Pull Request zawiera dwa commity:
+- MD419430 pierwszy commit
+- MD419430 dodanie sprawozdania
+
+![ss3](img/L1-03.png) 
+![ss4](img/L1-04.png)
