@@ -1,1 +1,1 @@
-![Test](screen test.jpg)
+![Test](screen_test.jpg)
