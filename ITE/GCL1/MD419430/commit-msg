@@ -1,0 +1,10 @@
+#!/bin/bash
+
+message=$(cat "$1")
+
+pattern="^MD419430"
+
+if [[ ! $message =~ $pattern ]]; then
+    echo "Błąd: commit message musi zaczynać się od MD419430"
+    exit 1
+fi
