@@ -1,0 +1,11 @@
+#!/bin/bash
+
+MSG_FILE=$1
+MSG_CONTENT=$(cat "$MSG_FILE")
+
+if [[ ! $MSG_CONTENT =~ ^WP416619 ]]; then
+    echo "--------------------------------------------------------"
+    echo "BŁĄD: Wiadomość commita musi zaczynać się od WP416619!"
+    echo "--------------------------------------------------------"
+    exit 1
+fi
