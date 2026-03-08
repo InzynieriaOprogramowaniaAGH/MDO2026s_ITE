@@ -1,0 +1,11 @@
+#!/bin/bash
+
+INDEKS="JK422022"
+MESSAGE=$(head -n 1 "$1")
+
+if [[ ! $MESSAGE =~ ^$INDEKS ]]; then
+	echo "ERROR: Commit start $INDEKS"
+	echo "My commit $MESSAGE"
+	exit 1
+fi
+exit 0
