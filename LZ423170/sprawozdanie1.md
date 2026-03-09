@@ -3,4 +3,5 @@
 2. Branch 423170;
 ![alt text](image-1.png)
 3. Git hook;
+![alt text](image-3.png)
 ![alt text](image-2.png)
