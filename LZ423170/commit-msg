@@ -3,7 +3,7 @@
 commit_msg_file=$1
 commit_msg=$(head -n 1 "$commit_msg_file")
 
-if[[ ! $commit_msg = [LZ423170]* ]]; then
+if[[$commit_msg != [LZ423170]* ]]; then
   echo "ERROR: Commit message must start with 'LZ423170'"
   exit 1
 fi
