@@ -1,5 +1,7 @@
 # Sprawozdanie 1
 
+## Class 01
+
 ### Wstęp
 
 Na wstępie sklonowanao repozytorium przedmiotu. Przełączono się na gałąź grupy, następnie do odpowiedniego kalaogu, gdzie stworzono gałąź o nazwie składającej się z inicjałów i numeru indeksu: ```MŁ420124```. Na gałęźi stworzono katalog odpowiadający nazwie gałęzi.
@@ -42,3 +44,12 @@ chmod +x .git/hooks/commit-msg
 
 ![Zdjęcie 1](img/s1.png)
 
+## Class 02
+
+### Pobieranie i uruchamianie kontenerów
+
+![Zdjęcie 2](img/s2.png)
+
+![Zdjęcie 3](img/s3.png)
+
+![Zdjęcie 3](img/s4.png)
