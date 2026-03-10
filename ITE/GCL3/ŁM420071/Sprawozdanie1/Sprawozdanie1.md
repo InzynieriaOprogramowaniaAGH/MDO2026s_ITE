@@ -1,5 +1,7 @@
 **Sprawozdanie**
 
+Lab1
+
 ![branch](scr1.png)
 
 ![hook](hook.png)
@@ -35,4 +37,21 @@
   177  chmod +x commit-msg
   178  git branch
   179  history
-<pre>
+</pre>
+
+Lab2
+
+![docker](docker1.png)
+
+![images](dockerImages.png)
+![container-ls](dockerls.png)
+
+![busybox](busybox.png)
+
+![proces w kontenerze](ps(in).png)
+
+![proces na hoscie](ps(out).png)
+
+![klon repo](build1ver.png)
+
+![pusto](pusto.png)
