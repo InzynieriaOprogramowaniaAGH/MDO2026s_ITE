@@ -21,8 +21,38 @@ stworzono hooka (commit-msg)
 
 ![](6-hook.png)
 
-
-
 przetestowano hooka
 
 ![](7-hook-test.png)
+
+zainstalowano dockera
+
+![](8-instalacja-dockera.png)
+
+zalogowano się do dockerhub
+
+![](9-zalogowanie-docker-hub.png)
+
+uruchomiono kontenery 
+
+![](10-docker-run-1.png)
+![](11-docker-run-2.png)
+
+sprawdzono rozmiar kontenerów
+
+![](12-kontenery-rozmiar.png)
+
+uruchomiono interaktywnie busybox 
+![](13-busy-box.png)
+
+uruchomiono kontener z ubuntu
+![](14-ubuntu.png)
+
+stworzono obraz za pomocą dockerfile i uruchomiono kontener
+![](15-dockerfile.png)
+
+usunięto kontenery
+![](16-kontenery.png)
+
+usunięto obrazy
+![](17-obrazy.png)

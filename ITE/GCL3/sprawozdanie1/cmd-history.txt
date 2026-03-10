@@ -61,3 +61,106 @@
    61  cmd/bash/PowerShell)
    62  cmd/bash/PowerShell
    63  history
+   64  git status
+   65  git add .
+   66  git status
+   67  git commit -m "Stwórz sprawozdanie 1"
+   68  git commit -m "KL422041: Stwórz sprawozdanie 1"
+   69  git pull
+   70  git push -u origin KL422041
+   71  git push
+   72  git pull
+   73  ls
+   74  docker --version
+   75  docker --help
+   76  ls
+   77  sudo dnf upgrade --refresh
+   78  sudo dnf install moby-engine docker-cli
+   79  docker --verion
+   80  docker --help
+   81  docker --version
+   82  sudo systemctl status docker
+   83  docker login
+   84  docker run hello-world
+   85  docker pull hello-world
+   86  sudo systemctl start docker
+   87  sudo docker pull hello-world
+   88  docker run hello-world
+   89  sudo docker run hello-world
+   90  sudo docker pull busybox
+   91  sudo docker pull ubuntu
+   92  sudo docker pull mariadb
+   93  sudo docker pull node
+   94  sudo docker pull runtime
+   95  sudo docker pull aspnet
+   96  docker login
+   97  sudo docker pull aspnet
+   98  sudo docker pull sdk
+   99  docker container -ls 
+  100  docker container ls -a
+  101  sudo docker container ls -a
+  102  docker run hello-world -rm 
+  103  sudo docker run hello-world -rm 
+  104  sudo docker run hello-world 
+  105  sudo docker rm  run hello-world 
+  106  sudo docker -rm  run hello-world 
+  107  sudo docker -rm run hello-world 
+  108  docker run --rm hello-world
+  109  sudo docker run --rm hello-world
+  110  echo $?
+  111  sudo docker run --rm busybox
+  112  echo $?
+  113  sudo docker run --rm ubuntu
+  114  sudo docker run --rm busybox
+  115  sudo docker run --rm ubuntu
+  116  echo $?
+  117  sudo docker run --rm mariadb
+  118  echo $?
+  119  sudo docker run --rm node
+  120  echo $?
+  121  sudo docker run --rm mcr.microsoft.com/dotnet/runtime dotnet
+  122  echo $?
+  123  sudo docker run --rm mcr.microsoft.com/dotnet/runtime dotnet
+  124  echo $?
+  125  sudo docker run --rm mcr.microsoft.com/dotnet/aspnet dotnet
+  126  echo $?
+  127  sudo docker run --rm mcr.microsoft.com/dotnet/sdk dotnet
+  128  echo $?
+  129  docker images
+  130  sudo docker images
+  131  docker run -it --rm busybox
+  132  sudo docker run -it --rm busybox
+  133  sudo docker run -it --rm ubuntu
+  134  cd ..
+  135  cd
+  136  ls
+  137  cd app
+  138  cd /app
+  139  cd repo_ssh
+  140  ls
+  141  cd ..
+  142  sudo rm repo_https -r
+  143  ls
+  144  cd repo_ssh/
+  145  ls
+  146  cd ITE/GCL3/sprawozdanie1/
+  147  ls
+  148  sudo docker build -t ubuntu-git-repo .
+  149  sudo hwclock -s
+  150  sudo docker build -t ubuntu-git-repo .
+  151  ls
+  152  cd
+  153  cd..
+  154  ls
+  155  cd ..
+  156  ls
+  157  cd admin/
+  158  LSBLK
+  159  lsblk
+  160  ls
+  161  docker ps
+  162  docker ps -a
+  163  docker container prune
+  164  docker image prune -a
+  165  docker image prune 
+  166  history
