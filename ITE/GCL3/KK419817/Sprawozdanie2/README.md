@@ -1,16 +1,43 @@
 
 
-```
+
+1.
+
+```sh
 sudo apt update
 sudo apt install docker.io
 ```
 ![wersja ubuntu](image-3.png)
 
+3.
+```sh
+docker pull hello-world
+docker pull busybox
+docker pull ubuntu
+# ...
+
+docker images
+```
+![alt text](image-4.png)
 
 
 4.
-![pull przyklady](image-2.png)
 
+```sh
+docker run busybox
+docker ps -a
+```
+
+![alt text](image-5.png)
+![alt text](image-2.png)
+
+```sh
+docker run -it busybox sh
+# w kontenerze
+busybox --help
+```
+
+![alt text](image-6.png)
 
 5.
 ![ubuntu](image.png)
