@@ -52,4 +52,6 @@ chmod +x .git/hooks/commit-msg
 
 ![Zdjęcie 3](img/s3.png)
 
-![Zdjęcie 3](img/s4.png)
+![Zdjęcie 4](img/s4.png)
+
+![Zdjęcie 5](img/s5.png)
