@@ -25,4 +25,5 @@ fi
 ![Zrzut 9](Obraz9.png)
 
 ## Próba włączenia gałęzi do gałęzi grupowej
+
 ![Zrzut 10](Obraz10.png)
