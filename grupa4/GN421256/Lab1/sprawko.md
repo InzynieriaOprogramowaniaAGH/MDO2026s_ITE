@@ -22,7 +22,7 @@ Po otrzymaniu takiego komunikatu wiadomo że jest ok
 
 Po stworzeniu odpowiedniego katalogu został napisany git hook (treść na końcu sprawozdania)
 
-![githook](githook.png)
+![hookdziala](githookdziala.png)
 
 
 ```{bash}
