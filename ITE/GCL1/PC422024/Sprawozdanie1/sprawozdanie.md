@@ -1,0 +1,5 @@
+![Klonowanie repo](lab1/1.png)
+![Tworzenie klucza SSH](lab1/2.png)
+![Klonowanie repo przez SSH](lab1/3.png)
+![Tworzenie swojego brancha](lab1/4.png)
+![Tworzenie hooka](lab1/5.png)
