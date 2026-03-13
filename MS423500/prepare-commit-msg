@@ -1,0 +1,4 @@
+!/bin/bash
+
+#dodawanie MS423500 przed tekstem wpisywanym w commit message
+echo "MS423500: $(cat $1)" > $1
