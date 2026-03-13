@@ -21,3 +21,16 @@ fi
 
 
 # LAB 2 Docker
+
+
+## Zadanie 2 i 3: Docker - Instalacja, obrazy i kody wyjścia
+
+Zgodnie z instrukcją zainstalowałem Dockera, pobrałem wymagane obrazy (w tym te z repozytorium Microsoftu) oraz sprawdziłem ich rozmiary i kod wyjścia (dla hello-world). Poniżej pełna dokumentacja z tych kroków:
+
+![Krok 1](docker1screen.png)
+
+![Krok 2](docker2screen.png)
+
+![Krok 3](docker2-2screen.png)
+
+![Krok 4](docker3screen.png)
