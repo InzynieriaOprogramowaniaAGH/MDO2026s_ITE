@@ -1,0 +1,9 @@
+#!/bin/bash
+# Wczytanie wiadomości commita
+COMMIT_MSG_FILE=$1
+
+# Sprawdzenie czy zaczyna się od AB420638
+if ! grep -q "^AB420638" "$COMMIT_MSG_FILE"; then
+  echo "BLAD: Wiadomosc commita musi zaczynac sie od 'AB420638'!"
+  exit 1
+fi
