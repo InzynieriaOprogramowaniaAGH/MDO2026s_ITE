@@ -1,0 +1,14 @@
+#!/bin/bash
+
+PATTERN="^MF420115"
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(head -n 1 "$COMMIT_MSG_FILE")
+
+if [[ ! $COMMIT_MSG =~ $PATTERN ]]; then
+  echo " BŁĄD: Każdy commit message musi zaczynać się od '$PATTERN'"
+  exit 1 
+fi
+
+echo " Commit message jest poprawny!"
+exit 0 

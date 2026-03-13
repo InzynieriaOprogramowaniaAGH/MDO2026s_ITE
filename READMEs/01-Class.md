@@ -9,7 +9,7 @@ Celem zajęć jest przygotowanie stanowiska pracy do dalszym toku przedmiotu. Sc
 
 ### Git
 1. Zainstaluj klienta Git i obsługę kluczy SSH (w maszynie wirtualnej lub środowisku uniksowym)
-2. Sklonuj nasze [repozytorium przedmiotowe](https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE) za pomocą HTTPS i [*personal access token*](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+2. Sklonuj nasze [repozytorium przedmiotowe](https://github.com/InzynieriaOprogramowaniaAGH/MDO2026_ITE) za pomocą HTTPS i [*personal access token*](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 
 ### SSH
 1. Utwórz klucze SSH

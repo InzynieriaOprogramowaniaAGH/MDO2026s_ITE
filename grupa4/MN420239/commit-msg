@@ -1,0 +1,8 @@
+#!/bin/sh
+
+PREFIX="MN420239"
+
+if ! grep -q "^$PREFIX" "$1"; then
+    echo "Commit message must start with $PREFIX"
+    exit 1
+fi
