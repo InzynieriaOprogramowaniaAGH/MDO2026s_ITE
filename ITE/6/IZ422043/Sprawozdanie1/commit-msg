@@ -1,0 +1,14 @@
+#!/bin/bash
+
+REQUIRED_PREFIX="IZ422043-"
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(head -n1 "$COMMIT_MSG_FILE")
+
+if [[ "$COMMIT_MSG" != "$REQUIRED_PREFIX"* ]]; then
+  echo "Message does not starts with '$REQUIRED_PREFIX'"
+  echo "Your commit message: $COMMIT_MSG"
+  exit 1
+fi
+
+exit 0
