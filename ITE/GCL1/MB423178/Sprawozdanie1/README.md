@@ -34,3 +34,21 @@ Zgodnie z instrukcją zainstalowałem Dockera, pobrałem wymagane obrazy (w tym 
 ![Krok 3](docker2-2screen.png)
 
 ![Krok 4](docker3screen.png)
+
+## Pozostałe zrzuty ekranu z wykonanych zadań (Zadania 4-9)
+
+ dokumentacjaa z dalszej pracy z Dockerem (interaktywna praca z kontenerami, budowanie własnego obrazu z pliku Dockerfile oraz czyszczenie środowiska):
+
+![Screen](docker3screen.png)
+![Screen](docker4screen.png)
+![Screen](docker5screen.png)
+![Screen](docker6screen.png)
+![Screen](<dockerScreen (1).png>)
+![Screen](<dockerScreen (2).png>)
+![Screen](<dockerScreen (3).png>)
+![Screen](<dockerScreen (4).png>)
+![Screen](<dockerScreen (5).png>)
+![Screen](<dockerScreen (6).png>)
+![Screen](<dockerScreen (7).png>)
+![Screen](<dockerScreen (8).png>)
+![Screen](<dockerScreen (9).png>)
