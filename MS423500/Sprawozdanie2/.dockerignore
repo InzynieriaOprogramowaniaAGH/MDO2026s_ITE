@@ -1,0 +1,5 @@
+# ignoruj absolutnie wszystko
+*
+
+# wyjatek tylko dla dockergfile
+!Dockerfile
