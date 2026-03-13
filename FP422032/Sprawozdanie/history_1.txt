@@ -1,0 +1,109 @@
+history Windows:
+
+1  ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_nopass -N ""
+2  ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_withpass
+3  ls -s ~/.ssh
+4  cat ~/.ssh/id_ed25519_nopass.pub
+5  ssh -T git@github.com -i ~/.ssh/id_ed25519_nopass
+6  cat ~/.ssh/id_ed25519_nopass.pub
+7  ssh -T git@github.com -i ~/.ssh/id_ed25519_nopass
+8  git config --global user.name "Doretor FP"
+9  sudo apt install git
+10  git config --global user.name "Doretor FP"
+11  git config --global user.name "Filip Pyrek"
+12  git config --global user.email "filippyrek60@gmail.com"
+13  git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026_ITE.git
+14  cd MDO2026_ITE/
+15  ls
+16  cd MDO2026_ITE/
+17  ls
+18  git push origin FP422032
+19  ls
+20  cd ..
+21  ls
+22  cd MDO2026_ITE/
+23  git checkout main
+24  git checkout grupa5
+25  git checkout -b FP422032
+26  mkdir FP422032 
+27  cd .git/hooks
+28  ls
+29  cd ..
+30  cd FP422032/
+31  cd ..
+32  cp FP422032/commit-msg .git/hooks/commit-msg
+33  chmod +x .git/hooks/commit-msg
+34  git push origin FP422032
+35  git remote set-url origin git@github.com:InzynieriaOprogramowaniaAGH/MDO2026_ITE.git
+36  git push origin FP422032
+37  ssh -T git@github.com -i ~/.ssh/id_ed25519_nopass
+38  git push origin FP422032
+39  .ssh/
+40  cd .ssh
+41  cd ..
+42  cd .ssh
+43  ls
+44  cd config
+45  nano config
+46  ls
+47  cd ..
+48  cd MDO2026_ITE/
+49  ls
+50  git push origin FP422032
+51  git status
+52  git add FP422032/
+53  git commit -m "Dodanie katalogu ze skryptem hooka"
+54  git commit -m "FP422032: Dodanie katalogu ze skryptem hooka"
+55  git push origin FP422032
+56  git status
+57  cd ..
+58  ls
+59  cd .ssh
+60  ls
+61  nano config
+62  cd ..
+63  cd MDO2026_ITE/
+64  cd .git
+65  ls
+66  cd hooks
+67  ls
+68  cd ..
+69  ls
+70  cd .ssh
+71  ls
+72  cd config
+73  nano config
+74  cd ..
+75  ls
+76  cd MDO
+77  cd MDO2026_ITE/
+78  ls
+79  history
+80  git status
+81  git add .
+82  git commit -m "FP422032: Napisane sprawozdanie (przed pull requestem)"
+83  git push origin FP422032
+84  git status
+85  git add .
+86  git commit -m "FP422032: Poprawa sprawozdania"
+87  git push origin FP422032
+88  git status
+89  git add .
+90  git commit -m "FP422032: Poprawa sprawozdania"
+91  git push origin FP422032
+92  history
+
+history Ubuntu:
+
+1  sudo systemctl status ssh
+2  sudo apt update
+3  sudo apt install openssh-server
+4  sudo systemctl status ssh
+5  sudo system start ssh
+6  sudo systemctl start ssh
+7  sudo systemctl status ssh
+8  ls
+9  cd MDO2026_ITE/
+10  ls
+11  cd ..
+12  history
