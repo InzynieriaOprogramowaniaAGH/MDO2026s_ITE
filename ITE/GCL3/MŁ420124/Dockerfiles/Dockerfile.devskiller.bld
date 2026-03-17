@@ -1,0 +1,11 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0
+
+RUN apt-get update && apt-get install -y git
+WORKDIR /App
+
+RUN git clone https://github.com/Devskiller/devskiller-sample-dotnetcore.git
+
+WORKDIR /App/devskiller-sample-dotnetcore
+
+RUN dotnet restore
+RUN dotnet build

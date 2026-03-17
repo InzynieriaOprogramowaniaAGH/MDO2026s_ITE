@@ -1,0 +1,5 @@
+FROM devskillerbld:latest
+
+WORKDIR /App/devskiller-sample-dotnetcore
+
+RUN dotnet test
