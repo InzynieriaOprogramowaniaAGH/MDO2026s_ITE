@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  readme-aura-build:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.build
+    image: mdo-ite:sprawozdanie3-build
+
+  readme-aura-test:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.test
+    image: mdo-ite:sprawozdanie3-test
+    depends_on:
+      - readme-aura-build
+

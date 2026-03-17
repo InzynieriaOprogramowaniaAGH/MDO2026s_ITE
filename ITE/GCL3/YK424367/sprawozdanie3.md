@@ -111,3 +111,67 @@ ubuntu@myserver:~/MDO2026s_ITE$ sudo docker run --rm mdo-ite:sprawozdanie3-test
       Tests  72 passed (72)
    Start at  08:07:52
    Duration  771ms (transform 92ms, setup 0ms, import 320ms, tests 180ms, environment 0ms)
+
+docker-compose build
+Building readme-aura-build
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  4.096kB
+Step 1/6 : FROM node:20
+ ---> e411ba256efc
+Step 2/6 : WORKDIR /readme-aura
+ ---> Using cache
+ ---> 8c256a72fa27
+Step 3/6 : RUN apt-get install -y git
+ ---> Using cache
+ ---> f6094dcbdee5
+Step 4/6 : RUN git clone https://github.com/collectioneur/readme-aura.git .
+ ---> Using cache
+ ---> 130d5b400796
+Step 5/6 : RUN npm install
+ ---> Using cache
+ ---> 6fbff2d24db4
+Step 6/6 : RUN npm run build
+ ---> Using cache
+ ---> 826a91c49af7
+Successfully built 826a91c49af7
+Successfully tagged mdo-ite:sprawozdanie3-build
+Building readme-aura-test
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  4.096kB
+Step 1/3 : FROM mdo-ite:sprawozdanie3-build
+ ---> 826a91c49af7
+Step 2/3 : WORKDIR /readme-aura
+ ---> Using cache
+ ---> e8819941c74d
+Step 3/3 : CMD ["npm", "test"]
+ ---> Using cache
+ ---> 41a220eea8ca
+Successfully built 41a220eea8ca
+Successfully tagged mdo-ite:sprawozdanie3-test
+ubuntu@myserver:~/MDO2026s_ITE/ITE/GCL3/YK424367/Sprawozdanie3$ docker-compose run --rm readme-aura-test
+Creating network "sprawozdanie3_default" with the default driver
+Creating sprawozdanie3_readme-aura-build_1 ... done
+Creating sprawozdanie3_readme-aura-test_run ... done
+
+> readme-aura@0.1.11 test
+> vitest run
+
+
+ RUN  v4.1.0 /readme-aura
+
+ ✓ src/tests/renderer.test.ts (28 tests) 48ms
+ ✓ src/tests/init.test.ts (13 tests) 119ms
+ ✓ src/tests/parser.test.ts (7 tests) 15ms
+ ✓ src/tests/github.test.ts (12 tests) 3ms
+ ✓ src/tests/templates.test.ts (12 tests) 2ms
+
+ Test Files  5 passed (5)
+      Tests  72 passed (72)
+   Start at  08:22:32
+   Duration  786ms (transform 109ms, setup 0ms, import 329ms, tests 187ms, environment 0ms)
