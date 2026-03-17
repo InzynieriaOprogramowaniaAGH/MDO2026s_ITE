@@ -25,6 +25,8 @@ przetestowano hooka
 
 ![](7-hook-test.png)
 
+===ZAJ2===
+
 zainstalowano dockera
 
 ![](8-instalacja-dockera.png)
@@ -56,3 +58,19 @@ usunięto kontenery
 
 usunięto obrazy
 ![](17-obrazy.png)
+
+===ZAJ3===
+
+sklonowano ripgrep na fedore
+![](18-clone-ripgrep.png)
+
+
+zbudowano ripgrep z użyciem cargo
+![](19-build.png)
+
+
+uruchomiono testy ripgrep
+![](20-test.png)
+
+zrobiono te kroki w dockerze
+![](21-docker.png)

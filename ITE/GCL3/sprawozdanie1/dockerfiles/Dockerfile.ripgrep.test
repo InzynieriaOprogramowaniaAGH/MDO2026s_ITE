@@ -1,0 +1,5 @@
+FROM ripgrep:latest
+
+WORKDIR /usr/src/ripgrep/ripgrep
+
+RUN cargo test
