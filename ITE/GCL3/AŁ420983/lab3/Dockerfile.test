@@ -1,0 +1,5 @@
+FROM flask-builder:latest
+
+WORKDIR /app
+
+CMD ["pytest"]
