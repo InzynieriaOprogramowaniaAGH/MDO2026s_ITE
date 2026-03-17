@@ -1,0 +1,4 @@
+
+FROM express-base
+ENTRYPOINT ["npm"]
+CMD ["test"]
