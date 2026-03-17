@@ -105,48 +105,82 @@ RUN git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
 CMD ["bash"]
 ```
 
+Usunięcie niepotrzebnych obrazów:
+`docker image prune -a`
+![prune](image-7.png)
+
 # Zajecia 3
 
-Do zajęć wykorzystano repozytorium nodebestpractices
+Do zajęć wykorzystano repozytorium expressjs
+(https://github.com/expressjs/express?tab=readme-ov-file#installation)
 
+Najpierw uruchomiłek lokalnie komendy:
 ```bash
 sudo apt update
 sudo apt install -y nodejs npm git
 
-git clone https://github.com/chalk/chalk.git
-
-cd chalk
+git clone https://github.com/expressjs/express.git --depth 1 && cd express
 npm install
+npm test
 ```
-![alt text](image-7.png)
+Wszystkie testy przeszły pomyślnie:
 
-![alt text](image-8.png)
+![testy](image-8.png)
 
-
-Następnie utworzyłem odpowiedni plik dockerfile.build i dockerfile.test
-
-`docker run -it chalk-build bash`
+Następnie uruchomiłem wspomniane wyżej komendy w interaktywnym trybie dockera:
+```Docker
+docker run -it node:20-alpine sh
+apk update
+apk add git
+# jw.
 ```
-FROM node:20
+![dockerint](image-9.png)
+![dockerinttest](image-10.png)
 
+
+Kolejno, utworzyłem plik [Dockerfile.build](lab2/Dockerfile.build)
+```Docker
+FROM node:20-alpine
 WORKDIR /app
-
-RUN apt update && apt install -y git
-RUN git clone https://github.com/chalk/chalk.git .
-
+RUN apk update
+RUN apk add git
+RUN git clone https://github.com/expressjs/express.git .
 RUN npm install
-
-RUN npm run build
 ```
 
-```
-FROM chalk-build
+Oraz [Dockerfile.test](lab2/Dockerfile.test)
 
+```Docker
+FROM express-build
 WORKDIR /app
-
-# run tests only
 CMD ["npm", "test"]
 ```
 
+---
 
+Build oraz uruchomienie konetenerów:
+```Docker
+docker build -f Dockerfile.build -t express-build .
 
+docker build -f Dockerfile.test -t express-test .
+
+docker run --rm express-test
+```
+![alt text](image-11.png)
+
+### Docker compose
+
+Instalacja:
+`sudo apt  install docker-compose`
+
+Utworzyłem plik [docker-compose.yml](lab2/docker-compose.yml), w którym utworzyłem dwa serwisy: build i test. Test jest zależny od build, przez co build jest automatycznie tworzony przed tworzeniem kontenera test
+
+Build:
+![alt text](image-12.png)
+
+Uruchomienie:
+`docker-compose run --rm test`
+
+![alt text](image-13.png)
+
+Wszystkie testy przeszły

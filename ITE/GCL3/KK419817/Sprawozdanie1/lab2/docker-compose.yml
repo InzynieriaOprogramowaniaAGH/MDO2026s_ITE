@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    image: express-build
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    image: express-test
+    depends_on:
+      - build
