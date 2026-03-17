@@ -1,0 +1,3 @@
+FROM fastify-builder:latest
+
+CMD ["npm", "test"]
