@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  build-stage:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    image: express-build:latest
+    #nadpisanie domyslnej komendy, zeby nie dzialalo w nieskonczonosc
+    command: ["echo", "poszlo"]
+
+  test-stage:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      - build-stage

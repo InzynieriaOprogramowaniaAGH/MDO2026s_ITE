@@ -1,0 +1,3 @@
+FROM express-build:latest
+#uruchomienie testow
+CMD ["npm", "test"]

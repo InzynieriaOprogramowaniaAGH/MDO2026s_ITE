@@ -1,0 +1,11 @@
+FROM node:20-alpine
+
+#ustawienie katalogu roboczego
+WORKDIR /app
+
+#kopia gotowego folderu do kontenera
+COPY express/ ./express/
+
+#wejscie do folderu i instalacja
+WORKDIR /app/express
+RUN npm install
