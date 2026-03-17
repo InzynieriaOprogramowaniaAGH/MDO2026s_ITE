@@ -106,3 +106,47 @@ CMD ["bash"]
 ```
 
 # Zajecia 3
+
+Do zajęć wykorzystano repozytorium nodebestpractices
+
+```bash
+sudo apt update
+sudo apt install -y nodejs npm git
+
+git clone https://github.com/chalk/chalk.git
+
+cd chalk
+npm install
+```
+![alt text](image-7.png)
+
+![alt text](image-8.png)
+
+
+Następnie utworzyłem odpowiedni plik dockerfile.build i dockerfile.test
+
+`docker run -it chalk-build bash`
+```
+FROM node:20
+
+WORKDIR /app
+
+RUN apt update && apt install -y git
+RUN git clone https://github.com/chalk/chalk.git .
+
+RUN npm install
+
+RUN npm run build
+```
+
+```
+FROM chalk-build
+
+WORKDIR /app
+
+# run tests only
+CMD ["npm", "test"]
+```
+
+
+
