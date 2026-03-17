@@ -28,3 +28,11 @@
 ![docker aktualizacja](image-20.png)
 
 ## Lab 3 ##
+
+![pytest](image-21.png)
+![build](image-22.png)
+![test](image-23.png)
+![docker ps](image-24.png)
+![docker run](image-25.png)
+
+## Lab 4 ##
