@@ -1,0 +1,5 @@
+FROM express-build
+
+WORKDIR /app/express
+
+CMD ["npm","test"]
