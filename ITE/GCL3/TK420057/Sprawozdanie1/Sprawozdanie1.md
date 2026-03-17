@@ -54,6 +54,7 @@ WORKDIR /app
 RUN git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
 
 CMD ["bash"]
+```
 
 ![Zrzut 14](img/7.png)
 ![Zrzut 15](img/8.png)
