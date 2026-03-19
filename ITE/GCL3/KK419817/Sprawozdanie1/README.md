@@ -111,6 +111,7 @@ Usunięcie niepotrzebnych obrazów:
 
 # Zajecia 3
 
+### Podstawowa instalacja
 Do zajęć wykorzystano repozytorium expressjs
 (https://github.com/expressjs/express?tab=readme-ov-file#installation)
 
@@ -127,6 +128,8 @@ Wszystkie testy przeszły pomyślnie:
 
 ![testy](image-8.png)
 
+### Tryb interaktywny
+
 Następnie uruchomiłem wspomniane wyżej komendy w interaktywnym trybie dockera:
 ```Docker
 docker run -it node:20-alpine sh
@@ -138,6 +141,8 @@ apk add git
 ![dockerinttest](image-10.png)
 
 
+### Dockerfiles
+
 Kolejno, utworzyłem plik [Dockerfile.build](lab2/Dockerfile.build)
 ```Docker
 FROM node:20-alpine
@@ -148,13 +153,14 @@ RUN git clone https://github.com/expressjs/express.git .
 RUN npm install
 ```
 
-Oraz [Dockerfile.test](lab2/Dockerfile.test)
+Oraz [Dockerfile.test](lab2/Dockerfile.test), który musi zostać wykonany po utworzeniu obrazu build o nazwie express-build
 
 ```Docker
 FROM express-build
 WORKDIR /app
 CMD ["npm", "test"]
 ```
+
 
 ---
 
@@ -178,9 +184,10 @@ Utworzyłem plik [docker-compose.yml](lab2/docker-compose.yml), w którym utworz
 Build:
 ![alt text](image-12.png)
 
-Uruchomienie:
+Uruchomiłem kontenery za pomocą komendy:
+
 `docker-compose run --rm test`
 
 ![alt text](image-13.png)
 
-Wszystkie testy przeszły
+Wszystko wykonało się poprawnie a testy ponownie przeszły.
