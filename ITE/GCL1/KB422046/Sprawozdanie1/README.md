@@ -99,3 +99,83 @@
 
 #### Pozbycie sie obrazow:
 ![Pozbycie sie obrazow](2.12_czyszczenie_obrazow.png)
+
+
+
+# Laboratorium 3
+
+#### Instalacja zaleznosci:
+![Instalacja zaleznosci: ](3.1.1_instalacja_zaleznosci.png)
+![Instalacja zaleznosci: ](3.1.2_instalacja_zaleznosci.png)
+
+#### Sklonowanie repozytorium:
+![Sklonowanie repozytorium: ](3.2_sklonowanie_repozytorium.png)
+
+#### Przygotowanie:
+![Przygotowanie: ](3.3_przygotowanie.png)
+
+#### Konfiguracja:
+![Konfiguracja: ](3.4.1_konfiguracja.png)
+![Konfiguracja: ](3.4.2_konfiguracja.png)
+
+#### Budowanie:
+![Budowanie: ](3.5.1_build.png)
+![Budowanie: ](3.5.2_build.png)
+
+#### Testy:
+![Testy: ](3.6.1_testy.png)
+![Testy: ](3.6.2_testy.png)
+
+#### Uruchomienie kontenera:
+![Uruchomienie kontenera: ](3.7_uruchomienie_kontenera.png)
+
+#### Instalacja zaleznosci:
+![Instalacja zaleznosci: ](3.8.1_instalacja_zaleznosci.png)
+![Instalacja zaleznosci: ](3.8.2_instalacja_zaleznosci.png)
+![Instalacja zaleznosci: ](3.8.3_instalacja_zaleznosci.png)
+
+#### Sklonowanie repozytorium:
+![Sklonowanie repozytorium: ](3.9_sklonowanie_repozytorium.png)
+
+#### Przygotowanie:
+![Przygotowanie: ](3.10_przygotowanie.png)
+
+#### Konfiguracja:
+![Konfiguracja: ](3.11_konfiguracja.png)
+
+#### Budowanie:
+![Budowanie: ](3.12.1_build.png)
+![Budowanie: ](3.12.2_build.png)
+
+#### Testy:
+![Testy: ](3.13.1_testy.png)
+![Testy: ](3.13.2_testy.png)
+
+#### Kontenery i obraz:
+![Kontenery i obrazy: ](3.14_kontener_i_obraz.png)
+
+#### Dockerfile.build:
+![Dockerfile.build: ](3.15_Dockerfile.build.png)
+
+#### Dockerfile.test:
+![Dockerfile.test: ](3.16_Dockerfile.test.png)
+
+#### Budowanie:
+![Budowanie: ](3.17.1_Dockerfile_build.png)
+![Budowanie: ](3.17.2_Dockerfile_build.png)
+![Budowanie: ](3.17.3_Dockerfile_build.png)
+![Budowanie: ](3.17.4_Dockerfile_build.png)
+![Budowanie: ](3.17.5_Dockerfile_build.png)
+
+#### Dockerfile-compose:
+![Dockerfile-compose: ](3.18_dockerfile-compose.png)
+
+#### Budowanie:
+![Budowanie: ](3.19.1_docker-compose_build.png)
+![Budowanie: ](3.19.2_docker-compose_build.png)
+
+#### Kontenery:
+![Kontenery: ](3.20_kontenery.png)
+
+#### Obrazy:
+![Obrazy: ](3.21_obrazy.png)
