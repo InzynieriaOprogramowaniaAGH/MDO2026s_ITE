@@ -42,3 +42,13 @@ Pull Request zawiera dwa commity:
 ![alt text](../img/L2/L2-10.png) 
 ![alt text](../img/L2/L2-11.png) 
 ![alt text](../img/L2/L2-12.png)
+# Laboratorium3
+![alt text](../img/L3/L3-01.png) 
+![alt text](../img/L3/L3-02.png) 
+![alt text](../img/L3/L3-03.png) 
+![alt text](../img/L3/L3-04.png) 
+![alt text](../img/L3/L3-05.png)
+![alt text](../img/L3/L3-06-1.png) 
+![alt text](../img/L3/L3-06-2.png)
+![alt text](../img/L3/L3-07.png) 
+![alt text](../img/L3/L3-08.png)
