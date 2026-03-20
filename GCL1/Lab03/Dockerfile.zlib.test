@@ -1,3 +1,0 @@
-FROM zlibbld   
-
-RUN make test
