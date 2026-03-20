@@ -1,0 +1,5 @@
+FROM jq-build:local
+
+WORKDIR /opt/jq
+
+CMD ["make", "check"]

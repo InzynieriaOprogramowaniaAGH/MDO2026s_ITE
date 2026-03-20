@@ -1,0 +1,15 @@
+services:
+  build-shell:
+    image: jq-build:local
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  test-runner:
+    image: jq-test:local
+    build:
+      context: .
+      dockerfile: Dockerfile.test
