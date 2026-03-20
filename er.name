@@ -1,0 +1,13 @@
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+remote.origin.url=https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+branch.main.remote=origin
+branch.main.merge=refs/heads/main
+branch.main.vscode-merge-base=origin/main
+branch.GCL1.remote=origin
+branch.GCL1.merge=refs/heads/GCL1
+branch.GCL1.vscode-merge-base=origin/GCL1
+branch.BC423361.vscode-merge-base=origin/main
