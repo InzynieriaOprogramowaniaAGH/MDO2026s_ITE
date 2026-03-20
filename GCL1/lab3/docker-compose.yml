@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    image: hiredis-build
+
+  tester:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      - builder

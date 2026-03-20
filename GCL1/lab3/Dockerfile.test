@@ -1,0 +1,3 @@
+FROM hiredis-build
+
+CMD redis-server --daemonize yes && make check
