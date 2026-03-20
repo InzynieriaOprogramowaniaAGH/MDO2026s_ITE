@@ -1,0 +1,1 @@
+Trzeba zrobić jakiś wrapper do deployu zlibas

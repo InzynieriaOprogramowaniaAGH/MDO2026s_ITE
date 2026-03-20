@@ -1,0 +1,5 @@
+FROM zlibbld
+
+WORKDIR /zlib
+RUN ls
+RUN make -B test
