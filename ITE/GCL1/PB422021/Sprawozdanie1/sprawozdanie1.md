@@ -52,3 +52,72 @@ Uruchomienie i weryfikacja (ls -la) zawartości sklonowanego repozytorium:
 ### 7. Porządki i historia
 Wyświetlenie historii wszystkich kontenerów (zarówno działających, jak i zatrzymanych):
 ![Historia kontenerów](historia_kontenerów.png)
+
+
+#### LAB3 
+
+ 1. Po sklonowaniu repo na systemie Ubuntu Server próba zbudowania zakończyła się niepowodzeniem. Wybrane repozytorium wymaga środowiska Node.js w wersji >= 20, podczas gdy system operacyjny oferuje wersję 18.19.1.
+
+ ![Błąd wyświetlania](lab3_ss/lab3ss1.png)
+
+ Z tego powodu przechodzę do wykonania kolejnej części instrukcji, ay wykonać to bez potrzeby instalacji nowej wersji node na ubuntu.
+
+ 2. Uruchomiałam i pobrałąm nowy obraz node:20 
+ 
+ ![Błąd wyświetlania](lab3_ss/lab3ss2.png)
+
+ Zainstalowałam gita 
+
+  ![Błąd wyświetlania](lab3_ss/lab3ss3.png)
+
+ Sklonowałam repozytorium do folderu app.
+
+  ![Błąd wyświetlania](lab3_ss/lab3ss4.png)
+
+Repozytorium zostało pobrane poprawnie.
+
+ ![Błąd wyświetlania](lab3_ss/lab3ss5.png)
+
+Zainstalowałam zależności 
+ ![Błąd wyświetlania](lab3_ss/lab3ss6.png)
+
+Uruchomiłam build, po tej komendzie pojawił sięnowy folder dist, co wskazuje na poprawne zbudowanie programu. 
+ ![Błąd wyświetlania](lab3_ss/lab3ss7.png)
+
+Następnie uruchomiłam testy, które przeszły poprawnie.
+ ![Błąd wyświetlania](lab3_ss/lab3ss8.png)
+
+3. W kolejnym kroku przeszłam do utworzenia plików Dockerfile, które zautomatyzują to co było wykonane wcześniej. 
+
+Dockerfile.build:
+FROM node:20
+
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+RUN git clone https://github.com/nestjs/typescript-starter.git .
+
+RUN npm install
+RUN npm run build
+
+CMD ["npm", "run", "start:prod"]
+
+ ![Błąd wyświetlania](lab3_ss/lab3ss9.png)
+
+Dockerfile.test:
+FROM app-build
+
+CMD ["npm", "run", "test"]
+
+ ![Błąd wyświetlania](lab3_ss/lab3ss10.png)
+
+ ![Błąd wyświetlania](lab3_ss/lab3ss11.png)
+ ![Błąd wyświetlania](lab3_ss/lab3ss12.png)
+ ![Błąd wyświetlania](lab3_ss/lab3ss13.png)
+
+To, że i w tym przypadku testy przeszły poprawnie potwierdza poprawność wdrożenia.
+ ![Błąd wyświetlania](lab3_ss/lab3ss14.png)
+
+
+ 
