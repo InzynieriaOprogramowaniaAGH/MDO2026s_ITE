@@ -50,7 +50,7 @@ chmod +x .git/hooks/commit-msg
 
 ## Class 02
 
-Docker to platforma zaprojektowana w celu upraszczania procesu tworzenia, dostarczania i uruchamiania aplikacji. Usprawnia dostarczanie oprogramowania poprzez konteneryzację, czyli technologię pakującą aplikację bądź jej zależności w odizolowane, uruchamialne jednostki zwane kontenerami. Rozwiązuje to problem polegający na tym, że gdy jedna z aplikacji przestanie działać, nie „zaraża” ona innych aplikacji. Jednocześnie redukuje koszty związane z izolacją, ponieważ eliminuje konieczność ponoszenia pełnego narzutu zasobów charakterystycznego dla pojedynczych maszyn wirtualnych (jądro, sterowniki, programy i aplikacje).
+`Docker` to platforma zaprojektowana w celu upraszczania procesu tworzenia, dostarczania i uruchamiania aplikacji. Usprawnia dostarczanie oprogramowania poprzez konteneryzację, czyli technologię pakującą aplikację bądź jej zależności w odizolowane, uruchamialne jednostki zwane kontenerami. Rozwiązuje to problem polegający na tym, że gdy jedna z aplikacji przestanie działać, nie „zaraża” ona innych aplikacji. Jednocześnie redukuje koszty związane z izolacją, ponieważ eliminuje konieczność ponoszenia pełnego narzutu zasobów charakterystycznego dla pojedynczych maszyn wirtualnych (jądro, sterowniki, programy i aplikacje).
 
 Obray kontenera to pakiery zawierające wszystkie pliki, pliki binarne, biblioteki oraz konfiguracje do uruchomienia kontenera. Obrazy kontenerów składają się z warstw: każda warstwa reprezentuje zestaw zmian systemu plików. Obrazy do uruchomienia lokalnie można znaleźć na Docker Hub.
 
@@ -67,8 +67,6 @@ Polecenie `docker run hello-world` powoduje utworzenie oraz uruchomienie kontene
 ![Zdjęcie 3](img/s3.png)
 
 ### Uruchomienie kontenera z obrazu `busybox` oraz wywołanie numeru sesji
-
-Obraz `busybox` zawiera minimalistyczny zestaw narzędzi systemowych wykorzystywanych w systemach uniksowych.
 
 ![Zdjęcie 4](img/s4.png)
 
@@ -171,3 +169,36 @@ Obraz jest widoczny po wpisaniu `docker images`.
 Podczas budowania drugiego obrazu proces został przerwany, ponieważ polecenie `dotnet test` zwróciło kod wyjścia 1. W rezultacie obraz nie otrzymał zdefiniowanego taga i pojawił się w systemie jako obraz typu `none`. Testy w repozytorium zostały napisane tak, aby nie przechodzić poprawnie.
 
 ![Zdjęcie 10](img/s10.png)
+
+## Class 04
+
+### Przygotowanie woluminu wejściowego oraz wyjściowego
+
+![Zdjęcie 11](img/s11.png)
+
+![Zdjęcie 12](img/s12.png)
+
+`sudo docker volume inspect my_vol_out`
+
+```bash
+[
+    {
+        "CreatedAt": "2026-03-24T07:52:34Z",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/my_vol_out/_data",
+        "Name": "my_vol_out",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+```
+
+Przy pomocy LLM (błąd ze strukturą katalogów) 
+```bash
+sudo docker run --rm \
+-v my_vol:/data \
+-v $(pwd)/devskiller-sample-dotnetcore:/src \
+ubuntu \
+bash -c "cp -r /src/. /data/"
+```
