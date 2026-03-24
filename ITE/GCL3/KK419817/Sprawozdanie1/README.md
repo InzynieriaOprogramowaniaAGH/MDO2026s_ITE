@@ -191,3 +191,40 @@ Uruchomiłem kontenery za pomocą komendy:
 ![alt text](image-13.png)
 
 Wszystko wykonało się poprawnie a testy ponownie przeszły.
+
+
+# Zajecia 4
+
+Eksponowanie portu i łączność między kontenerami
+
+Server
+```
+docker run -it --name iperf-server alpine sh
+
+apk add iperf3
+
+# start listening:
+iperf3 -s
+```
+![alt text](image-16.png)
+
+Klient
+```
+docker run -it --name iperf-client alpine sh
+apk add iperf3
+```
+![alt text](image-15.png)
+
+Na hoscie:
+```
+docker inspect iperf-server
+docker inspect iperf-server | grep IPAddress
+```
+![alt text](image-14.png)
+
+Polaczenie z klienta, test łącza:
+```
+iperf3 -c iperf3 -c 172.17.0.2
+```
+![testpol](image-17.png)
+
