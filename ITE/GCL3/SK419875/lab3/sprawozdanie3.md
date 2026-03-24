@@ -9,3 +9,4 @@ stan dockera po operacjach:
 ![alt text](6.PNG) 
 automatyzacja z użyciem pliku .yml:
 ![alt text](7.PNG)
+![alt text](8.png)
