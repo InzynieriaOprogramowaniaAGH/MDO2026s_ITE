@@ -203,7 +203,6 @@ docker run -it --name iperf-server alpine sh
 
 apk add iperf3
 
-# start listening:
 iperf3 -s
 ```
 ![alt text](image-16.png)
@@ -215,7 +214,7 @@ apk add iperf3
 ```
 ![alt text](image-15.png)
 
-Na hoscie:
+Na hoście:
 ```
 docker inspect iperf-server
 docker inspect iperf-server | grep IPAddress
@@ -224,7 +223,40 @@ docker inspect iperf-server | grep IPAddress
 
 Polaczenie z klienta, test łącza:
 ```
-iperf3 -c iperf3 -c 172.17.0.2
+iperf3 -c 172.17.0.2
 ```
 ![testpol](image-17.png)
+
+Następnie utworzyłem własną sieć za pomocą polecenia `docker network create my-net`
+
+Usunąłem poprzednie kontenery i postawiłem je na nowo (z flagą --rm aby nie zaśmiecały pamięci)
+```
+docker stop iperf-client iperf-server
+docker rm -f iperf-client iperf-server
+
+# server
+docker run -it --rm --name iperf-server --network my-net alpine sh
+apk add iperf3
+iperf3 -s
+
+# client
+docker run -it --rm --name iperf-client --network my-net alpine sh
+```
+
+Uruchomiono
+`iperf3 -c iperf-server` w kliencie
+![alt text](image-18.png)
+
+Połączenie z hosta:
+
+![alt text](image-19.png)
+
+Dodano regułę przekierowania portów:
+![alt text](image-21.png)
+
+Połączeni spoza hosta (system windows):
+![alt text](image-20.png)
+
+logi:
+![alt text](image-22.png)
 
