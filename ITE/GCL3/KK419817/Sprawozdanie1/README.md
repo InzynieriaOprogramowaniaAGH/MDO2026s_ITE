@@ -327,6 +327,26 @@ logi:
 
 ![alt text](image-22.png)
 
+## Usługi w rozumieniu systemu, kontenera i klastra
+
+Uruchomienie SSHD w kontenerze
+```bash
+docker run -d --name ssh-server -p 2222:22 ubuntu:22.04 sh -c "apt update && apt install -y openssh-server && mkdir -p /var/run/sshd && echo 'root:password' | chpasswd && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && /usr/sbin/sshd -D"
+```
+![alt text](image-28.png)
+
+Połączenie przez ssh:
+```bash
+ssh -p 2222 root@localhost
+# wpisanie hasła w prompcie
+```
+![alt text](image-29.png)
+
+Komunikacja z kontenerem przez SSH pozwala na łatwe debugowanie i ręczne zarządzanie środowiskiem, ponieważ można zalogować się do kontenera tak jak do zwykłego serwera Linux i bezpośrednio sprawdzić jego stan, procesy czy pliki. Jest to dość wygodne, lecz łamie podstawową ideę konteneryzacji, w której kontenery powinny być nietrwałe i zarządzane automatycznie, a nie modyfikowane ręcznie. Dodatkowo zwiększa to powierzchnię ataku przez otwieranie portu SSH oraz utrudnia automatyzację w procesach CI/CD, gdzie zamiast ręcznego dostępu preferowane są powtarzalne i deklaratywne konfiguracje.
+
+## Przygotowanie do uruchomienia serwera Jenkins
+
+
 
 
 
