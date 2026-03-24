@@ -36,3 +36,26 @@
 ![docker run](image-25.png)
 
 ## Lab 4 ##
+
+![create volume](image-26.png)
+![ls src](image-27.png)
+![ls in](image-28.png)
+![install requirements](image-29.png)
+![pytest](image-30.png)
+![echo](image-31.png)
+![result](image-32.png)
+![cleanup](image-33.png)
+![git clone](image-34.png)
+![git test](image-35.png)
+![iperf](image-36.png)
+![docker run](image-37.png)
+![client server](image-38.png)
+![bridge](image-39.png)
+![sshd](image-40.png)
+![2222](image-41.png)
+![server](image-42.png)
+![success](image-43.png)
+![jenkins admin](image-44.png)
+![jenkins login](image-45.png)
+
+## Fin ##
