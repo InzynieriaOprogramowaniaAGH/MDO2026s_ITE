@@ -345,8 +345,56 @@ ssh -p 2222 root@localhost
 Komunikacja z kontenerem przez SSH pozwala na łatwe debugowanie i ręczne zarządzanie środowiskiem, ponieważ można zalogować się do kontenera tak jak do zwykłego serwera Linux i bezpośrednio sprawdzić jego stan, procesy czy pliki. Jest to dość wygodne, lecz łamie podstawową ideę konteneryzacji, w której kontenery powinny być nietrwałe i zarządzane automatycznie, a nie modyfikowane ręcznie. Dodatkowo zwiększa to powierzchnię ataku przez otwieranie portu SSH oraz utrudnia automatyzację w procesach CI/CD, gdzie zamiast ręcznego dostępu preferowane są powtarzalne i deklaratywne konfiguracje.
 
 ## Przygotowanie do uruchomienia serwera Jenkins
+Utworzenie sieci dla komunikacji kontenerów
+Uruchomienie dind
+```bash
+docker network create jenkins
+
+docker run -d \
+  --name jenkins-docker \
+  --network jenkins \
+  --privileged \
+  docker:dind
+```
+![alt text](image-30.png)
+
+Wykazanie działającego kontenera:
+
+![alt text](image-31.png)
+
+Uruchomienie jenkinsa (port 8080 - później używany w przeglądarce)
+
+```bash
+docker run -d \
+  --name jenkins \
+  --network jenkins \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts
+```
+![alt text](image-32.png)
 
 
 
+Dodanie port forwardingu dla 8080
+![alt text](image-33.png)
 
+`http://localhost:8080/` w przeglądarce (poza VM)
+![alt text](image-34.png)
 
+"Wyciągnięcie" hasła:
+
+```bash
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+![alt text](image-35.png)
+
+![alt text](image-37.png)
+
+![alt text](image-38.png)
+
+Działające kontenery:
+`docker ps`
+![alt text](image-36.png)
