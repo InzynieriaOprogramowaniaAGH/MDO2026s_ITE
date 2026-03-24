@@ -195,7 +195,73 @@ Wszystko wykonało się poprawnie a testy ponownie przeszły.
 
 # Zajecia 4
 
-Eksponowanie portu i łączność między kontenerami
+## Zachowywanie stanu między kontenerami
+
+Utworzono woluminy
+```
+docker volume create vol_src
+docker volume create vol_bin
+```
+vol_src - do przechowywania kodu źródłowego
+vol_bin - do przechowywania node_modules etc.
+
+Kontener bazowy (node:20-alpine) nie zawiera Gita. Aby umieścić kod źródłowy na woluminie, uruchomiłem kontener pomocniczy z obrazem alpine/git:
+
+```
+docker run --rm -v vol_src:/data alpine/git clone https://github.com/expressjs/express.git /data
+```
+![alt text](image-23.png)
+
+Kontener pomocniczy alpine/git został użyty, ponieważ kontener bazowy node:20-alpine nie zawiera Gita. Metoda ta pozwala na jednorazowe sklonowanie repozytorium na wolumin bez instalowania zbędnych narzędzi w docelowym obrazie, a po zakończeniu kontener jest automatycznie usuwany.
+
+
+Włączenie kontenera, instalacja dependencji
+```
+docker run -it --name builder-node -v vol_src:/app_in -v vol_bin:/app_out node:20-alpine sh
+cd /app_in
+npm install
+cp -r node_modules /app_out/
+```
+![a](image-24.png)
+
+Po instalacji wszystkie zależności (node_modules) zostały zapisane w katalogu /app_in/node_modules. Ponieważ katalog /app_in jest mapowany na wolumin vol_src, a nie na vol_bin, zależności zostałyby utracone po usunięciu kontenera.
+Aby trwale zachować zależności na dedykowanym woluminie wyjściowym, skopiowałem je do /app_out
+
+Sprawdzono zawartość woluminu vol_bin za pomocą tymczasowego kontenera, katalog /check zawiera pliki node_modules, co potwierdza, że dane zostały zachowane
+```
+docker run -it --rm -v vol_bin:/check alpine sh
+ls -la /check
+```
+![alt text](image-25.png)
+W katalogu /check (który jest mapowany na vol_bin) widoczne są skopiowane wcześniej pliki node_modules. Oznacza to, że dane zostały trwale zapisane na woluminie i są dostępne niezależnie od kontenera.
+
+---
+
+Klonowanie wewnątrz kontenera
+
+```
+docker volume create vol_bin2
+
+docker run -it --rm -v vol_bin2:/app_out node:20-alpine sh
+apk add git
+git clone https://github.com/expressjs/express.git
+cd express
+npm install
+cp -r node_modules /app_out/
+```
+![alt text](image-26.png)
+
+W tym przypadku kod źródłowy nie był przechowywany na woluminie – został sklonowany lokalnie wewnątrz kontenera, a następnie skopiowany tylko wynik budowania (node_modules) na wolumin wyjściowy
+
+![alt text](image-27.png)
+
+#### Dyskusja nad użyciem docker build i RUN --mount
+Opisane kroki można wykonać również za pomocą docker build i pliku Dockerfile z użyciem flagi RUN --mount.
+
+Zamiast ręcznego tworzenia woluminów i uruchamiania kontenerów, całość definiuje się w jednym pliku a użycie instrukcji `RUN --mount=type=cache` pozwala na zachowanie repozytorium i zainstalowanych zależności między kolejnymi budowami, eliminując konieczność każdorazowego klonowania i instalacji. Dzięki temu proces budowania staje się szybszy i w pełni zdefiniowany w jednym pliku.
+
+
+## Eksponowanie portu i łączność między kontenerami
 
 Server
 ```
@@ -258,5 +324,9 @@ Połączeni spoza hosta (system windows):
 ![alt text](image-20.png)
 
 logi:
+
 ![alt text](image-22.png)
+
+
+
 
