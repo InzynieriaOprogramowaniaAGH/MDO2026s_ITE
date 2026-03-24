@@ -41,5 +41,10 @@ Pomiary wykazują bardzo wysoką przepustowość na poziomie około 23.3 Gbits/s
 przerwania sesji przez klienta, jednak nie wpływa on na wiarygodność zebranych wcześniej danych o transferze.
 
 ## Usługi w rozumieniu systemu, kontenera i klastra
+<img width="1011" height="198" alt="image" src="https://github.com/user-attachments/assets/cf4406e9-2451-451b-9582-58b49d8a98d8" />
+<img width="1051" height="761" alt="image" src="https://github.com/user-attachments/assets/252b9022-9514-49db-852a-9ec64e005c5b" />
 
+Zaletą SSH jest możliwość korzystania ze standardowych narzędzi do zarządzania plikami oraz łatwiejsze debugowanie w środowiskach typu legacy. Główną wadą jest łamanie zasady jeden proces na kontener, co niepotrzebnie zwiększa zużycie zasobów i rozszerza pole ataku na bezpieczeństwo systemu. 
 ## Przygotowanie do uruchomienia serwera Jenkins
+<img width="1050" height="531" alt="image" src="https://github.com/user-attachments/assets/42dc870d-6519-4d02-8297-f44321bb2406" />
+<img width="1460" height="979" alt="image" src="https://github.com/user-attachments/assets/d61a11b0-bbe2-4f59-bab2-b21f3b3d6596" />
