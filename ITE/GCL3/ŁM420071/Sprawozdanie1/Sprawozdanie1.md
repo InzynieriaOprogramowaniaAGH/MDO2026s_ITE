@@ -57,3 +57,15 @@ Lab2
 ![pusto](pusto.png)
 
 ![alt text](expressTest.png)
+
+![alt text](createvolumin.png)
+
+![alt text](Output.png)
+
+![alt text](cloneinside.png)
+
+![alt text](mount.png)
+
+![alt text](IP1.png)
+
+![alt text](IP2.png)
