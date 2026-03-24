@@ -1,0 +1,14 @@
+services:
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    image: realworld-base
+
+  tester:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    image: realworld-tester
+    depends_on:
+      - builder
