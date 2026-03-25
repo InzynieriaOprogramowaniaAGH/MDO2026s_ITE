@@ -60,7 +60,9 @@ Lab2
 
 ![alt text](createvolumin.png)
 
-![alt text](Output.png)
+![alt text](input.png)
+
+![alt text](output.png)
 
 ![alt text](cloneinside.png)
 
@@ -69,3 +71,21 @@ Lab2
 ![alt text](IP1.png)
 
 ![alt text](IP2.png)
+
+![alt text](testconnection1.png)
+
+![alt text](testconnection2.png)
+
+![alt text](hostPing.png)
+
+![alt text](testConnectionHost.png)
+
+![alt text](testconnectionFromWinows.png)
+
+![alt text](logi_iperf.png)
+
+![alt text](sshconnection.png)
+
+![alt text](jenkins_containers.png)
+
+![alt text](jenkins_login.png)
