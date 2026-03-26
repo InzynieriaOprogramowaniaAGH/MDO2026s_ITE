@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  # budowanie kodu
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.nvim.build
+    image: neovim-build:latest
+    # kontener w trybie "idle"
+    command: tail -f /dev/null
+
+  # urachamianie testów
+  tester:
+    build:
+      context: .
+      dockerfile: Dockerfile.nvim.test
+    depends_on:
+      - builder
