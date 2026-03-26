@@ -1,0 +1,7 @@
+version: '3.8'
+
+services:
+  testy3:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
