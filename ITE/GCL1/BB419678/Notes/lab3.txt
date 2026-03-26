@@ -5,3 +5,5 @@ Projekt II: dobry kandydat (testy i build)
 gin: framework http do go - teoretycznie ma wszystko,ale to framework a nie sam projekt.
 
 redis: tak,ale trzeba zrobić forka i zostawić tylko testy jednostkowe - reszta ok.
+
+neovim: pasuje wszystko teoretycznie - mamy make build, make unittest i apache 2.0 jako licencje:
