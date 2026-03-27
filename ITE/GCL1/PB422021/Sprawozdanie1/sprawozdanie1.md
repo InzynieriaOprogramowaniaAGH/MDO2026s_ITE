@@ -120,4 +120,35 @@ To, że i w tym przypadku testy przeszły poprawnie potwierdza poprawność wdro
  ![Błąd wyświetlania](lab3_ss/lab3ss14.png)
 
 
- 
+ #### LAB 4
+
+1. Woluminy - wersja bez zainstalowanego gita.
+
+  ![Błąd wyświetlania](lab4_ss/lab4ss1.png)
+
+  ![Błąd wyświetlania](lab4_ss/lab4ss2.png)
+
+  ![Błąd wyświetlania](lab4_ss/lab4ss3.png)
+
+  ![Błąd wyświetlania](lab4_ss/lab4ss4.png)
+
+  ![Błąd wyświetlania](lab4_ss/lab4ss5.png)
+
+  ![Błąd wyświetlania](lab4_ss/lab4ss6.png)
+
+  ![Błąd wyświetlania](lab4_ss/lab4ss7.png)
+
+  ![Błąd wyświetlania](lab4_ss/lab4ss8.png)
+
+
+  Następnie zrobiłam to samo, ale klonawanie na wolumin wejściowy przeprowadziłam wewnątrz kontenera już z wykorzystaniem Gita w kontenerze.
+
+ ![Błąd wyświetlania](lab4_ss/lab4ss9.png)
+
+ Po uruchomieniu nowego kontenera w folderze input nadal były stare pliki, więc musiałam je usunąć przed zaciągnięciem repo do tego folderu. Po usunięciu pierwszej instancji kontenera i uruchomieniu nowej z tym samym montowaniem, pliki z poprzedniej sesji były nadal dostępne. Ponieważ narzędzie Git wymaga pustego katalogu docelowego do wykonania operacji clone, konieczne było wyczyszczenie zawartości woluminu przed ponownym pobraniem kodu.
+
+  ![Błąd wyświetlania](lab4_ss/lab4ss10.png)
+
+  ![Błąd wyświetlania](lab4_ss/lab4ss11.png)
+  ![Błąd wyświetlania](lab4_ss/lab4ss12.png)
+  ![Błąd wyświetlania](lab4_ss/lab4ss13.png)
