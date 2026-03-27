@@ -37,7 +37,7 @@ Zainstalowano środowisko Docker przy użyciu repozytorium dystrybucyjnego (unik
 
 ![Instalacja Dockera w systemie Ubuntu](lab2/docker_install.png)
 ![Weryfikacja pobranych obrazów i ich rozmiarów](lab2/docker_images.png)
-![Pomyślne uruchomienie kontenera hello-world](lab2/run_hello-word.png)
+![Pomyślne uruchomienie kontenera hello-world](lab2/run_helloworld.png)
 
 ### 2.2. Kontenery interaktywne i inspekcja procesów
 Uruchomiono kontener `busybox` w trybie interaktywnym w celu weryfikacji wersji systemu. Następnie w kontenerze `ubuntu` zainstalowano narzędzia `procps` i wykazano, że głównym procesem (PID 1) jest powłoka `/bin/bash`.
@@ -88,7 +88,7 @@ Przygotowano dwa pliki Dockerfile:
 
 Fragment uruchamiania powyższego Dockerfile:
 
-![Uruchomienie Dockerfile.build](lab3/screenshots/build_dockerfile_build)
+![Uruchomienie Dockerfile.build](lab3/screenshots/build_dockerfile_build.png)
 
 2. **Dockerfile.test**: Bazuje na obrazie builda i wykonuje tylko testy (`CMD ["make", "check"]`).
 
@@ -167,7 +167,12 @@ Otrzymane wyniki na poziomie hosta:
 **2. Łączność spoza Hosta (Windows -> Kontener):**
 Wykorzystano mechanizm Port Forwarding w oprogramowaniu VirtualBox, aby udostępnić port 5201 dla systemu macierzystego (Windows). Połączenie zrealizowano przy użyciu klienta IPerf3 dla systemu Windows.
 
+Konfiguracja portu na maszynie wirtualnej:
+
 ![Konfiguracja portu](lab4/iperf_config.png)
+
+Wynik połączenia z PowerShella:
+
 ![Połączenie spoza hosta (z poziomu Windowsa)](lab4/screen_iperf_windows.png)
 
 **Wnioski z pomiaru przepustowości:**
