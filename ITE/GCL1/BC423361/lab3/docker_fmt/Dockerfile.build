@@ -1,0 +1,8 @@
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y git g++ cmake make
+WORKDIR /app
+RUN git clone https://github.com/fmtlib/fmt.git .
+WORKDIR /app/build
+RUN cmake -DFMT_TEST=ON .. && make
+

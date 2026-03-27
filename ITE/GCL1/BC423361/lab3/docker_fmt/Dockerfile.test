@@ -1,0 +1,3 @@
+FROM fmt-build-image
+WORKDIR /app/build
+CMD ["make", "test"]

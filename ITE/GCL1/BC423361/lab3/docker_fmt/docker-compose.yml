@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+ build-stage:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    image: fmt-build-image
+ test-stage:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      - build-stage
