@@ -24,6 +24,7 @@ if [[ ! $commit_message =~ $pattern ]]; then
     echo "BŁĄD: Wiadomość musi zaczynać się od PD420765"
     exit 1
 fi
+```
 
 ---
 
@@ -121,6 +122,7 @@ Można stworzyć trzeci etap (kontener), który po pomyślnych testach pobiera a
 FROM tester-image
 RUN apt-get install -y fpm
 RUN fpm -s dir -t deb -n hiredis /app/libhiredis.so
+```
 
 ## Laboratorium 4:
 
@@ -134,7 +136,9 @@ Dokładny opis wykonania:
 1. Utworzono nazwany wolumin Dockera: docker volume create vol_in.
 2. Uruchomiono tymczasowy kontener pomocniczy z zainstalowanym Gitem, montując do niego stworzony wolumin:
 
+```bash
 docker run --rm -v vol_in:/data alpine/git clone https://github.com/redis/hiredis.git /data
+```
 
 Po zakończeniu klonowania kontener pomocniczy został automatycznie usunięty (--rm), a kod pozostał na woluminie vol_in.
 Następnie uruchomiono właściwy kontener budujący (hiredis-build), montując wolumin vol_in w trybie tylko do odczytu (:ro).
