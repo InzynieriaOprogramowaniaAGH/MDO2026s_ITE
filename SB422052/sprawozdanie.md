@@ -50,3 +50,18 @@ Tak wygląda wynik zautomatyzowanych testów po zbudowaniu i odpaleniu drugiego 
 
 ![Docker Compose](screeny/8.png)
 
+---
+---
+## Zajęcia 04: Woluminy, Sieci i Jenkins
+
+### 1. Zachowywanie stanu między kontenerami (Woluminy)
+ Stworzyłem najpierw dwa nazwane woluminy: `vol_wejsciowy` i `vol_wyjsciowy`.
+
+
+Do pobrania kodu użyłem tzw. **kontenera pomocniczego** z leciutkim obrazem `alpine/git`. Odpaliłem go z podpiętym woluminem wejściowym, kazałem mu sklonować repozytorium (Express.js) i od razu po tym usunąć kontener (opcja `--rm`). 
+
+
+Kiedy kod leżał już  na woluminie, uruchomiłem docelowy kontener bazowy (`node:20`). Wszedłem do środka, zainstalowałem pakiety (zrobiłem builda przez `npm install`), a gotowe pliki skopiowałem na drugi wolumin (`vol_wyjsciowy`). 
+Poniżej screen pokazujący, że dane przetrwały zamknięcie kontenera (wylistowałem zawartość woluminu wyjściowego z poziomu szybkiego, testowego kontenera alpine):
+
+![Woluminy wyjściowe](screeny/voluminy.png)
