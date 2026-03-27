@@ -103,3 +103,23 @@ Finalnie proces został ujęty w `docker-compose.yml`, co pozwala na uruchomieni
 * **Czy program nadaje się do wdrażania jako kontener?** Tak, aplikacje Spring Boot są natywnie przystosowane do pracy w kontenerach (microservices).
 * **Artefakt końcowy:** Aplikacja powinna być dystrybuowana jako plik **JAR**.
 * **Oczyszczanie:** Obraz budujący zawiera kod źródłowy i narzędzia deweloperskie, co zwiększa jego rozmiar i zmniejsza bezpieczeństwo. Do celów produkcyjnych należy zastosować technikę **Multi-stage build**, kopiując wyłącznie skompilowany plik `.jar` do lekkiego obrazu JRE (np. Alpine).
+
+# Zajęcia 04: Woluminy, Sieci, Usługi i Jenkins
+
+## Część 1: Zachowywanie stanu między kontenerami (Woluminy)
+Celem zadania było odseparowanie kodu źródłowego i zbudowanych artefaktów od ulotnych kontenerów za pomocą woluminów Dockera.
+
+1.  **Tworzenie woluminów:** Utworzono woluminy `wejscie` i `wyjscie`.
+    ![Tworzenie woluminów](lab4_1.png)
+2.  **Klonowanie bez użycia Gita w kontenerze budującym:** Ponieważ obraz bazowy nie posiadał Gita, użyto tymczasowego kontenera pomocniczego (`alpine/git`), który sklonował repozytorium bezpośrednio na wolumin wejściowy i natychmiast uległ zniszczeniu (`--rm`). To najbezpieczniejsze podejście utrzymujące czystość obrazu budującego.
+    ![Klonowanie kontenerem pomocniczym](lab4_2.png)
+3.  **Budowa aplikacji:** Uruchomiono główny kontener budujący podpinając oba woluminy.
+    ![Sukces budowania](lab4_3.png)
+4.  **Weryfikacja trwałości:** Gotowy plik `.jar` przetrwał na woluminie wyjściowym po zamknięciu kontenera.
+    ![Gotowy plik jar na woluminie](lab4_4.png)
+5.  **Ponowienie operacji wewnątrz kontenera:** Drugą metodą było wejście do kontenera w trybie interaktywnym, ręczna instalacja Gita i sklonowanie repozytorium.
+    ![Instalacja Gita interaktywnie](lab4_5.png)
+    ![Klonowanie interaktywnie](lab4_6.png)
+6.  **Zapisanie drugiego artefaktu:** Nowy plik skopiowano jako `build_ponowiony.jar`.
+    ![Sukces ponowienia](lab4_7.png)
+    ![Dwa pliki na woluminie](lab4_8.png)
