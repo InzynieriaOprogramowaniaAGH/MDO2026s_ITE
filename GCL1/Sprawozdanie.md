@@ -37,7 +37,7 @@ Zainstalowano środowisko Docker przy użyciu repozytorium dystrybucyjnego (unik
 
 ![Instalacja Dockera w systemie Ubuntu](lab2/docker_install.png)
 ![Weryfikacja pobranych obrazów i ich rozmiarów](lab2/docker_images.png)
-![Pomyślne uruchomienie kontenera hello-world](lab2/run_helloword.png)
+![Pomyślne uruchomienie kontenera hello-world](lab2/run_hello-word.png)
 
 ### 2.2. Kontenery interaktywne i inspekcja procesów
 Uruchomiono kontener `busybox` w trybie interaktywnym w celu weryfikacji wersji systemu. Następnie w kontenerze `ubuntu` zainstalowano narzędzia `procps` i wykazano, że głównym procesem (PID 1) jest powłoka `/bin/bash`.
@@ -63,43 +63,43 @@ Do zadania wybrano bibliotekę **hiredis** (klient C dla bazy Redis), udostępni
 
 Kompilacja biblioteki:
 
-![Kompilacja biblioteki hiredis na hoście](lab3/build_lokalny.png)
+![Kompilacja biblioteki hiredis na hoście](lab3/screenshots/build_lokalny.png)
 
 Wyniki testów jednostkowych
 
-![Pomyślny wynik testów jednostkowych na hoście](lab3/tes_lokalnie_passed.png)
+![Pomyślny wynik testów jednostkowych na hoście](lab3/screenshots/tes_lokalnie_passed.png)
 
 ### 3.2. Izolacja: Build i test w kontenerze interaktywnym
 Zgodnie z wymogiem izolacji, proces powtórzono w kontenerze `ubuntu:22.04`. Do kontenera podłączono TTY, zainstalowano zależności (`build-essential`, `git`, `redis-server`), sklonowano kod i pomyślnie przeprowadzono build oraz testy.
 
 Budowanie hiredisa wewnątrz kontenera interaktywnego:
 
-![Budowanie hiredis wewnątrz kontenera interaktywnego](lab3/interactive_build.png)
+![Budowanie hiredis wewnątrz kontenera interaktywnego](lab3/screenshots/interactive_build.png)
 
 Wyniki testów:
 
-![Potwierdzenie przejścia testów w kontenerze](lab3/interactive_test_passed.png)
+![Potwierdzenie przejścia testów w kontenerze](lab3/screenshots/interactive_test_passed.png)
 
 ### 3.3. Automatyzacja: Dockerfile i Docker Compose
 Przygotowano dwa pliki Dockerfile:
 1. **Dockerfile.build**: Instaluje kompilatory i buduje oprogramowanie.
 
-![Dockerfile.build](lab3/dockerfile_build.png)
+![Dockerfile.build](lab3/screenshots/dockerfile_build.png)
 
 Fragment uruchamiania powyższego Dockerfile:
 
-![Uruchomienie Dockerfile.build](lab3/build_dockerfile_build)
+![Uruchomienie Dockerfile.build](lab3/screenshots/build_dockerfile_build)
 
 2. **Dockerfile.test**: Bazuje na obrazie builda i wykonuje tylko testy (`CMD ["make", "check"]`).
 
-![Dockerfile.test](lab3/dockerfile_test.png)
+![Dockerfile.test](lab3/screenshots/dockerfile_test.png)
 
 Fragmenty uruchamiania powyższego Dockerfile:
 
-![Dockerfile.test - 1](lab3/dockerfile_run_test_1.png)
-![Dockerfile.test - 2](lab3/dockerfile_run_test_2.png)
+![Dockerfile.test - 1](lab3/screenshots/dockerfile_run_test_1.png)
+![Dockerfile.test - 2](lab3/screenshots/dockerfile_run_test_2.png)
 
-![Uruchomienie potoku CI przez Docker Compose](lab3/docker_compose_run_2.png)
+![Uruchomienie potoku CI przez Docker Compose](lab3/screenshots/docker_compose_run_2.png)
 
 ### 3.4. Dyskusja i odpowiedzi na pytania z instrukcji
 
@@ -162,7 +162,7 @@ Dzięki mapowaniu portów `-p 5201:5201`, usługa serwera IPerf3 stała się dos
 ![Połączenie z poziomu hosta](lab4/iperf_access_from_host.png)
 
 Otrzymane wyniki na poziomie hosta:
-![Połączenie z hosta](lab4/iperf_run_client_test)
+![Połączenie z hosta](lab4/iperf_run_client_test.png)
 
 **2. Łączność spoza Hosta (Windows -> Kontener):**
 Wykorzystano mechanizm Port Forwarding w oprogramowaniu VirtualBox, aby udostępnić port 5201 dla systemu macierzystego (Windows). Połączenie zrealizowano przy użyciu klienta IPerf3 dla systemu Windows.
@@ -187,7 +187,7 @@ Celem zadania było uruchomienie usługi SSH wewnątrz kontenera Ubuntu, co pozw
 * **Zalety:** Pozwala na używanie tradycyjnych narzędzi (Putty, WinSCP) do zarządzania kontenerem.
 * **Wady:** Jest to tzw. "anti-pattern" – zwiększa rozmiar obrazu i obniża bezpieczeństwo. W środowisku Docker zaleca się używanie komendy `docker exec`.
 
-![Logowanie SSH do kontenera](sshd_done.png)
+![Logowanie SSH do kontenera](lab4/sshd_done.png)
 
 ---
 
