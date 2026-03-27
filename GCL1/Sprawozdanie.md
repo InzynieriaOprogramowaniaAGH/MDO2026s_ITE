@@ -37,6 +37,9 @@ Zainstalowano środowisko Docker przy użyciu repozytorium dystrybucyjnego (unik
 
 ![Instalacja Dockera w systemie Ubuntu](lab2/docker_install.png)
 ![Weryfikacja pobranych obrazów i ich rozmiarów](lab2/docker_images.png)
+
+Przykład pomyślnego uruchomienia obrazu 'hello-world':
+
 ![Pomyślne uruchomienie kontenera hello-world](lab2/run_helloworld.png)
 
 ### 2.2. Kontenery interaktywne i inspekcja procesów
@@ -48,58 +51,110 @@ Uruchomiono kontener `busybox` w trybie interaktywnym w celu weryfikacji wersji 
 ### 2.3. Dockerfile
 Stworzono Dockerfile automatyzujący instalację Gita i klonowanie repozytorium. Po zakończeniu prac przeprowadzono czyszczenie zakończonych kontenerów oraz nieużywanych obrazów, aby zwolnić miejsce na dysku.
 
+Przykładowy plik Dockerfile
+
+![Dockerfile](lba2/dockerfile.png)
+
+Budowanie obrazu z Dockerfile:
+
 ![Budowanie obrazu z Dockerfile](lab2/dockerfile_run.png)
+
+Usuwamy zakończone kontenery używając 'prune':
+
 ![Usuwanie zakończonych kontenerów (prune)](lab2/containter_prune.png)
+
+Usuwamy nieużywane obrazy lokalne:
+
 ![Usuwanie nieużywanych obrazów lokalnych](lab2/image_prune.png)
 
 ---
 
-## Laboratorium 3: Dockerfiles - Kontener jako definicja etapu
+## Laboratorium 3: Dockerfiles
 
-Celem zajęć było przeniesienie procesu budowania i testowania oprogramowania do powtarzalnego środowiska CI.
+## 3.1. Wybór oprogramowania i weryfikacja lokalna
 
-### 3.1. Wybór oprogramowania i weryfikacja lokalna
-Do zadania wybrano bibliotekę **hiredis** (klient C dla bazy Redis), udostępnioną na licencji BSD. Projekt posiada plik `Makefile`, który umożliwia kompilację (`make`) oraz uruchomienie testów jednostkowych (`make check`).
+Do zadania wybrano bibliotekę **hiredis** – minimalistyczny klient C dla bazy danych Redis. Wybór podyktowany był faktem, że projekt posiada standardowy `Makefile` oraz rozbudowane testy integracyjne, co pozwala na pełne zaprezentowanie potoku budowania w kontenerze.
 
-Kompilacja biblioteki:
+Pobranie repozytorium:
 
-![Kompilacja biblioteki hiredis na hoście](lab3/screenshots/build_lokalny.png)
+![git_clone.png](lab3/screenshots/git_clone.png)
 
-Wyniki testów jednostkowych
+Proces kompilacji kodu źródłowego przy użyciu narzędzia `make`. Na zrzucie widać kompilację plików obiektowych i łączenie ich w gotową bibliotekę współdzieloną (.so).
+![build_lokalny.png](lab3/screenshots/build_lokalny.png)
 
-![Pomyślny wynik testów jednostkowych na hoście](lab3/screenshots/tes_lokalnie_passed.png)
+Aby wszystkie testy przeszły pozytywnie należy zainstalować 'redis-server' i go uruchomić:
 
-### 3.2. Izolacja: Build i test w kontenerze interaktywnym
-Zgodnie z wymogiem izolacji, proces powtórzono w kontenerze `ubuntu:22.04`. Do kontenera podłączono TTY, zainstalowano zależności (`build-essential`, `git`, `redis-server`), sklonowano kod i pomyślnie przeprowadzono build oraz testy.
+![redis_server_download.png](lab3/screenshots/redis_server_download.png)
+![run_redis_server.png](lab3/screenshots/run_redis_server.png)
 
-Budowanie hiredisa wewnątrz kontenera interaktywnego:
+Rozpoczęcie procedury testowej na maszynie hosta (Ubuntu Server). Ten etap pozwolił zidentyfikować, że do pomyślnego przejścia testów wymagany jest działający w systemie serwer Redis.
 
-![Budowanie hiredis wewnątrz kontenera interaktywnego](lab3/screenshots/interactive_build.png)
+![test_lokalnie.png](lab3/screenshots/test_lokalnie.png)
 
-Wyniki testów:
+Zakończenie testów:
 
-![Potwierdzenie przejścia testów w kontenerze](lab3/screenshots/interactive_test_passed.png)
+![tes_lokalnie_passed.png](lab3/screenshots/tes_lokalnie_passed.png)
 
-### 3.3. Automatyzacja: Dockerfile i Docker Compose
-Przygotowano dwa pliki Dockerfile:
-1. **Dockerfile.build**: Instaluje kompilatory i buduje oprogramowanie.
+---
 
-![Dockerfile.build](lab3/screenshots/dockerfile_build.png)
+## 3.2. Izolacja: Build i test w kontenerze interaktywnym
 
-Fragment uruchamiania powyższego Dockerfile:
+Zgodnie z wymogiem izolacji, proces powtórzono w czystym kontenerze `ubuntu:22.04`. Praca interaktywna pozwoliła na precyzyjne określenie listy zależności (build-essential, git, redis-server).
+Uruchomienie kontenera i instalacja podstawowych narzędzi kompilacyjnych. Wykorzystanie flagi `-it` pozwoliło na podłączenie terminala i interaktywną konfigurację środowiska od zera.
+![uruchom_ubuntu_i_zainstaluj_w_nim_reszte.png](lab3/screenshots/uruchom_ubuntu_i_zainstaluj_w_nim_reszte.png)
 
-![Uruchomienie Dockerfile.build](lab3/screenshots/build_dockerfile_build.png)
+Klonowanie repozytorium bezpośrednio wewnątrz kontenera. Pozwala to upewnić się, że obraz bazowy posiada poprawną konfigurację sieciową i certyfikaty do komunikacji z GitHubem.
+![interactive_ubuntu_git_clone.png](lab3/screenshots/interactive_ubuntu_git_clone.png)
 
-2. **Dockerfile.test**: Bazuje na obrazie builda i wykonuje tylko testy (`CMD ["make", "check"]`).
+Instalacja `redis-server` wewnątrz kontenera. Jest to kluczowy krok, ponieważ testy hiredis sprawdzają faktyczną łączność TCP z bazą danych na porcie 6379.
+![redis_server_download.png](lab3/screenshots/redis_server_download.png)
 
-![Dockerfile.test](lab3/screenshots/dockerfile_test.png)
+Uruchomienie serwera Redis z flagą `--daemonize yes`. Jest to niezbędne w pracy interaktywnej, aby serwer pracował w tle, nie blokując terminala użytkownika.
+![interactive_redis_server.png](lab3/screenshots/interactive_redis_server.png)
 
-Fragmenty uruchamiania powyższego Dockerfile:
+Kompilacja biblioteki w izolowanym środowisku. Dzięki temu mamy pewność, że proces budowania jest powtarzalny i nie zależy od specyficznych ustawień maszyny hosta.
+![interactive_build.png](lab3/screenshots/interactive_build.png)
 
-![Dockerfile.test - 1](lab3/screenshots/dockerfile_run_test_1.png)
-![Dockerfile.test - 2](lab3/screenshots/dockerfile_run_test_2.png)
+Uruchomienie testów integracyjnych wewnątrz kontenera za pomocą komendy `make check`. Proces ten weryfikuje poprawność działania funkcji biblioteki w komunikacji z lokalnym serwerem Redis.
+![interactive_test_1.png](lab3/screenshots/interactive_test_1.png)
 
-![Uruchomienie potoku CI przez Docker Compose](lab3/screenshots/docker_compose_run_2.png)
+Wynik końcowy działania testów:
+![interactive_test_passed.png](lab3/screenshots/interactive_test_passed.png)
+
+---
+
+## 3.3. Automatyzacja: Dockerfile i Docker Compose
+
+Kroki wykonane wcześniej ręcznie zostały zaimplementowane w formie plików konfiguracyjnych, co pozwala na automatyzację procesu w potoku CI.
+
+Definicja `Dockerfile.build`. Plik ten zawiera instrukcje przygotowania kompilatora, pobrania kodu i wykonania builda. Zastosowano optymalizację poprzez usuwanie list pakietów po instalacji (fragment `rm -rf /var/lib/apt/lists/*`).
+![dockerfile_build.png](lab3/screenshots/dockerfile_build.png)
+
+Budowanie obrazu bazowego (build-stage). Docker przetwarza kolejne instrukcje, tworząc warstwy obrazu, które będą bazą dla etapu testowego.
+![build_dockerfile_build.png](lab3/screenshots/build_dockerfile_build.png)
+
+Definicja `Dockerfile.test`. Obraz ten dziedziczy po obrazie budującym (`FROM hiredis-build`), co pozwala na uruchomienie testów na już skompilowanych plikach binarnych bez powtarzania kompilacji.
+![dockerfile_test.png](lab3/screenshots/dockerfile_test.png)
+
+Uruchomienie kontenera testowego. Docker w tym momencie automatycznie uruchamia serwer Redis w tle.
+![run_dockerfile_test.png](lab3/screenshots/run_dockerfile_test.png)
+
+Uruchomienie testów:
+![dockerfile_run_test_1.png](lab3/screenshots/dockerfile_run_test_1.png)
+
+Wynik końcowy testów:
+![dockerfile_run_test_2.png](lab3/screenshots/dockerfile_run_test_2.png)
+
+Struktura pliku `docker-compose.yml`. Wykorzystanie docker-compose  pozwala na zdefiniowanie obu usług (builder i tester) w jednym pliku, zarządzając kolejnością ich uruchamiania i nazewnictwem obrazów.
+![docker_compose.png](lab3/screenshots/docker_compose.png)
+
+Uruchomienie potoku przez Docker Compose. Narzędzie to automatycznie buduje brakujące obrazy i uruchamia testy, zwracając wyniki w czytelnej formie.
+![docker_compose_run_1.png](lab3/screenshots/docker_compose_run_1.png)
+
+Podsumowanie działania docker-compose. Zakończenie pracy kontenera testera z kodem wyjścia 0 oznacza, że cały proces CI (od pobrania kodu po testy) zakończył się sukcesem.
+![docker_compose_run_2.png](lab3/screenshots/docker_compose_run_2.png)
+
+---
 
 ### 3.4. Dyskusja i odpowiedzi na pytania z instrukcji
 
