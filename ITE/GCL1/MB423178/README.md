@@ -123,3 +123,17 @@ Celem zadania było odseparowanie kodu źródłowego i zbudowanych artefaktów o
 6.  **Zapisanie drugiego artefaktu:** Nowy plik skopiowano jako `build_ponowiony.jar`.
     ![Sukces ponowienia](lab4_7.png)
     ![Dwa pliki na woluminie](lab4_8.png)
+
+## Część 2: Eksponowanie portów i łączność między kontenerami (Sieci Docker)
+Celem tej części zadania było zbadanie przepustowości sieciowej oraz udowodnienie, że własne sieci w Dockerze posiadają wbudowany mechanizm rozwiązywania nazw (DNS).
+
+1. **Test w domyślnej sieci (po adresie IP):** Uruchomiono serwer narzędzia `iperf3` w tle, a następnie połączono się z nim z drugiego kontenera (klienta), identyfikując go za pomocą sztywnego adresu IP (`172.17.0.2`). Domyślna sieć typu *bridge* nie wspiera automatycznego rozwiązywania nazw.
+   ![Uruchomienie serwera iperf](lab4_9.png)
+   ![Wynik testu po IP](lab4_11.png)
+
+2. **Test we własnej sieci (Rozwiązywanie nazw - DNS):** Utworzono dedykowaną sieć mostkową o nazwie `moja-siec`. Uruchomiono w niej serwer, a następnie klient połączył się z nim, używając wyłącznie jego nazwy (`serwer-dns`). 
+   *Wniosek:* Własne sieci w Dockerze (User-defined bridges) uruchamiają wbudowany serwer DNS, który automatycznie mapuje nazwy kontenerów na ich adresy IP. Jest to kluczowy mechanizm przy budowaniu komunikujących się ze sobą mikroserwisów.
+   ![Wynik testu po nazwie DNS we własnej sieci](lab4_12.png)
+
+### Dyskusja: Analiza przepustowości
+Z wykonanych pomiarów wnika, że przepustowość komunikacji wynosi około **21 - 23 Gbits/sec**. Tak ogromna prędkość wynika z faktu, że ruch między kontenerami nigdy nie trafia na fizyczną kartę sieciową. Pakiety są routowane całkowicie wewnątrz systemu hosta poprzez wirtualny przełącznik (software bridge) w pamięci RAM. W rzeczywistości wynik ten mierzy głównie wydajność procesora maszyny wirtualnej, a nie przepustowość prawdziwego łącza.
