@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sprawozdanie1.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="laboratorium-1">Laboratorium 1</h1>
+<h2 id="1-implementacja-githooka-commit-msg">1. Implementacja Githooka (commit-msg)</h2>
+<p>W ramach zadania przygotowałem skrypt typu <code>githook</code>, który wymusza określoną strukturę wiadomości commita. Każdy commit musi zaczynać się od identyfikatora <code>MD419430</code>.</p>
+<h3 id="kod-skryptu">Kod skryptu:</h3>
+<pre class="hljs"><code><div><span class="hljs-meta">#!/bin/bash
+</span>
+message=$(cat <span class="hljs-string">"<span class="hljs-variable">$1</span>"</span>)
+
+pattern=<span class="hljs-string">"^MD419430"</span>
+
+<span class="hljs-keyword">if</span> [[ ! <span class="hljs-variable">$message</span> =~ <span class="hljs-variable">$pattern</span> ]]; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"Błąd: commit message musi zaczynać się od MD419430"</span>
+    <span class="hljs-built_in">exit</span> 1
+<span class="hljs-keyword">fi</span>
+
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L1/L1-01.png" alt="alt text">
+<img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L1/L1-02.png" alt="alt text"></p>
+<h2 id="2-pull-requestu">2. Pull request'u</h2>
+<p>Utworzono Pull Request z gałęzi MD419430 do gałęzi grupowej GCL1.
+Pull Request zawiera dwa commity:</p>
+<ul>
+<li>MD419430 pierwszy commit</li>
+<li>MD419430 dodanie sprawozdania</li>
+</ul>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L1/L1-03.png" alt="alt text">
+<img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L1/L1-04.png" alt="alt text"></p>
+<h1 id="laboratorium-2">Laboratorium 2</h1>
+<h2 id="1-zestawienie-%C5%9Brodowiska-docker">1. Zestawienie środowiska Docker</h2>
+<h3 id="cel">Cel</h3>
+<p>Celem zadania była instalacja silnika Docker w systemie Linux przy użyciu natywnych pakietów dystrybucyjnych oraz weryfikacja poprawności działania usługi.</p>
+<hr>
+<h3 id="krok-1-instalacja-oprogramowania">Krok 1. Instalacja oprogramowania</h3>
+<p>Zainstalowano pakiet <code>docker.io</code> z oficjalnych repozytoriów dystrybucji Ubuntu, unikając rozwiązań typu Snap/Flatpak.</p>
+<pre class="hljs"><code><div>sudo apt update
+sudo apt install docker.io
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-01.png" alt="alt text"></p>
+<h3 id="krok-2-weryfikacja-statusu-i-wersji">Krok 2. Weryfikacja statusu i wersji</h3>
+<p>Sprawdzono wersję zainstalowanego narzędzia oraz upewniono się, że demon Dockera pracuje poprawnie w systemie.</p>
+<pre class="hljs"><code><div>docker --version
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-02.png" alt="alt text"></p>
+<pre class="hljs"><code><div>sudo systemctl status docker
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-03.png" alt="alt text"></p>
+<hr>
+<h2 id="2-zarz%C4%85dzanie-obrazami-i-testy-uruchomieniowe">2. Zarządzanie obrazami i testy uruchomieniowe</h2>
+<h3 id="cel">Cel</h3>
+<p>Pobranie sugerowanych obrazów z Docker Hub, analiza ich rozmiarów oraz weryfikacja mechanizmu &quot;pull-and-run&quot;.</p>
+<hr>
+<h3 id="krok-1-przegl%C4%85d-obraz%C3%B3w-lokalnych">Krok 1. Przegląd obrazów lokalnych</h3>
+<p>Pobrano szereg obrazów (m.in. <code>node</code>, <code>ubuntu</code>, <code>fedora</code>, <code>.NET</code>) i wyświetlono ich listę wraz z rozmiarami.</p>
+<pre class="hljs"><code><div>docker images
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-04.png" alt="alt text"></p>
+<h3 id="krok-2-test-hello-world">Krok 2. Test Hello-World</h3>
+<p>Uruchomiono kontener testowy w celu weryfikacji łączności z Docker Hub i poprawnego generowania strumienia wyjściowego.</p>
+<pre class="hljs"><code><div>docker run hello-world
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-05.png" alt="alt text"></p>
+<hr>
+<h2 id="3-praca-interaktywna-i-izolacja-proces%C3%B3w">3. Praca interaktywna i izolacja procesów</h2>
+<h3 id="cel">Cel</h3>
+<p>Badanie izolacji kontenera poprzez analizę procesów systemowych oraz modyfikację środowiska wewnątrz kontenera.</p>
+<hr>
+<h3 id="krok-1-kontener-busybox">Krok 1. Kontener Busybox</h3>
+<p>Uruchomiono lekki kontener w trybie interaktywnym, aby zapoznać się z dostępnymi narzędziami systemowymi.</p>
+<pre class="hljs"><code><div>docker run -it busybox sh
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-06.png" alt="alt text"></p>
+<h3 id="krok-2-analiza-pid-1-ubuntu">Krok 2. Analiza PID 1 (Ubuntu)</h3>
+<p>Uruchomiono system Ubuntu w kontenerze i zweryfikowano, że proces <code>bash</code> posiada identyfikator PID 1, co dowodzi izolacji od procesów hosta.</p>
+<pre class="hljs"><code><div>docker run -it ubuntu bash
+ps -p 1
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-07.png" alt="alt text"></p>
+<h3 id="krok-3-aktualizacja-systemu-wewn%C4%85trz-kontenera">Krok 3. Aktualizacja systemu wewnątrz kontenera</h3>
+<p>Przeprowadzono aktualizację pakietów w kontenerze, sprawdzając odizolowanie systemu plików.</p>
+<pre class="hljs"><code><div>apt update 
+apt upgrade
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-08.png" alt="alt text"></p>
+<hr>
+<h2 id="4-w%C5%82asna-definicja-obrazu-dockerfile">4. Własna definicja obrazu (Dockerfile)</h2>
+<h3 id="cel">Cel</h3>
+<p>Przygotowanie autorskiego obrazu zawierającego narzędzie Git oraz automatycznie sklonowane repozytorium projektu.</p>
+<hr>
+<h3 id="krok-1-budowa-i-weryfikacja">Krok 1. Budowa i weryfikacja</h3>
+<p>Zbudowano obraz na podstawie przygotowanego pliku <code>Dockerfile</code>, a następnie sprawdzono obecność sklonowanych plików repozytorium.</p>
+<pre class="hljs"><code><div>docker build -t devops-lab-image .
+docker run -it devops-lab-image bash
+<span class="hljs-comment"># ls -R wewnątrz kontenera</span>
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-09.png" alt="alt text"></p>
+<hr>
+<h2 id="5-porz%C4%85dkowanie-zasob%C3%B3w">5. Porządkowanie zasobów</h2>
+<h3 id="cel">Cel</h3>
+<p>Zwolnienie zasobów dyskowych poprzez usunięcie zatrzymanych kontenerów oraz nieużywanych warstw obrazów.</p>
+<hr>
+<h3 id="krok-1-lista-wszystkich-kontener%C3%B3w">Krok 1. Lista wszystkich kontenerów</h3>
+<p>Wyświetlono kontenery, które zakończyły pracę, przed ich ostatecznym usunięciem.</p>
+<pre class="hljs"><code><div>docker ps -a
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-10.png" alt="alt text"></p>
+<h3 id="krok-2-czyszczenie-pruning">Krok 2. Czyszczenie (Pruning)</h3>
+<p>Wykonano komendy czyszczące magazyn lokalny Dockera.</p>
+<pre class="hljs"><code><div>docker image prune -a
+docker container prune
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-11.png" alt="alt text"></p>
+<pre class="hljs"><code><div>docker image prune -a
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L2/L2-12.png" alt="alt text"></p>
+<hr>
+<h2 id="wnioski">Wnioski</h2>
+<ul>
+<li><strong>Środowisko:</strong> Docker pozwala na błyskawiczne zestawienie różnorodnych systemów operacyjnych (Ubuntu, Fedora) bez narzutu typowego dla pełnej wirtualizacji.</li>
+<li><strong>Izolacja:</strong> Procesy wewnątrz kontenera są odseparowane od hosta, co potwierdza analiza PID 1.</li>
+<li><strong>Dockerfile:</strong> Wykorzystanie własnych definicji pozwala na pełną automatyzację przygotowania środowiska pracy (np. instalacja gita i pobranie kodu).</li>
+<li><strong>Zarządzanie:</strong> Regularne czyszczenie obrazów i kontenerów jest niezbędne do zachowania porządku w systemie deweloperskim.</li>
+</ul>
+<h1 id="laboratorium-3">Laboratorium 3</h1>
+<h2 id="1-wyb%C3%B3r-oprogramowania-i-przygotowanie-%C5%9Brodowiska">1. Wybór oprogramowania i przygotowanie środowiska</h2>
+<h3 id="cel">Cel</h3>
+<p>Celem zadania był wybór repozytorium z otwartą licencją, posiadającego zdefiniowane skrypty budowania oraz testowania, a następnie weryfikacja jego działania w systemie operacyjnym hosta.</p>
+<hr>
+<h3 id="krok-1-wyb%C3%B3r-projektu">Krok 1. Wybór projektu</h3>
+<p>Wybrano oficjalne repozytorium startowe frameworka <strong>NestJS</strong>, które spełnia wymagania dotyczące licencji (MIT) oraz posiada predefiniowane skrypty w pliku <code>package.json</code>.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Klonowanie projektu</span>
+git <span class="hljs-built_in">clone</span> --depth 1 https://github.com/nestjs/typescript-starter.git nestjs-app
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L3/L3-01.png" alt="alt text"></p>
+<hr>
+<h3 id="krok-2-budowanie-aplikacji-host">Krok 2. Budowanie aplikacji (Host)</h3>
+<p>Zainstalowano zależności oraz przeprowadzono proces kompilacji TypeScript do JavaScript.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Instalacja zależności</span>
+npm ci
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L3/L3-02.png" alt="alt text"></p>
+<pre class="hljs"><code><div>npm run build
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L3/L3-03.png" alt="alt text"></p>
+<hr>
+<h3 id="krok-3-uruchomienie-test%C3%B3w-host">Krok 3. Uruchomienie testów (Host)</h3>
+<p>Zweryfikowano poprawność działania aplikacji poprzez uruchomienie testów jednostkowych <strong>Jest</strong>.</p>
+<pre class="hljs"><code><div>npm run <span class="hljs-built_in">test</span>
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L3/L3-04.png" alt="alt text"></p>
+<hr>
+<h2 id="2-izolacja-i-powtarzalno%C5%9B%C4%87-build-w-kontenerze">2. Izolacja i powtarzalność: Build w kontenerze</h2>
+<h3 id="cel">Cel</h3>
+<p>Weryfikacja procesu budowania w izolowanym środowisku przy użyciu interaktywnego kontenera Docker, co zapewnia niezależność od konfiguracji hosta.</p>
+<hr>
+<h3 id="krok-1-praca-interaktywna">Krok 1. Praca interaktywna</h3>
+<p>Uruchomiono kontener z oficjalnym obrazem Node.js i ręcznie wykonano kroki niezbędne do zbudowania aplikacji.</p>
+<pre class="hljs"><code><div>docker run --rm -it node:22-bookworm-slim bash
+
+<span class="hljs-comment"># Wewnątrz kontenera:</span>
+apt update &amp;&amp; apt install -y git
+git <span class="hljs-built_in">clone</span> --depth 1 https://github.com/nestjs/typescript-starter.git .
+npm ci
+npm run build
+npm <span class="hljs-built_in">test</span>
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L3/L3-05.png" alt="alt text"></p>
+<hr>
+<h2 id="3-automatyzacja--dockerfile-jako-definicja-etapu">3. Automatyzacja — Dockerfile jako definicja etapu</h2>
+<h3 id="cel">Cel</h3>
+<p>Stworzenie dwóch plików Dockerfile automatyzujących proces: pierwszy przygotowuje artefakt (build), a drugi wykonuje testy na bazie tego artefaktu.</p>
+<hr>
+<h3 id="krok-1-etap-build-dockerfilebuild">Krok 1. Etap Build (Dockerfile.build)</h3>
+<p>Przygotowano plik <code>Dockerfile.build</code> wykonujący pełną kompilację kodu.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">FROM</span> node:<span class="hljs-number">22</span>-bookworm-slim
+<span class="hljs-keyword">WORKDIR</span><span class="bash"> /app</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> apt-get update &amp;&amp; apt-get install -y --no-install-recommends git ca-certificates \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> git <span class="hljs-built_in">clone</span> --depth 1 https://github.com/nestjs/typescript-starter.git .</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> npm ci</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> npm run build</span>
+<span class="hljs-keyword">CMD</span><span class="bash"> [<span class="hljs-string">"bash"</span>]</span>
+</div></code></pre>
+<p>Budowa obrazu:</p>
+<pre class="hljs"><code><div>docker build -f Dockerfile.build -t md419430-nest-build .
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L3/L3-06-1.png" alt="alt text">
+<img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L3/L3-06-2.png" alt="alt text"></p>
+<hr>
+<h3 id="krok-2-etap-test-dockerfiletest">Krok 2. Etap Test (Dockerfile.test)</h3>
+<p>Utworzono plik <code>Dockerfile.test</code> bazujący na obrazie z poprzedniego kroku, aby uniknąć powtarzania instalacji zależności.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">FROM</span> md419430-nest-build
+<span class="hljs-keyword">CMD</span><span class="bash"> [<span class="hljs-string">"npm"</span>, <span class="hljs-string">"run"</span>, <span class="hljs-string">"test"</span>]</span>
+</div></code></pre>
+<p>Uruchomienie procesu testowego:</p>
+<pre class="hljs"><code><div>docker build -f Dockerfile.test -t md419430-nest-test .
+docker run --rm md419430-nest-test
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L3/L3-07.png" alt="alt text"></p>
+<hr>
+<h2 id="4-weryfikacja-dzia%C5%82ania-kontenera-i-wnioski">4. Weryfikacja działania kontenera i wnioski</h2>
+<h3 id="cel">Cel</h3>
+<p>Analiza procesów zachodzących wewnątrz uruchomionego kontenera NestJS oraz podsumowanie korzyści z konteneryzacji.</p>
+<hr>
+<h3 id="krok-1-monitoring-proces%C3%B3w">Krok 1. Monitoring procesów</h3>
+<p>Uruchomiono kontener w trybie interaktywnym, uruchomiono aplikację w tle i sprawdzono listę procesów.</p>
+<pre class="hljs"><code><div>docker run --rm -it md419430-nest-build bash
+<span class="hljs-comment"># Wewnątrz kontenera:</span>
+node dist/main.js &amp;
+ps aux
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L3/L3-09.png" alt="alt text"></p>
+<hr>
+<h3 id="wnioski">Wnioski</h3>
+<ul>
+<li><strong>Przenośność:</strong> Konteneryzacja pozwala na uruchomienie aplikacji NestJS w identycznym środowisku na każdym systemie wspierającym Dockera.</li>
+<li><strong>Separacja etapów:</strong> Rozdzielenie obrazu na <code>build</code> i <code>test</code> pozwala na optymalizację potoków CI/CD i łatwiejsze zarządzanie artefaktami.</li>
+<li><strong>Izolacja:</strong> Instalacja zależności w kontenerze zapobiega konfliktom wersji Node.js i bibliotek na maszynie dewelopera.</li>
+<li><strong>Obraz vs Kontener:</strong> Obraz jest statyczną definicją, natomiast kontener to działający proces (w tym przypadku proces <code>node</code> wykonujący skompilowany kod JS).</li>
+</ul>
+<h1 id="laboratorium-4">Laboratorium 4</h1>
+<h2 id="1-zachowywanie-stanu-mi%C4%99dzy-kontenerami">1. Zachowywanie stanu między kontenerami</h2>
+<h3 id="cel">Cel</h3>
+<p>Celem zadania było wykorzystanie woluminów Dockera do zachowania stanu
+pomiędzy kontenerami oraz wykonanie procesu budowania aplikacji.</p>
+<hr>
+<h3 id="krok-1-utworzenie-wolumin%C3%B3w">Krok 1. Utworzenie woluminów</h3>
+<p>Utworzono dwa woluminy: - wejściowy (<code>vol_in</code>) - wyjściowy (<code>vol_out</code>)</p>
+<pre class="hljs"><code><div>docker volume create vol_in
+docker volume create vol_out
+</div></code></pre>
+<hr>
+<h3 id="krok-2-sklonowanie-repozytorium">Krok 2. Sklonowanie repozytorium</h3>
+<p>Repozytorium zostało pobrane przy użyciu tymczasowego kontenera
+<code>alpine/git</code>.</p>
+<pre class="hljs"><code><div>docker run --rm -v vol_in:/app alpine/git <span class="hljs-built_in">clone</span> https://github.com/nestjs/typescript-starter.git /app
+</div></code></pre>
+<p>Podejście to pozwala uniknąć instalowania Gita w docelowym kontenerze.</p>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-01.png" alt="alt text"></h2>
+<h3 id="krok-3-budowanie-aplikacji">Krok 3. Budowanie aplikacji</h3>
+<p>Uruchomiono kontener Node.js z podłączonymi woluminami i wykonano proces
+budowania aplikacji.</p>
+<pre class="hljs"><code><div>docker run --rm -v vol_in:/app -v vol_out:/output -w /app node:20-alpine sh -c <span class="hljs-string">"npm install &amp;&amp; npm run build &amp;&amp; cp -r dist /output/"</span>
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-02.png" alt="alt text"></h2>
+<h3 id="krok-4-weryfikacja-wynik%C3%B3w">Krok 4. Weryfikacja wyników</h3>
+<p>Sprawdzono zawartość woluminu wyjściowego.</p>
+<pre class="hljs"><code><div>docker run --rm -v vol_out:/output alpine ls -la /output/dist
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-03.png" alt="alt text"></h2>
+<h3 id="krok-5-wariant-z-gitem-w-kontenerze">Krok 5. Wariant z Gitem w kontenerze</h3>
+<p>Wykonano alternatywne rozwiązanie z użyciem obrazu zawierającego Git.</p>
+<pre class="hljs"><code><div>docker volume create vol_in2
+docker volume create vol_out2
+
+docker run --rm -v vol_in2:/app -v vol_out2:/output -w /app node:20 sh -c <span class="hljs-string">"git clone https://github.com/nestjs/typescript-starter.git . &amp;&amp; npm install &amp;&amp; npm run build &amp;&amp; cp -r dist /output/"</span>
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-04.png" alt="alt text"></h2>
+<h3 id="wnioski">Wnioski</h3>
+<p>Podobny efekt można uzyskać przy użyciu <code>docker build</code> oraz
+mechanizmów: - <code>RUN --mount=type=bind</code> - <code>RUN --mount=type=cache</code></p>
+<hr>
+<h2 id="2-%C5%82%C4%85czno%C5%9B%C4%87-mi%C4%99dzy-kontenerami">2. Łączność między kontenerami</h2>
+<h3 id="cel">Cel</h3>
+<p>Celem było sprawdzenie komunikacji między kontenerami przy użyciu
+narzędzia <code>iperf3</code>.</p>
+<hr>
+<h3 id="krok-1-uruchomienie-serwera">Krok 1. Uruchomienie serwera</h3>
+<pre class="hljs"><code><div>docker run -d --name iperf_server networkstatic/iperf3 -s
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-05_1.png" alt="alt text"></h2>
+<h3 id="krok-2-odczyt-adresu-ip">Krok 2. Odczyt adresu IP</h3>
+<pre class="hljs"><code><div>docker inspect -f <span class="hljs-string">'{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'</span> iperf_server
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-05_2.png" alt="alt text"></h2>
+<h3 id="krok-3-test-po%C5%82%C4%85czenia">Krok 3. Test połączenia</h3>
+<pre class="hljs"><code><div>docker run --rm networkstatic/iperf3 -c &lt;IP_SERWERA&gt;
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-06.png" alt="alt text"></h2>
+<h3 id="krok-4-w%C5%82asna-sie%C4%87-docker">Krok 4. Własna sieć Docker</h3>
+<pre class="hljs"><code><div>docker stop iperf_server &amp;&amp; docker rm iperf_server
+docker network create my_bridge_net
+</div></code></pre>
+<p>Uruchomienie kontenerów w sieci:</p>
+<pre class="hljs"><code><div>docker run -d --name iperf_server --network my_bridge_net networkstatic/iperf3 -s
+docker run --rm --network my_bridge_net networkstatic/iperf3 -c iperf_server
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-07.png" alt="alt text"></h2>
+<h3 id="krok-5-dost%C4%99p-z-hosta">Krok 5. Dostęp z hosta</h3>
+<pre class="hljs"><code><div>docker run -d --name iperf_server -p 5201:5201 networkstatic/iperf3 -s
+</div></code></pre>
+<p>Test z hosta:</p>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-09.png" alt="alt text"></p>
+<p>Test z spoza hosta:</p>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-10.png" alt="alt text"></h2>
+<h2 id="3-ssh-w-kontenerze">3. SSH w kontenerze</h2>
+<h3 id="cel">Cel</h3>
+<p>Celem było zestawienie połączenia SSH z kontenerem.</p>
+<hr>
+<h3 id="krok-1-uruchomienie-kontenera">Krok 1. Uruchomienie kontenera</h3>
+<pre class="hljs"><code><div>docker run -d -p 2222:22 --name test_sshd rastasheep/ubuntu-sshd
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-x.png" alt="alt text"></h2>
+<h3 id="krok-2-po%C5%82%C4%85czenie-ssh">Krok 2. Połączenie SSH</h3>
+<pre class="hljs"><code><div>ssh <span class="hljs-built_in">test</span>@127.0.0.1 -p 2222
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-11.png" alt="alt text"></h2>
+<h3 id="wnioski">Wnioski</h3>
+<p><strong>Wady:</strong></p>
+<ul>
+<li>naruszenie zasady jeden proces = jeden kontener\</li>
+<li>zwiększone ryzyko bezpieczeństwa\</li>
+<li>większy rozmiar obrazu</li>
+</ul>
+<p><strong>Zalety:</strong></p>
+<ul>
+<li>możliwość zdalnego dostępu\</li>
+<li>zastosowania testowe i integracyjne</li>
+</ul>
+<hr>
+<h2 id="4-jenkins-w-dockerze">4. Jenkins w Dockerze</h2>
+<h3 id="cel">Cel</h3>
+<p>Celem było uruchomienie serwera Jenkins z możliwością zarządzania
+Dockerem.</p>
+<hr>
+<h3 id="krok-1-utworzenie-sieci">Krok 1. Utworzenie sieci</h3>
+<pre class="hljs"><code><div>docker network create jenkins
+</div></code></pre>
+<hr>
+<h3 id="krok-2-uruchomienie-docker-in-docker">Krok 2. Uruchomienie Docker-in-Docker</h3>
+<pre class="hljs"><code><div>docker run --name jenkins-docker --rm --detach \
+  --privileged --network jenkins --network-alias docker \
+  --env DOCKER_TLS_CERTDIR=/certs \
+  --volume jenkins-docker-certs:/certs/client \
+  --volume jenkins-data:/var/jenkins_home \
+  --publish 2376:2376 \
+  docker:dind --storage-driver overlay2
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-13.png" alt="alt text"></h2>
+<h3 id="krok-3-budowa-obrazu-jenkins">Krok 3. Budowa obrazu Jenkins</h3>
+<pre class="hljs"><code><div>docker build -t myjenkins-blueocean:2.426.3-1 -f Dockerfile.jenkins .
+</div></code></pre>
+<h2 id="alt-textalt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-14_1.png" alt="alt text">
+<img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-14_2.png" alt="alt text"></h2>
+<h3 id="krok-4-uruchomienie-jenkins">Krok 4. Uruchomienie Jenkins</h3>
+<pre class="hljs"><code><div>docker run --name jenkins-blueocean --rm --detach \
+  --network jenkins --env DOCKER_HOST=tcp://docker:2376 \
+  --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 \
+  --publish 8080:8080 --publish 50000:50000 \
+  --volume jenkins-data:/var/jenkins_home \
+  --volume jenkins-docker-certs:/certs/client:ro \
+  myjenkins-blueocean:2.426.3-1
+</div></code></pre>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-15.png" alt="alt text"></h2>
+<h3 id="krok-5-konfiguracja">Krok 5. Konfiguracja</h3>
+<p>Odczyt hasła administratora:</p>
+<pre class="hljs"><code><div>docker <span class="hljs-built_in">exec</span> jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+</div></code></pre>
+<p>Następnie: - logowanie do panelu (<code>http://localhost:8080</code>) - instalacja
+sugerowanych wtyczek - utworzenie użytkownika</p>
+<h2 id="alt-text"><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-17.png" alt="alt text"></h2>
+<h3 id="weryfikacja-dzia%C5%82ania">Weryfikacja działania</h3>
+<pre class="hljs"><code><div>docker ps
+</div></code></pre>
+<p><img src="file:///home/devops/MDO2026s_ITE/ITE/GCL1/MD419430/img/L4/L4-18.png" alt="alt text"></p>
+
+</body>
+</html>
