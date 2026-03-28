@@ -6,58 +6,64 @@
 1. Dodanie klucza SSH do GitHub.
 2. Utworzenie nowej własnej gałęzi (branch) oraz sprawdzenie poprawności wybrania odpowiedniego brancha.
 
-![Branch](SS-1.png)
+  ![Branch](SS-1.png)
 
 3. Napisanie skryptu Git hooka - commit-msg, który werfikuje czy każdy commit zaczyna się poprawnym kodem (inicjały&nrindeksu).Skrypt należy umieścić w odpowiednim miejscu (.git/hooks), aby uruchamiał się przy każdym commicie.
 ### Kod skryptu: ###
 
-![Hook](SS-2.png)
+  ![Hook](SS-2.png)
 
 ### Testowanie: ###
 Wykonanie commitu z celowym bledem, aby sprawdzic poprawnosc skryptu.
 
-![Wrong commit](SS-3.png)
+  ![Wrong commit](SS-3.png)
 
 Wykonanie prawidlowego commita.
 
-![Right commit](SS-4.png)
+  ![Right commit](SS-4.png)
 
 4. Polecenie git push -> wysłanie zrobionych rzeczy do githuba.
 
-![git push](SS-5.png)
+  ![git push](SS-5.png)
 
 
 ## Lab 2 ##
 
 ### Wykonane kroki: ###
-1) Zainstalowanie dockera w systemie linuksowym.
-![Docker-version](SS-6.png)
+1. Zainstalowanie dockera (pakiet docker.io) w systemie Ubuntu 24.04.1 . Weryfikacja wersji:
 
-2) Pobrane obrazy.
-![Downloaded images](SS-7.png)
+  ![Docker-version](SS-6.png)
 
-3) Uruchomienie obrazu hello-world.
-![hello-world image](SS-8.png)
+2. Pobranie obrazów: 'hello-world', 'busybox', 'ubuntu', 'mariadb', 'node' za pomocą polecenia "sudo docker pull nazwa_obrazu". Lista pobranych obrazów z ich rozmiarami:
 
-4) Podlaczenie sie interaktywnie do kontenera z obrazu busybox.
-![busybox image](SS-9.png)
+  ![Downloaded images](SS-7.png)
 
-5) Uruchomienie "systemu w kontenerze"(ubuntu) + zaprezentowanie PID1.
-![ubuntu image](SS-10.png)
+3. Testowe uruchomienie obrazu hello-world.
 
-6) Plik Dockerfile.
-![Dockerfile](SS-11.png)
+  ![hello-world image](SS-8.png)
 
-7) Zbudowanie.
-![Build](SS-12.png)
+4. Podlaczenie sie interaktywnie do kontenera z obrazu busybox. Poprzez wywołanie "echo $?" sprawdzamy kod zakończenia ostatnio wykonanego polecenia, czyli w tym przypadku poprawność wykonania busybox.
 
-8) Uruchomienie w trybie interaktywnym + weryfikacja repozytorium.
-![Run](SS-13.png)
+  ![busybox image](SS-9.png)
 
-9) Uruchomione kontenery.
-![Running containers](SS-14.png)
+5. Uruchomienie "systemu w kontenerze"(ubuntu) + zaprezentowanie PID1 dla "bash", co potwierdza izolację od procesów hosta.
 
-10) Usuniecie kontenerow i obrazow:
-![Containers remove](SS-15.png)
+  ![ubuntu image](SS-10.png)
 
-![Images remove](SS-16.png)
+6. Stworzenie pliku Dockerfile, który bazuje na obrazie ubuntu, instaluje "git", określa katalog roboczy oraz klonuje nasze repozytorium.
+### Kod Dockerfile: ###
+
+  ![Dockerfile](SS-11.png)
+
+7. Budowa obrazu za pomocą utworzonego pliku Dockerfile oraz weryfikacja poprawności klonowania:
+
+  ![Build](SS-12.png)
+  ![Run](SS-13.png)
+
+8. Wyświetlenie listy uruchomionych kontenerów:
+
+  ![Running containers](SS-14.png)
+
+9. Usuniecie kontenerow i obrazow z lokalnego magazynu:
+  ![Containers remove](SS-15.png)
+  ![Images remove](SS-16.png)
