@@ -3,18 +3,17 @@
 ## Lab 1 ##
 
 ### Wykonane kroki: ###
-1) Dodanie klucza SSH do GitHub.
-
-2) Utworzenie nowej własnej gałęzi (branch) oraz sprawdzenie poprawności wybrania odpowiedniego brancha.
+1. Dodanie klucza SSH do GitHub.
+2. Utworzenie nowej własnej gałęzi (branch) oraz sprawdzenie poprawności wybrania odpowiedniego brancha.
 
 ![Branch](SS-1.png)
 
-3) Napisanie skryptu Git hooka - commit-msg, który werfikuje czy każdy commit zaczyna się poprawnym kodem (inicjały&nrindeksu).
+3. Napisanie skryptu Git hooka - commit-msg, który werfikuje czy każdy commit zaczyna się poprawnym kodem (inicjały&nrindeksu).Skrypt należy umieścić w odpowiednim miejscu (.git/hooks), aby uruchamiał się przy każdym commicie.
+### Kod skryptu: ###
 
 ![Hook](SS-2.png)
-Skrypt należy umieścić w odpowiednim miejscu (.git/hooks), aby uruchamiał się przy każdym commicie.
 
-Testowanie:
+### Testowanie: ###
 Wykonanie commitu z celowym bledem, aby sprawdzic poprawnosc skryptu.
 
 ![Wrong commit](SS-3.png)
@@ -23,7 +22,7 @@ Wykonanie prawidlowego commita.
 
 ![Right commit](SS-4.png)
 
-4) Polecenie git push -> wysłanie zrobionych rzeczy do githuba.
+4. Polecenie git push -> wysłanie zrobionych rzeczy do githuba.
 
 ![git push](SS-5.png)
 
