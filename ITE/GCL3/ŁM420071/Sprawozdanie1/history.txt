@@ -1,0 +1,318 @@
+
+  153  git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE/tree/ŁM420071
+  154  github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE
+  155  sudo apt update
+  156  sudo apt intstall ca-certificates curl gnupg lsb-release
+  157  sudo apt install ca-certificates curl gnupg lsb-release
+  158  sudo mkdir -p /etc/apt/keyrings
+  159  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  160  echo   "rb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  161    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  162  sudo apt updatee
+  163  sudo apt update
+  164  echo   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  165    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  166  sudo apt update
+  167  sudo apt install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+  168  docker
+  169  docker --version
+  170  sudo docker run hello-world
+  171  docker images
+  172  sudo docker images
+  173  sudo docker container ls
+  174  sudo docker run hello-world
+  175  echo $?
+  176  sudo docker container ls -a
+  177  docker pull busybox
+  178  sudo docker pull busybox
+  179  docker run busybox
+  180  sudo docker run busybox
+  181  docker container ls
+  182  sudo docker container ls
+  183  sudo docker container ls -a
+  184  sudo pull ubuntu
+  185  sudo docker pull ubuntu
+  186  sudo docker run ubuntu
+  187  sudo docker container ls -a
+  188  sudo docker run ubuntu -tty bash
+  189  sudo docker run -tty ubuntu bash
+  190  sudo docker run -i -tty ubuntu bash
+  191  sudo docker run --rm  -i -tty ubuntu bash
+  192  sudo docker run --tty ubuntu bash
+  193  sudo docker container ls -a
+  194  sudo docker container ls 
+  195  docker stop 51c2c329a915
+  196  sudo docker stop 51c2c329a915
+  197  sudo docker container ls 
+  198  sudo docker pull fedora
+  199  sudo docker run --tty fedora bash
+  200  sudo docker run --rm -i --tty fedora bash
+  201  sudo docker container ls -a
+  202  docker ps 
+  203  sudo docker ps 
+  204  sudo docker ps -a
+  205  sudo docker pull mariadb
+  206  sudo docker run --rm -i --tty mariadb bash
+  207  sudo docker container ls -a
+  208  sudo docker run  mariadb 
+  209  sudo docker container ls -a
+  210  sudo docker pull runtime
+  211  sudo docker pull mcr.microsoft.com/dotnet/runtime:8.0
+  212  sudo docker run  runtime 
+  213  sudo docker images
+  214  sudo docker run  mcr.microsoft.com/runtime:8.0 
+  215  sodu docker tag mcr.microsoft.com/dotnet/runtime runtime
+  216  sudo docker tag mcr.microsoft.com/dotnet/runtime runtime
+  217  sudo docker tag mcr.microsoft.com/dotnet/runtime:8.0 runtime
+  218  sudo docker images
+  219  sudo docker run  runtime
+  220  docker rmi mcr.microsoft.com/dotnet/runtime:8.0
+  221  sudo docker rmi mcr.microsoft.com/dotnet/runtime:8.0
+  222  sudo docker images
+  223  sudo docker pull node
+  224  sudo docker run  node
+  225  sudo docker pull mcr.microsoft.com/dotnet/aspnet:8.0
+  226  sudo docker images
+  227  sudo docker pull mcr.microsoft.com/dotnet/sdk:8.0sudo docker pull mcr.microsoft.com/dotnet/sdk:8.0
+  228  sudo docker pull mcr.microsoft.com/dotnet/sdk:8.0
+  229  sudo docker tag mcr.microsoft.com/dotnet/aspnet:8.0 aspnet
+  230  sudo docker tag mcr.microsoft.com/dotnet/sdk:8.0 sdk
+  231  sudo docker rmi mcr.microsoft.com/dotnet/sdk:8.0 
+  232  sudo docker rmi mcr.microsoft.com/dotnet/aspnet:8.0 
+  233  docker run aspnet
+  234  sudo docker run aspnet
+  235  sudo docker run sdk
+  236  sudo docker images
+  237  docker ls 
+  238  sudo docker container ls 
+  239  sudo docker container ls -a
+  240  docker stop tender_mayer
+  241  sudo docker stop tender_mayer
+  242  docker system prune
+  243  sudo docker container ls -a
+  244  sudo docker system prune
+  245  sudo ocker images
+  246  sudo docker images
+  247  sudo docker container ls -a
+  248  sudo docker -rm -it busybox
+  249  sudo docker --rm -it busybox
+  250  sudo docker run --rm -it busybox
+  251  sudo docker run --rm -i -tty fedora
+  252  sudo docker run --rm -i -tty fedora bash
+  253  sudo docker run --rm -i --tty fedora bash
+  254  sudo appgroup docker
+  255  sudo addgroup docker
+  256  sudo usermod -aG docker $USER
+  257  docker images
+  258  newgrp docker
+  259  docker images
+  260  docker run --rm -it ubuntu bash
+  261  ps aux
+  262  ps aux | grep docker
+  263  docker run --rm -it ubuntu bash
+  264  mkdir docker1
+  265  cd docker1/
+  266  touch Dockerfile
+  267  docker build -t my-git-app
+  268  docker build -t my-git-app .
+  269  docker images
+  270  docker build -t my-git-app .
+  271  docker images
+  272  docker run --rm -it my-git-app:latest 
+  273  docker iners ls -a
+  274  docker containers ls
+  275  docker conteiners ls
+  276  docker container ls -a
+  277  cd ..
+  278  cd MDO2026s_ITE/
+  279  cdd ..
+  280  cd ..
+  281  cd MDO2026s_ITE/
+  282  cd ITE/GCL3/
+  283  cd ..
+  284  cd MDO2026s_ITE/
+  285  git gc --prune=now
+  286  git fsck --full
+  287  cd ..
+  288  rm -rf MDO2026s_ITE/
+  289  git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE
+  290  cd MDO2026s_ITE/
+  291  exit
+  292  ps aux | grep docker
+  293  ps aux
+  294  shutdown
+  295  shutdown -h
+  296  shutdown -h now
+  297  cd ..
+  298  git clone https://github.com/MaciejL777/MES
+  299  cd MES/
+  300  make OPENMP=1
+  301  suda apt install make
+  302  sudo apt install make
+  303  make OPENMP=1
+  304  ls\
+  305  ls
+  306  mv makefile\ Makefile Makefile
+  307  ls
+  308  make OPENMP-1
+  309  make OPENMP=1
+  310  sudo apt install g++
+  311  make OPENMP=1
+  312  cd ..
+  313  rm -rf MES/
+  314  git clone https://github.com/MaciejL777/MES
+  315  cd MES
+  316  make OPENMP=1
+  317  cd ..
+  318  rm -rf MES/
+  319  git clone https://github.com/MaciejL777/MES
+  320  make OPENMP=1
+  321  cd MES/
+  322  make OPENMP=1
+  323  cd ..
+  324  rm -rf MES/
+  325  git clone https://github.com/MaciejL777/MES
+  326  make OPENMP=1
+  327  cd MES/
+  328  make OPENMP=1
+  329  cd ..
+  330  rm -rf MES/
+  331  git clone https://github.com/MaciejL777/MES
+  332  cd MES/
+  333  make OPENMP=1
+  334  cd ..
+  335  rm -rf MES/
+  336  git clone https://github.com/MaciejL777/MES
+  337  cd ..
+  338  cd $
+  339  cd admin/
+  340  cd MES/
+  341  make OPENMP=1
+  342  make run
+  343  make OPENMP=4
+  344  make clean
+  345  make OPENMP=4
+  346  make run
+  347  cd ..
+  348  rm -rf MES/
+  349  git clone https://github.com/MaciejL777/MES
+  350  cd MES/
+  351  make OPENMP=1
+  352  make run
+  353  cd ..
+  354  rm -rf MES/
+  355  git clone https://github.com/MaciejL777/MES
+  356  make run
+  357  cd MES/
+  358  make run
+  359  ls
+  360  cd ..
+  361  rm -rf MES/
+  362  git clone https://github.com/expressjs/express
+  363  ls
+  364  cd express/
+  365  npm install express
+  366  sudo apt install npm
+  367  npm install express
+  368  cd ..
+  369  rm -rf express/
+  370  mkdir express
+  371  touch Dockerfile
+  372  cd express/
+  373  ls
+  374  touch Dockerfile
+  375  docker build -t express
+  376  docker build -t express .
+  377  docker run -p 3000:3000 express:latest
+  378  docker container ls
+  379  docker exec -it vigilant_easley npm test
+  380  docker build -t express-base -f Dockerfile.build .
+  381  docker build -t express-test -f Dockerfile.test .
+  382  docker run --rm express-test
+  383  docker build -t express-base -f Dockerfile.build .
+  384  docker build -t express-test -f Dockerfile.test .
+  385  docker run --rm express-test
+  386  docker build -t express-base -f Dockerfile.build .
+  387  docker build -t express-test -f Dockerfile.test .
+  388  docker run --rm express-test
+  389  docker images
+  390  docker container ls
+  391  docker container ls -a
+  392  docker images
+  393  docker container ls
+  394  docker ls -a
+  395  docker container ls -a
+  396  docker container inspect vigilant_easley 
+  397  docker Network
+  398  docker network
+  399  docker network ls
+  400  ifconfig
+  401  sudo apt install net-tools
+  402  ifconfig
+  403  docker volume create input
+  404  docker volume create output
+  405  docker run --rm -v input:/src alpine/git clone https://github.com/expressjs/express
+  406  docker volume ls
+  407  git clone https://github.com/expressjs/express ./input
+  408  ls
+  409  docker run --rm -it   -v $(pwd)/input:/app/input   -v output_build:/app/output   -w /app/input   node:20   bash -c "command -v git || echo 'Git nieobecny'; npm install && npm run build --if-present && cp -r . /app/output"
+  410  docker conteiner ls -a
+  411  docker container ls -a
+  412  docker images
+  413  ls
+  414  docker volume inspect output
+  415  docker volume inspect input
+  416  docker run --rm -it   -v $(pwd)/input:/app/input   -v output_build:/app/output   -w /app/input   node:20   bash -c "command -v git || echo 'Git nieobecny'; npm install && npm run build --if-present && cp -r . /app/output" shell
+  417  docker run --rm -v output_build:/data alpine ls -la /data
+  418  docker run --rm -v output:/data alpine ls -la /data
+  419  docker volume ls
+  420  docker run --rm -v input:/data alpine ls -la /data
+  421  ls
+  422  docker run --rm -it   -v input:/app/input   -v output:/app/output   node:20   bash -c "apt-get update && apt-get install -y git && \
+  423             git clone https://github.com/expressjs/express.git /app/input && \
+  424             cd /app/input && npm install && \
+  425             cp -r /app/input/node_modules /app/output/"
+  426  docker run --rm -v input:/data alpine ls -la /data
+  427  docker run --rm -v output:/data alpine ls -la /data
+  428  cd input
+  429  docker build -t moj-express-app
+  430  docker build -t moj-express-app .
+  431  docker build -t express-optimized
+  432  docker build -t express-optimized .
+  433  docker run -d --name iperf-server networkstatic/iperf3 -s
+  434  docker run -it --name iperf-client networkstatic/iperf3 /bin/sh
+  435  docker container ls
+  436  docker container ls -a
+  437  docker container remove iperf-client 
+  438  docker run -it --name iperf-client networkstatic/iperf3 /bin/sh
+  439  docker container remove iperf-client 
+  440  docker run -it --name iperf-client networkstatic/iperf3 /bin/sh-c
+  441  docker container remove iperf-client 
+  442  docker run -it --name iperf-client networkstatic/iperf3 /bin/sh -c
+  443  docker run -it --name iperf-client networkstatic/iperf3 -c /bin/sh 
+  444  docker container remove iperf-client 
+  445  docker run -it --name iperf-client networkstatic/iperf3 -c /bin/sh 
+  446  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf-server
+  447  docker run --rm -it networkstatic/iperf3 -c 172.17.0.2# Podstawienie adresu IP z poprzedniego kroku
+  448  docker run --rm -it networkstatic/iperf3 -c 172.17.0.2docker run --rm -it networkstatic/iperf3 -c 172.17.0.2
+  449  docker container remove iperf-client 
+  450  docker run --rm -it networkstatic/iperf3 -c 172.17.0.2
+  451  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf-server
+  452  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf-client
+  453  docker container ls -a
+  454  docker run --rm -it -d  networkstatic/iperf3 -c 172.17.0.2
+  455  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf-client
+  456  docker container ls -a
+  457  docker run --rm -it -d  networkstatic/iperf3 -c 172.17.0.2
+  458  docker container ls -a
+  459  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'  stupefied_raman
+  460  docker run  -it -d  networkstatic/iperf3 -c 172.17.0.2
+  461  docker container ls -a
+  462  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'  determined_banzai
+  463  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' determined_banzai
+  464  docker run  -it -d  networkstatic/iperf3 -c 172.17.0.2
+  465  docker container ls -a
+  466  docker start determined_banzai
+  467  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' determined_banzai
+  468  docker run -it --name iperf-client --network moja-siec networkstatic/iperf3 sh
+  469  history > history.txt
