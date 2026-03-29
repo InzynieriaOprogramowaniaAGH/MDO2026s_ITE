@@ -1,8 +1,8 @@
 # Sprawozdanie 1 #
 
-## Lab 1 ##
 
-## Wykonane kroki: ##
+# Lab 1 #
+Wykonane kroki:
 ## 1. Dodanie klucza SSH do GitHub.
 ## 2. Branch.
 Utworzenie nowej własnej gałęzi (branch) oraz sprawdzenie poprawności wybrania odpowiedniego brancha.
@@ -29,9 +29,8 @@ Wykonanie prawidlowego commita.
   ![git push](SS-5.png)
 
 
-## Lab 2 ##
-
-## Wykonane kroki: ##
+# Lab 2 #
+Wykonane kroki:
 ## 1. Docker
 Zainstalowanie dockera (pakiet docker.io) w systemie Ubuntu 24.04.1 . Weryfikacja wersji:
 
@@ -77,9 +76,8 @@ Budowa obrazu za pomocą utworzonego pliku Dockerfile oraz weryfikacja poprawno�
   ![Images remove](SS-16.png)
 
 
-## Lab 3 ##
-
-## Wykonane kroki: ##
+# Lab 3 #
+Wykonane kroki:
 
 ## 1. Wybór repozytorium z kodem oprogramowania.
 Do realizacji zadania wybrano projekt **Express.js**, czyli framework *Node.js* przeznaczony do budowy aplikacji webowych. Repozytorium zawiera kod źródłowy, zależności instalowane przez `npm` oraz testy uruchamiane poleceniem `npm test`, dzięki czemu nadaje się do demonstracji procesu *build* i *test* w kontenerach Dockera.
