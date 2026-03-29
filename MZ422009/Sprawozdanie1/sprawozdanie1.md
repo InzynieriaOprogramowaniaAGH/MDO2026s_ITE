@@ -3,7 +3,7 @@
 ## Lab 1 ##
 
 ### Wykonane kroki: ###
-1. Dodanie klucza SSH do GitHub.
+## 1. Dodanie klucza SSH do GitHub.
 2. Utworzenie nowej własnej gałęzi (branch) oraz sprawdzenie poprawności wybrania odpowiedniego brancha.
 
   ![Branch](SS-1.png)
@@ -67,3 +67,36 @@ Wykonanie prawidlowego commita.
 9. Usuniecie kontenerow i obrazow z lokalnego magazynu:
   ![Containers remove](SS-15.png)
   ![Images remove](SS-16.png)
+
+
+## Lab 3 ##
+
+### Wykonane kroki: ###
+
+## 1. Wybór repozytorium z kodem oprogramowania.
+Do realizacji zadania wybrano projekt **Express.js**, czyli framework *Node.js* przeznaczony do budowy aplikacji webowych. Repozytorium zawiera kod źródłowy, zależności instalowane przez `npm` oraz testy uruchamiane poleceniem `npm test`, dzięki czemu nadaje się do demonstracji procesu *build* i *test* w kontenerach Dockera.
+
+## 2. Etap build - Dockerfile.bld
+Utworzono plik Dockerfile odpowiedzialny za przygotowanie środowiska oraz budowę aplikacji.
+### Kod Dockerfile.bld: ###
+
+  ![Dockerfile.bld](SS-17.png)
+
+Za pomocą polecenia *sudo docker build -t express-build -f Dockerfile.bld .* zbudowano ten obraz. Oto tego wynik:
+
+  ![Build](SS-18.png)
+  
+## 3. Etap testów - Dockerfile.test
+Utworzono drugi Dockerfile bazujący na obrazie build. Ten Dockerfile ustawia katalog roboczy oraz uruchamia testy poleceniem *npm test*.
+### Kod Dockerfile.test: ###
+
+  ![Dockerfile.test](SS-19.png)
+
+Następnie zbudowano tym razem ten obraz.
+
+  ![Test](SS-20.png)
+
+## 4. Weryfikacja obrazów
+Sprawdzono dostępne obrazy:
+
+  ![Obrazy](SS-21.png)
