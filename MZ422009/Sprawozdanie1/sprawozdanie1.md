@@ -91,7 +91,7 @@ Utworzono plik Dockerfile odpowiedzialny za przygotowanie środowiska oraz budow
 Za pomocą polecenia *sudo docker build -t express-build -f Dockerfile.bld .* zbudowano ten obraz. Oto tego wynik:
 
   ![Build](SS-18.png)
-  
+
 ## 3. Etap testów - Dockerfile.test
 Utworzono drugi Dockerfile bazujący na obrazie build. Ten Dockerfile ustawia katalog roboczy oraz uruchamia testy poleceniem *npm test*.
 ### Kod Dockerfile.test: ###
