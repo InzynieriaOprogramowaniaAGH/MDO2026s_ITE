@@ -4,11 +4,13 @@
 
 ## Wykonane kroki: ##
 ## 1. Dodanie klucza SSH do GitHub.
-## 2. Utworzenie nowej własnej gałęzi (branch) oraz sprawdzenie poprawności wybrania odpowiedniego brancha.
+## 2. Branch.
+Utworzenie nowej własnej gałęzi (branch) oraz sprawdzenie poprawności wybrania odpowiedniego brancha.
 
   ![Branch](SS-1.png)
 
-## 3. Napisanie skryptu Git hooka - commit-msg, który werfikuje czy każdy commit zaczyna się poprawnym kodem (inicjały&nrindeksu).Skrypt należy umieścić w odpowiednim miejscu (.git/hooks), aby uruchamiał się przy każdym commicie.
+## 3. Skrypt Git hook
+Napisanie skryptu Git hooka - commit-msg, który werfikuje czy każdy commit zaczyna się poprawnym kodem (inicjały&nrindeksu).Skrypt należy umieścić w odpowiednim miejscu (.git/hooks), aby uruchamiał się przy każdym commicie.
 ### Kod skryptu: ###
 
   ![Hook](SS-2.png)
@@ -30,32 +32,38 @@ Wykonanie prawidlowego commita.
 ## Lab 2 ##
 
 ## Wykonane kroki: ##
-## 1. Zainstalowanie dockera (pakiet docker.io) w systemie Ubuntu 24.04.1 . Weryfikacja wersji:
+## 1. Docker
+Zainstalowanie dockera (pakiet docker.io) w systemie Ubuntu 24.04.1 . Weryfikacja wersji:
 
   ![Docker-version](SS-6.png)
 
-## 2. Pobranie obrazów: 'hello-world', 'busybox', 'ubuntu', 'mariadb', 'node' za pomocą polecenia "sudo docker pull nazwa_obrazu". Lista pobranych obrazów z ich rozmiarami:
+## 2. Obrazy
+Pobranie obrazów: 'hello-world', 'busybox', 'ubuntu', 'mariadb', 'node' za pomocą polecenia "sudo docker pull nazwa_obrazu". Lista pobranych obrazów z ich rozmiarami:
 
   ![Downloaded images](SS-7.png)
 
-## 3. Testowe uruchomienie obrazu hello-world.
+## 3. hello-world
+Testowe uruchomienie obrazu hello-world.
 
   ![hello-world image](SS-8.png)
 
-## 4. Podlaczenie sie interaktywnie do kontenera z obrazu busybox. Poprzez wywołanie "echo $?" sprawdzamy kod zakończenia ostatnio wykonanego polecenia, czyli w tym przypadku poprawność wykonania busybox.
+## 4. busybox
+Podlaczenie sie interaktywnie do kontenera z obrazu busybox. Poprzez wywołanie "echo $?" sprawdzamy kod zakończenia ostatnio wykonanego polecenia, czyli w tym przypadku poprawność wykonania busybox.
 
   ![busybox image](SS-9.png)
 
-## 5. Uruchomienie "systemu w kontenerze"(ubuntu) + zaprezentowanie PID1 dla "bash", co potwierdza izolację od procesów hosta.
+## 5. ubuntu
+Uruchomienie "systemu w kontenerze"(ubuntu) + zaprezentowanie PID1 dla "bash", co potwierdza izolację od procesów hosta.
 
   ![ubuntu image](SS-10.png)
 
-## 6. Stworzenie pliku Dockerfile, który bazuje na obrazie ubuntu, instaluje "git", określa katalog roboczy oraz klonuje nasze repozytorium.
+## 6. Dockerfile
+Stworzenie pliku Dockerfile, który bazuje na obrazie ubuntu, instaluje "git", określa katalog roboczy oraz klonuje nasze repozytorium.
 ### Kod Dockerfile: ###
 
   ![Dockerfile](SS-11.png)
 
-## 7. Budowa obrazu za pomocą utworzonego pliku Dockerfile oraz weryfikacja poprawności klonowania:
+Budowa obrazu za pomocą utworzonego pliku Dockerfile oraz weryfikacja poprawności klonowania:
 
   ![Build](SS-12.png)
   ![Run](SS-13.png)
