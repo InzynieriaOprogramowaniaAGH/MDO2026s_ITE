@@ -6,6 +6,6 @@ WORKDIR /opt
 
 ARG REPO="https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git"
 
-RUN git clone "$REPO" repo || echo "nie dziala xd"
+RUN git clone "$REPO" repo
 
 CMD ["/bin/bash"]
