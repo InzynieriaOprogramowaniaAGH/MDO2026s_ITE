@@ -107,6 +107,26 @@ Sprawdzono dostępne obrazy:
 
   ![Obrazy](SS-21.png)
 
+## 3.5. Przygotowanie do wdrożenia (deploy) – pytania i odpowiedzi
+**Czy program nadaje się do wdrażania i publikowania jako kontener, czy taki sposób interakcji nadaje się tylko do builda?**
+
+Program może zostać opublikowany jako kontener, jeśli jest usługą działającą poprawnie w środowisku serwerowym, np. API lub aplikacją webową. Nie każdy projekt nadaje się jednak do takiej formy wdrożenia. W niektórych przypadkach kontener lepiej wykorzystać jedynie do budowania i testowania aplikacji.
+
+**Jeżeli program miałby być publikowany jako kontener – czy trzeba go oczyścić z pozostałości po buildzie?**
+
+Tak. Finalny obraz nie powinien zawierać narzędzi developerskich, cache pakietów ani zbędnych plików. Dzięki temu obraz jest mniejszy, bezpieczniejszy i łatwiejszy do wdrożenia.
+
+**Czy dedykowany etap deploy-and-publish powinien być oddzielną ścieżką?**
+
+Tak. Oddzielenie etapu build, test i deploy upraszcza organizację procesu CI/CD. Pozwala to na lepszą kontrolę nad tym, co trafia do finalnego artefaktu.
+
+**Czy zbudowany program należałoby dystrybuować jako pakiet, np. JAR, DEB, RPM, EGG?**
+
+Zależy to od typu projektu. Dla części aplikacji lepszy będzie obraz kontenera, a dla innych bardziej odpowiedni będzie klasyczny pakiet instalacyjny, np. DEB lub RPM.
+
+**W jaki sposób zapewnić taki format? Dodatkowy krok, trzeci kontener?**
+
+Tak. Można zastosować dodatkowy etap lub osobny kontener odpowiedzialny za przygotowanie końcowego artefaktu. Przykładowo: pierwszy etap wykonuje build, drugi testy, a trzeci tworzy finalny pakiet lub obraz gotowy do publikacji.
 
 # Lab 4 #
 Wykonane kroki:
@@ -121,10 +141,13 @@ Następnie uruchomiony został kontener bazowy `express-build` z podpiętymi wł
 ![Run+Volume](SS-23.png)
 
 **Jak to zostało wykonane i dlaczego ta metoda?**
+
 W celu sklonowania repozytorium do woluminu wejściowego wykorzystano uruchomienie kontenera pomocniczego z podpiętym woluminem (`input-data`) i wykonanie operacji `git clone` wewnątrz kontenera.
 Takie rozwiązanie pozwala na zapisanie danych bezpośrednio w woluminie Dockera, który jest niezależny od cyklu życia kontenera.
-	Nie zastosowano *bind mount* z lokalnym katalogiem, ponieważ dane miały być przechowywane w zarządzanym przez Dockera woluminie, co zapewnia większą przenośność i izolację od systemu hosta.
-	Nie wykorzystano również bezpośredniego kopiowania do katalogu Dockera (`/var/lib/docker`), ponieważ nie jest to zalecana praktyka — katalog ten jest zarządzany przez silnik Dockera i nie powinien być modyfikowany ręcznie.
+
+-Nie zastosowano *bind mount* z lokalnym katalogiem, ponieważ dane miały być przechowywane w zarządzanym przez Dockera woluminie, co zapewnia większą przenośność i izolację od systemu hosta.
+
+-Nie wykorzystano również bezpośredniego kopiowania do katalogu Dockera (`/var/lib/docker`), ponieważ nie jest to zalecana praktyka — katalog ten jest zarządzany przez silnik Dockera i nie powinien być modyfikowany ręcznie.
 
 ![Volume clone](SS-24.png)
 
@@ -141,7 +164,7 @@ W celu weryfikacji zapisania wyników na woluminie wyjsciowym po wyłączeniu ko
 Woluminy Dockera umożliwiają zachowanie stanu między kolejnymi kontenerami. Dzięki temu dane wejściowe i wyniki pracy nie zostały utracone po zakończeniu działania pojedynczej instancji kontenera.
 
 ## 4.2. Łączność między kontenerami
-** a) Połączenie w domyślnej sieci Dockera (adres IP)**
+### a) Połączenie w domyślnej sieci Dockera (adres IP)
 W celu zbadania komunikacji sieciowej uruchomiono kontener z serwerem *iperf3*.
 
 ![iperf server](SS-28.png)
@@ -149,13 +172,13 @@ W celu zbadania komunikacji sieciowej uruchomiono kontener z serwerem *iperf3*.
 
 Następnie uruchomiono drugi kontener i wykonano w nim połączenie z użyciem adresu IP servera:
 
-![iperf server](SS-30.png)
-![iperf server](SS-31.png)
+![Start drugiego kontenera](SS-30.png)
+![Polaczenie przez IP](SS-31.png)
 
 
 **Opis:** W tym przypadku komunikacja odbywa się w domyślnej sieci Dockera, gdzie kontenery identyfikowane są przez adresy IP.
 
-** b) Połączenie w dedykowanej sieci (po nazwie kontenera)**
+### b) Połączenie w dedykowanej sieci (po nazwie kontenera)
 Utworzono własną sieć mostkową oraz uruchomiono kontener serwera w tej sieci:
 
 ![iperf server](SS-32.png)
@@ -163,12 +186,12 @@ Utworzono własną sieć mostkową oraz uruchomiono kontener serwera w tej sieci
 
 Nastepnie uruchomiono drugi kontener clienta i wykonano w nim połączenie po nazwie kontenera:
 
-![iperf server](SS-34.png)
-![iperf server](SS-35.png)
+![Start drugiego kontenera](SS-34.png)
+![Polaczenie po nazwie](SS-35.png)
 
 **Opis:** W dedykowanej sieci Dockera możliwe jest używanie nazw kontenerów zamiast adresów IP dzięki wbudowanemu mechanizmowi DNS.
 
-** c) Połączenie z hosta**
+### c) Połączenie z hosta
 Uruchomiono kontener z mapowaniem portu, a w nim uruchomiono server iperf3:
 
 ![iperf server](SS-36.png)
@@ -176,6 +199,45 @@ Uruchomiono kontener z mapowaniem portu, a w nim uruchomiono server iperf3:
 
 Następnie z poziomu hosta wykonano połączenie do `localhost`:
 
-![iperf server](SS-38.png)
+![Polaczenie z host](SS-38.png)
 
 **Opis:** Mapowanie portów (`-p`) umożliwia dostęp do usług działających w kontenerze z poziomu systemu hosta.
+
+## 4.3. Usługa SSHD w kontenerze
+W kontenerze Ubuntu uruchomiono usługę *OpenSSH Server* (`service ssh start`) oraz sprawdzono obecność procesu *sshd* (`ps aux | grep ssh`).
+
+![SSHD](SS-39.png)
+
+Następnie z hosta wykonano połączenie SSH do kontenera z użyciem wcześniej utworzonego użytkownika `mil` i portu `2222`.
+
+![Połączenie SSH do kontenera](SS-40.png)
+
+**Opis:** Usługa *SSHD* została uruchomiona w kontenerze i udostępniona przez mapowanie portu. Dzięki temu możliwe było połączenie z kontenerem z poziomu hosta przy użyciu protokołu SSH.
+
+## 4.4. Kontenerowa instancja Jenkins
+W pierwszym kroku uruchomiono kontener `jenkins-docker` oparty o obraz *Docker-in-Docker*.
+
+![Jenkins-docker](SS-41.png)
+
+Następnie uruchomiono właściwy kontener `jenkins`, skonfigurowany do współpracy z `jenkins-docker`.
+
+![Jenkins](SS-42.png)
+
+Stan obu kontenerów zweryfikowano poleceniem `docker ps`.
+
+![Jenkins containers](SS-43.png)
+
+Po wejściu na adres serwera Jenkins w przeglądarce uzyskano ekran odblokowania instancji i wpisano hasło odczytane z terminala.
+
+![Jenkins-haslo](SS-44.png)
+
+Kolejny ekran potwierdził przejście do etapu instalacji sugerowanych wtyczek. (co zostało zrealizowane)
+
+![Jenkins-wtyczki](SS-45.png)
+
+## Podsumowanie
+
+Wykonane ćwiczenia pokazały, że automatyzacja i konteneryzacja znacząco upraszczają organizację pracy z projektem. Zastosowanie *Git Hooks* umożliwiło wymuszenie ustalonych reguł pracy z repozytorium, co poprawia spójność historii zmian.
+Wprowadzenie Dockera do procesu budowania i testowania pozwoliło odseparować środowisko uruchomieniowe od systemu hosta. Dzięki temu ten sam proces może zostać wykonany w identyczny sposób niezależnie od maszyny, na której pracuje użytkownik.
+Istotnym elementem okazało się również wykorzystanie woluminów i sieci Dockera. Woluminy umożliwiają zachowanie danych poza czasem życia kontenera, natomiast sieci pozwalają na prostą i uporządkowaną komunikację między uruchomionymi usługami.
+Uruchomienie instancji Jenkins potwierdziło, że narzędzia ciągłej integracji mogą być wdrażane w modelu kontenerowym i stanowić centralny element dalszej automatyzacji procesu wytwarzania oprogramowania.
