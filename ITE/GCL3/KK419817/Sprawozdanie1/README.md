@@ -1,5 +1,5 @@
-Sprawozdanie metodyki devops
-03.03.2026 Kryspin Kucha ITE gr.3
+# Sprawozdanie 1 metodyki devops
+**Kryspin Kucha ITE gr.3**
 
 Git hook
 ```sh
@@ -42,7 +42,7 @@ git push
 
 
 
-1.
+1. 2.
 
 ```sh
 sudo apt update
@@ -182,6 +182,7 @@ Instalacja:
 Utworzyłem plik [docker-compose.yml](lab2/docker-compose.yml), w którym utworzyłem dwa serwisy: build i test. Test jest zależny od build, przez co build jest automatycznie tworzony przed tworzeniem kontenera test
 
 Build:
+
 ![alt text](image-12.png)
 
 Uruchomiłem kontenery za pomocą komendy:
@@ -263,7 +264,7 @@ Zamiast ręcznego tworzenia woluminów i uruchamiania kontenerów, całość def
 
 ## Eksponowanie portu i łączność między kontenerami
 
-Server
+Server:
 ```
 docker run -it --name iperf-server alpine sh
 
@@ -273,7 +274,7 @@ iperf3 -s
 ```
 ![alt text](image-16.png)
 
-Klient
+Klient:
 ```
 docker run -it --name iperf-client alpine sh
 apk add iperf3
