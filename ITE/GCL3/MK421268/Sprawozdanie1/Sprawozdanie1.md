@@ -1,4 +1,4 @@
-# SPRAWOZDANIA - MK421268
+# SPRAWOZDANIE1 - MK421268
 
 ---
 
@@ -21,6 +21,7 @@ Utworzenie własnego brancha oraz 2 kluczy SSH (ed25519 z hasłem oraz ECDSA bez
 Dodanie gitHooka
 
 ![alt text](../lab1/zdj2.png)
+
 ![alt text](../lab1/zdj3.png)
 
 ---
@@ -40,6 +41,7 @@ Uruchomienie busybox i ubuntu
 Sprawdzenie ich rozmiarów oraz kodu wyjścia
 
 ![alt text](../lab2/img3.png)
+
 ![alt text](../lab2/img4.png)
 
 Polaczenie sie do kontenera interaktywnie z obrazu busybox
@@ -71,6 +73,7 @@ Wybór oprogramowania
 Uruchomienie bez Dockera i zależności
 
 ![alt text](../lab3/img2.png)
+
 ![alt text](../lab3/img3.png)
 
 Zbudowanie obrazów w dockerze
