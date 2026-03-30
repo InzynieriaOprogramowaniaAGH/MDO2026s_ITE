@@ -4,7 +4,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 #kopia gotowego folderu do kontenera
-COPY express/ ./express/
+RUN git clone -b 4.x https://github.com/expressjs/express.git ./express/
 
 #wejscie do folderu i instalacja
 WORKDIR /app/express
