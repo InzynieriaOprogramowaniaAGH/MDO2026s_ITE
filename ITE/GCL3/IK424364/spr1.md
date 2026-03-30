@@ -147,6 +147,30 @@ docker run --name test-run realworld-tester
 
 Lab 4
 
+Tworzenie i sprawdzanie działalności Bind Mount:
+![scr1](./cw3/Screenshot_9.png)
+
+![scr1](./cw3/Screenshot_10.png)
+
+
+Lączność pomiędzu 2 kontenerami z iperf3:
+![scr1](./cw3/Screenshot_3.png)
+
+Najwyższy wynik wynoszący 36,1 Gbit/s
+
+Lączność pomiędzu 2 kontenerami z iperf3 w sieci docker:
+![scr1](./cw3/Screenshot_5.png)
+
+Uzyskuje stabilny transfer na poziomie 32,3 Gbit/s
+
+Lączność pomiędzu 2 kontenerami z iperf3 spoza hosta:
+![scr1](./cw3/Screenshot_7.png)
+
+Niższą przepustowość rzędu 3,2 Gbit/s osiągana ze względu na narzut procesów proxy i translacji portów
+
+Z tego wychodzi, że sieci Docker mają prawie natywną szybkość przesayłania danych
+
+
 SSHD:
 ```
 sudo docker run --rm --tty -i --name ssh-container ubuntu
@@ -157,3 +181,72 @@ echo 'root:password123' | chpasswd
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 /usr/sbin/sshd -D &
 ```
+
+![scr1](./cw3/Screenshot_8.png)
+
+Zaletą SSH jest wygoda przesyłania plików i obsługa zewnętrznych narzędzi, natomiast wadą jest niepotrzebny narzut zasobów oraz ryzyko bezpieczeństwa
+
+
+Instalacja Jenkins:
+```
+docker network create jenkins
+```
+
+```
+docker run \
+  --name jenkins-docker \
+  --rm \
+  --detach \
+  --privileged \
+  --network jenkins \
+  --network-alias docker \
+  --env DOCKER_TLS_CERTDIR=/certs \
+  --volume jenkins-docker-certs:/certs/client \
+  --volume jenkins-data:/var/jenkins_home \
+  --publish 2376:2376 \
+  docker:dind \
+  --storage-driver overlay2
+```
+
+Był stworzony Dockerfile:
+```
+FROM jenkins/jenkins:2.541.3-jdk21
+USER root
+RUN apt-get update && apt-get install -y lsb-release ca-certificates curl && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc && \
+    chmod a+r /etc/apt/keyrings/docker.asc && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+    https://download.docker.com/linux/debian $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" \
+    | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && apt-get install -y docker-ce-cli && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+USER jenkins
+RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api"
+```
+
+```
+docker build -t myjenkins-blueocean:2.541.3-1 .
+```
+
+```
+docker run \
+  --name jenkins-blueocean \
+  --restart=on-failure \
+  --detach \
+  --network jenkins \
+  --env DOCKER_HOST=tcp://docker:2376 \
+  --env DOCKER_CERT_PATH=/certs/client \
+  --env DOCKER_TLS_VERIFY=1 \
+  --publish 8080:8080 \
+  --publish 50000:50000 \
+  --volume jenkins-data:/var/jenkins_home \
+  --volume jenkins-docker-certs:/certs/client:ro \
+  myjenkins-blueocean:2.541.3-1
+```
+
+![scr1](./cw3/Screenshot_11.png)
+
+![scr1](./cw3/Screenshot_12.png)
+
+![scr1](./cw3/Screenshot_13.png)
