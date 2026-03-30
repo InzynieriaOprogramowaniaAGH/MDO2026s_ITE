@@ -172,11 +172,29 @@ Podczas budowania drugiego obrazu proces został przerwany, ponieważ polecenie 
 
 ## Class 04
 
+Woluminy są trwałymi magazynami danych dla kontenerów, tworzone i zarządzane przez `Dockera`. Wolumin można utworzyć jawnie za pomocą polecenia `docker volume create` lub Docker może utworzyć wolumin podczas tworzenia kontenera lub usługi.
+
+Podczas tworzenia woluminu, jest on przechowywany w katalogu na hoście Dockera. Po zamontowaniu woluminu w kontenerze, ten katalog jest montowany w kontenerze. Działa to podobnie do montowania przez powiązanie, z tą różnicą, że woluminy są zarządzane przez Dockera i odizolowane od podstawowej funkcjonalności komputera hosta.
+
 ### Przygotowanie woluminu wejściowego oraz wyjściowego
 
 ![Zdjęcie 11](img/s11.png)
 
+### Uruchomienie kontenera oraz zainstalowanie niezbędnych wymagań wstępne (bez Gita)
+
+Aby zamontować wolumin za pomocą polecenia `docker run` (z użyciem flag `--mount` lub `--volume`).
+
+```bash
+sudo docker run -it \
+--mount type=volume,source=my_vol,destination=/src \
+--mount type=volume,source=my_vol_out,destination=/out \
+mcr.microsoft.com/dotnet/sdk:9.0 \
+bash
+```
+
 ![Zdjęcie 12](img/s12.png)
+
+Spawdzenie ścieżki do katalogu, w której znajduje się stworzony `my_vol_out`.
 
 `sudo docker volume inspect my_vol_out`
 
@@ -194,7 +212,14 @@ Podczas budowania drugiego obrazu proces został przerwany, ponieważ polecenie 
 ]
 ```
 
-Przy pomocy LLM (błąd ze strukturą katalogów) 
+### Sklonowanie repozytorium na wolumin wejściowy
+
+Repozytorium projektu zostało sklonowane na hoście, a następnie skopiowane do woluminu wejściowego przy użyciu kontenera pomocniczego. 
+
+Do przeniesienia plików wykorzystano tymczasowy kontener, który został uruchomiony tylko na czas wykonania operacji kopiowania. Dzięki temu możliwe było skopiowanie plików poleceniem `cp` bez konieczności instalowania Gita w kontenerze bazowym.
+
+Do wykonania tego polecenia posłużono się LLMem, ponieważ wystąpił problem ze strukturą katalogów.
+
 ```bash
 sudo docker run --rm \
 -v my_vol:/data \
@@ -202,3 +227,143 @@ sudo docker run --rm \
 ubuntu \
 bash -c "cp -r /src/. /data/"
 ```
+
+### Uruchomienie buildu w kontenerze
+
+Ponownie, poprzez kontener pomocniczy, nastąpiło wejście do woluminu i uruchomienie kodu, a następnie zapis wyników do katalogu wyjściowego. Posłużono się poleceniem `dotnet publish`, które kompiluje projekt, zbiera wszystkie zależności oraz tworzy zestaw plików do uruchomienia aplikacji. Flaga `-o` przekierowuje pliki wynikowe do katalogu `/out`.
+
+```bash
+dotnet restore
+dotnet build
+```
+![Zdjęcie 13](img/s13.png)
+
+```bash
+dotnet publish -o /out
+```
+
+Sprawdzenie poprawnego zbudowania:
+
+```bash
+sudo docker run --rm \
+-v my_vol_out:/data \
+ubuntu \
+ls /data
+```
+
+![Zdjęcie 14](img/s14.png)
+
+### Uruchomienie z użyciem Gita w kontenerze
+
+Poprzez kontener pomocniczy, nastąpiło wejście do woluminu i instalacja Gita na wolumienie i klonujemy repozytorium projektu bezpośrednio na wolumin wejściowy. Polecenie zostało wykonane na starych woluminach - `my_vol` oraz `my_vol_out`. 
+
+```bash
+apt update
+apt install git -y
+cd /src
+git clone https://github.com/Devskiller/devskiller-sample-dotnetcore.git
+```
+
+![Zdjęcie 15](img/s15.png)
+
+### Eksponowanie portu i łączność między kontenerami
+
+`iPerf3` to narzędzie do aktywnych pomiarów maksymalnej osiągalnej przepustowości w sieciach IP. Obsługuje ono dostrajanie różnych parametrów związanych z synchronizacją, buforami i protokołami (TCP, UDP, SCTP z IPv4 i IPv6). Dla każdego testu raportuje przepustowość, straty i inne parametry. 
+
+W sieci Dockera kontenery nie widzą swoich nazw, dlatego posługujemy się adresami Ip.
+
+```bash
+sudo docker run -d --name server-iperf networkstatic/iperf3 -s
+ifconfig
+```
+
+Adres Ip sprawdzono przy pomocy polecenia `ifconfig`, jak zostało przedstawione na zajęciach. Znaleziono `docker0` i adres `172.17.0.1`.
+
+![Zdjęcie 19](img/s19.png)
+
+```bash
+docker run -d --name server-iperf networkstatic/iperf3 -s
+ifconfig
+sudo docker run --rm networkstatic/iperf3 -c 172.17.0.2
+```
+
+Uruchomienie klienta i pomiar:
+
+![Zdjęcie 20](img/s20.png)
+
+### Własna dedykowaną sieć mostkowa
+
+Dedykowane sieci użytkownika pozwalają  kontenerom komunikować się po nazwie, co jest znacznie wygodniejsze.
+
+```bash
+sudo docker network create my_network
+sudo docker run -d --name serwer_iperf_2 --network my_network networkstatic/iperf3 -s
+sudo docker run -it --rm --network my_network networkstatic/iperf3 -c serwer_iperf_2
+```
+
+![Zdjęcie 16](img/s16.png)
+
+![Zdjęcie 17](img/s17.png)
+
+Następnie, zainstalowano `net-tools` na kontenerze, aaby sprawdzić ip poprzez polecenie `ifconfig` użyte podczas prezentacji na zajęciach.
+
+```bash
+sudo docker exec -it serwer_iperf_2 bash
+apt update && apt install -y net-tools
+ifconfig
+```
+
+### Połącz się spoza kontenera (z hosta i spoza hosta)
+
+Aby połączyć się z serwerem z zewnątrz, musimy "wypchnąć" port kontenera na zewnątrz. Służy do tego flaga -p, która tworzy tunel między portem fizycznym maszyny a portem wewnątrz kontenera.
+
+![Zdjęcie 18](img/s18.png)
+
+```bash
+sudo docker run -d --name serwer-out -p 5201:5201 networkstatic/iperf3 -s
+```
+
+![Zdjęcie 21](img/s21.png)
+
+### Zestawienie usługi SSH wewnątrz kontenera
+
+Zestawienie usługi SSH wewnątrz kontenera pozwala na zdalne logowanie się do niego tak, jakby był on oddzielnym serwerem fizycznym lub maszyną wirtualną.
+
+Po uruchomieniu kontenera i instalacji pakietu `openssh-server`, konieczne było ręczne ustawienie hasła użytkownika `root` poleceniem `passwd root`. Następnie, w pliku /etc/ssh/sshd_config, zmieniono parametr PermitRootLogin na yes, aby umożliwić dostęp do konta administratora.
+
+```bash
+sudo docker run -it --name ssh-container ubuntu bash
+apt update && apt install -y openssh-server
+```
+
+![Zdjęcie 22](img/s22.png)
+
+![Zdjęcie 23](img/s23.png)
+
+### Przygotowanie do uruchomienia serwera Jenkins
+
+Jenkins to popularne narzędzie do automatyzacji procesów budowania i testowania oprogramowania. Instalacja wymagała zastosowania techniki DIND (Docker-in-Docker), dzięki której kontener z Jenkinsem może zlecać budowanie obrazów drugiemu kontenerowi pełniącemu rolę silnika Docker.
+
+```bash
+sudo docker network create jenkins
+sudo docker volume create jenkins-docker-certs
+sudo docker volume create jenkins-data
+
+sudo docker run --name jenkins-docker --detach \
+  --privileged --network jenkins --network-alias docker \
+  --env DOCKER_TLS_CERTDIR=/certs \
+  --volume jenkins-docker-certs:/certs \
+  --volume jenkins-data:/var/jenkins_home \
+  --publish 2376:2376 \
+  docker:dind
+
+sudo docker run --name jenkins-server --detach \
+  --network jenkins --env DOCKER_HOST=tcp://docker:2376 \
+  --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 \
+  --publish 8080:8080 --publish 50000:50000 \
+  --volume jenkins-data:/var/jenkins_home \
+  --volume jenkins-docker-certs:/certs:ro \
+  jenkins/jenkins:lts
+```
+
+![Zdjęcie 24](img/s24.png)
