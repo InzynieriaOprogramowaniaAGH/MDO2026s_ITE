@@ -1,0 +1,10 @@
+## regex do plików .png (ctrl-h)
+
+*(Zrzut)\s(ekranu)\s(.*?)\s(.*?\.png)
+
+ $1%20$2%20$3%20$4
+
+
+ITE/GCL1/BB419678/screenshots/Zrzut ekranu (.*?) (.*?\.png)
+
+![img](../screenshots/Zrzut%20ekranu%20$1%20$2)
