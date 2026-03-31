@@ -1,4 +1,4 @@
-# Lab1
+# Lab1 Wprowadzenie, Git, Gałęzie, SSH
 
 ## 1. Treść githooka
 
@@ -28,7 +28,7 @@ fi
 
 ![Zrzut 10](img/Obraz10.png)
 
-# Lab2
+# Lab2 Git, Docker
 
 ## Pobieranie i uruchamianie obrazów, sprawdzenie ich rozmiarów.
 
@@ -61,4 +61,39 @@ CMD ["bash"]
 
 ## Wyczyszczenie obrazów przechowywanych w lokalnym magazynie
 
-![Zrzut 14](img/6.png)
+![Zrzut 16](img/6.png)
+
+# Lab3 Dockerfiles, kontener jako definicja etapu
+
+![Zrzut 30](../lab3/9.png)
+![Zrzut 31](../lab3/10.png)
+![Zrzut 32](../lab3/11.png)
+![Zrzut 33](../lab3/12.png)
+![Zrzut 34](../lab3/13.png)
+![Zrzut 35](../lab3/14.png)
+![Zrzut 36](../lab3/15.png)
+![Zrzut 37](../lab3/16.png)
+
+# Lab4 Dodatkowa terminologia w konteneryzacji, instancja Jenkins
+
+## Zachowywanie stanu między kontenerami
+
+![Zrzut 17](../lab4/Obraz1.png)
+![Zrzut 18](../lab4/Obraz2.png)
+
+## Eksponowanie portu i łaczność między kontenerami
+
+![Zrzut 19](../lab4/Obraz3.png)
+![Zrzut 20](../lab4/Obraz4.png)
+![Zrzut 21](../lab4/Obraz5.png)
+![Zrzut 22](../lab4/Obraz6.png)
+![Zrzut 23](../lab4/Obraz7.png)
+![Zrzut 24](../lab4/Obraz8.png)
+![Zrzut 25](../lab4/Obraz9.png)
+![Zrzut 26](../lab4/Obraz10.png)
+![Zrzut 27](../lab4/Obraz11.png)
+
+## Jenkins
+
+![Zrzut 28](../lab4/Obraz1.png)
+![Zrzut 29](../lab4/Obraz1.png)
