@@ -10,7 +10,7 @@ Wszystkie opisane poniżej kroki zostały wykonane w wyizolowanym środowisku.
 
 ### 1. Git
 Zgodnie z poleceniem, upewniono się, że w systemie Linux zainstalowany jest klient Git. Następnie wykonano pierwsze, testowe klonowanie repozytorium przedmiotowego z użyciem protokołu HTTPS. Do uwierzytelnienia wykorzystano wygenerowany w panelu GitHub *Personal Access Token* (PAT).
-![Klonowanie HTTPS i autoryzacja](lab1_8.png)
+![Klonowanie HTTPS i autoryzacja](lab1_9.png)
 
 ### 2. SSH
 Aby docelowo zabezpieczyć i ułatwić komunikację z serwerem, porzucono autoryzację HTTPS na rzecz kluczy SSH.
@@ -22,7 +22,7 @@ Aby docelowo zabezpieczyć i ułatwić komunikację z serwerem, porzucono autory
 * **Konfiguracja GitHub:** Klucze publiczne dodano do ustawień konta GitHub, a konto dodatkowo zabezpieczono uwierzytelnianiem dwuskładnikowym (2FA).
   ![Zarządzanie kluczami w GitHub](lab1_17.png)
 * **Klonowanie repozytorium po SSH:** Z powodzeniem nawiązano połączenie (`ssh -T git@github.com`) i sklonowano repozytorium wykorzystując protokół SSH.
-  ![Klonowanie po SSH](lab1_9.png)
+  ![Klonowanie po SSH](lab1_8.png)
 
 ### 3. Narzędzia
 Jako docelowe środowisko IDE skonfigurowano **Visual Studio Code**. Użyto rozszerzenia *Remote - SSH*, co wyeliminowało potrzebę instalowania zewnętrznych menedżerów plików (np. FileZilla). Wbudowany eksplorator zapewnił natychmiastową wymianę plików i wygodny podgląd dokumentacji Markdown.
