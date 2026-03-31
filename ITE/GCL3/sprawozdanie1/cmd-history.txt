@@ -158,9 +158,271 @@
   158  LSBLK
   159  lsblk
   160  ls
-  161  docker ps
-  162  docker ps -a
-  163  docker container prune
-  164  docker image prune -a
-  165  docker image prune 
-  166  history
+  161  cd ITE/GCL3/sprawozdanie1/
+  162  sudo docker build -t ubuntu-git-repo
+  163  sudo docker build -t ubuntu-git-repo .
+  164  sudo docker run -it ubuntu-git-repo
+  165  docker ps
+  166  sudo group add docker
+  167  sudo groupadd docker
+  168  sudo usermod -aG docker admin
+  169  newgrp docker
+  170  docker ps
+  171  docker ps -a
+  172  docker container prune
+  173  docker image prune -a
+  174  docker image prune 
+  175  history
+  176  git status
+  177  git add .
+  178  git status
+  179  git commit 
+  180  git commit -m "KL422041: Zrób zadania z zajeć 2"
+  181  git login
+  182  git status
+  183  git pull
+  184  git push
+  185  git config --global --edit
+  186  git status
+  187  ls
+  188  cd repo_ssh/
+  189  ls
+  190  cd ITE/
+  191  ls
+  192  cd ..
+  193  ls
+  194  cd ITE
+  195  ls
+  196  cd GCL3/
+  197  ls
+  198  cd sprawozdanie1/
+  199  ls
+  200  mkdir dockerfiles
+  201  ls
+  202  cd dockerfiles
+  203  ls
+  204  cd ..
+  205  c ls
+  206  ls
+  207  git clone https://github.com/BurntSushi/ripgrep.git
+  208  ls
+  209  cd ripgrep
+  210  cargo build
+  211  sudo dnf install cargo
+  212  ls
+  213  cargo build
+  214  cargo test
+  215  ./target/debug/rg "main"
+  216  cd ..
+  217  ls
+  218  tree
+  219  ls
+  220  cd repo_ssh/
+  221  ls
+  222  cd ITE/
+  223  ls
+  224  cd GCL3/
+  225  ls
+  226  cd sprawozdanie1/
+  227  cd dockerfiles/
+  228  ls
+  229  docker build -t ripgrep -f ./Dockerfile.ripgrep.bld
+  230  docker build -t ripgrep -f ./Dockerfile.ripgrep.bld .
+  231  history
+  232  docker build -t ripgrep -f ./Dockerfile.ripgrep.bld .
+  233  psd
+  234  pwd
+  235  docker images
+  236  docker build -t ripgrep -f ./Dockerfile.ripgrep.test .
+  237  ls
+  238  docker images
+  239  docker build -t ripgrep -f ./Dockerfile.ripgrep.bld .
+  240  docker build -t ripgreptest -f ./Dockerfile.ripgrep.bld .
+  241  docker images
+  242  docker containers
+  243  docker ps -a
+  244  ks
+  245  git status
+  246  git add .
+  247  git status
+  248  git pull
+  249  git status
+  250  git add .
+  251  git status
+  252  git add .
+  253  git status
+  254  ls
+  255  git status
+  256  git add .
+  257  git status
+  258  ls
+  259  cd ..
+  260  git add .
+  261  git status
+  262  git commit -m "KL422041: Zrób zadania z zajęć 3"
+  263  git status
+  264  git push
+  265  git status
+  266  docker image prune -a
+  267  docker images
+  268  docker run -it --name iperf-klient --entrypoint sh networkstatic/iperf3
+  269  docker run -it -rm --name iperf-klient --network moje-siec  --entrypoint sh networkstatic/iperf3
+  270  docker run -it --rm --name iperf-klient --network moje-siec  --entrypoint sh networkstatic/iperf3
+  271  docker remove iperf-klent
+  272  docker rm iperf-klent
+  273  docker rm iperf-klient
+  274  ls
+  275  docker run -it --rm --name iperf-klient --network moje-siec  --entrypoint sh networkstatic/iperf3
+  276  docker inspect --format "{{ .NetworkSettings.IPAddress }}" iperf3-server
+  277  docker inspect -format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf3-server
+  278  docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf3-server
+  279  docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf3-klient
+  280  docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf-klient
+  281  docker network create moje-siec
+  282  ping youtu.be
+  283  ls
+  284  cd 
+  285  ls
+  286  cd repo_ssh/
+  287  ping gov.pl
+  288  ping onet.pl
+  289  sudo dnf install iperf3
+  290  iperf3 --version
+  291  sudo dnf install iperf3
+  292  iperf3 --version
+  293  history
+  294  docker run -d --name iperf-server networkstatic/iper3 -s
+  295  docker run  -it --rm --name=iperf3-server networkstatic/iperf3 -s
+  296  docker run  -it --rm --name iperf3-server --network moje-siec  networkstatic/iperf3 -s
+  297  docker ps 
+  298  docker --rm iperf-klent
+  299  docker -rm iperf-klent
+  300  docker rm iperf-klent
+  301  docker rm iperf-klient
+  302  docker stop iperf-klent
+  303  docker stop iperf-klient
+  304  docker ps
+  305  clear
+  306  docker run -it --rm --name iperf-1 networkstatic/iperf3
+  307  docker run -it --rm --name iperf-1 networkstatic/iperf3 -c
+  308  docker run -it --rm --name iperf-1 networkstatic/iperf3 -s
+  309  ls
+  310  cd repo_ssh/
+  311  ls
+  312  cd ITE/
+  313  ls
+  314  cd GCL3/
+  315  ls
+  316  docker ps
+  317  docker images
+  318  docker run -it --rm --name iperf-1 networkstatic/iperf3 -s
+  319  docker run -it --rm --name iperf-2 --network iperf-network networkstatic/iperf3 -c iperf-1
+  320  iperf3 -version
+  321  iperf3 -c iperf-1
+  322  docker inspect 
+  323  docker inspect iperf-1
+  324  iperf3 -c 172.18.0.2
+  325  docker ps
+  326  docker inspect trusting_sutherland 
+  327  hostname -I
+  328  sudo firewall-cmd --add-port=5201/tcp --permanent
+  329  sudo firewall-cmd --add-port=5201/udp --permanent
+  330  sudo firewall-cmd --reload
+  331  sudo firewall-cmd --remove-port=5201/tcp --permanent
+  332  sudo firewall-cmd --remove-port=5201/udp --permanent
+  333  sudo firewall-cmd --remove-port=5201/tcp --permanent
+  334  docker networks
+  335  docker network ls
+  336  docker ps
+  337  docker inspect frosty_wright 
+  338  docker ps
+  339  docker inspect iperf-
+  340  docker inspect iperf-1
+  341  ip addr show
+  342  docker run -it --rm --name iperf-1 networkstatic/iperf3 -c
+  343  docker run -it --rm --name iperf-2 networkstatic/iperf3 -c
+  344  docker ps
+  345  docker ps -a
+  346  docker inspect 
+  347  docker inspect iperf-1
+  348  docker run -it --rm --name iperf-2 networkstatic/iperf3 -c 172.17.0.1
+  349  docker network
+  350  docker network ls
+  351  docker network prune
+  352  docker network ls
+  353  docker run -it --rm --name iperf-2 networkstatic/iperf3 -c 172.17.0.2
+  354  docker network create iperf-network
+  355  docker run -it --rm --name iperf-1 --network iperf-network networkstatic/iperf3 -s
+  356  docker run -it --rm --name iperf-1 --network host networkstatic/iperf3 -s
+  357  docker run -it --rm --network host networkstatic/iperf3 -s
+  358  docker run -d --name iperf-zewnetrzny -p 5201:5201 networkstatic/iperf3 -s
+  359  docker ls
+  360  docker ps
+  361  docker rm -f iperf-zewnetrzny 
+  362  docker ps
+  363  docker run -it --rm -network=host networkstatic/iperf3 -s 
+  364  docker run -it --rm --network=host networkstatic/iperf3 -s
+  365  docker run -it --rm --network=host --name iperf-1  networkstatic/iperf3 -s
+  366  ls
+  367  cd repo_ssh/
+  368  ls
+  369  cd ITE/
+  370  ls
+  371  cd GCL3/
+  372  ls
+  373  docker ps
+  374  docker run -it --rm --network=host --name iperf-1 networkstatic/iperf3 -s
+  375  docker ps
+  376  docker inspect iperf-
+  377  docker inspect iperf-1
+  378  sudo firewall-cmd --add-port=5201/tcp --permanent
+  379  sudo firewall-cmd --reload
+  380  docker build -f Dockerfile.fedora-sshd -t fedora-sshd .
+  381  cd ..
+  382  ls
+  383  cd repo_ssh/
+  384  ls
+  385  cd ITE/
+  386  ls
+  387  cd GCL3/
+  388  ls
+  389  cd sprawozdanie1/
+  390  ls
+  391  cd dockerfiles/
+  392  ls
+  393  clear
+  394  docker build -f Dockerfile.fedora-sshd -t fedora-sshd .
+  395  docker run -d -p 2222:22 --name sshd-container fedore-sshd
+  396  docker run -d -p 2222:22 --name sshd-container fedora-sshd
+  397  ssh root@localhost -p 2222
+  398  docker ps
+  399  docker stop sshd-container 
+  400  docker rm sshd-container 
+  401  docker ps -a
+  402  clear
+  403  docker network ls
+  404  docker network create jenkins
+  405  docker volume create jenkins-docker-certs
+  406  docker volume create jenkins-data
+  407  docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind
+  408  docker build -f Dockerfile.jenkins -t jenkins-image .
+  409  docker run --name jenkins-server --rm --detach   --network jenkins   --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client   --env DOCKER_TLS_VERIFY=1   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   --publish 8080:8080 --publish 50000:50000   my-jenkins-image
+  410  docker run --name jenkins-server --rm --detach   --network jenkins   --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client   --env DOCKER_TLS_VERIFY=1   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   --publish 8080:8080 --publish 50000:50000   jenkins-image
+  411  docker ps
+  412  docker exec jenkins-server cat /var/jenkins_home/secrets/initialAdminPassword
+  413  git pull
+  414  git status
+  415  git add .
+  416  git status
+  417  cd ..
+  418  git status
+  419  git add .
+  420  git status
+  421  clear
+  422* git commit -m "KL422041: Zrób sprawozdanie 1"
+  423  git status
+  424  git push
+  425  git status
+  426  git add .
+  427  git status
+  428  history
