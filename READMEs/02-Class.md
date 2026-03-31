@@ -14,7 +14,7 @@ Celem zajęć jest zestawienie środowiska skonteneryzowanego do pracy nad CI i 
    - użyj repozytorium swojej dystrybucji, jeżeli to możliwe (zamiast Community Edition - dystrybucyjne pakiety są lepiej dostosowane)
    - rozważ niestosowanie rozwiązania Snap (w Ubuntu) i FlatPak
 2. Zarejestruj się w [Docker Hub](https://hub.docker.com/) i zapoznaj z sugerowanymi obrazami
-3. Zapoznaj się z obrazami `hello-world`, `busybox`, `ubuntu` lub `fedora`, `mariadb`, `runtime`, `aspnet` i `sdk` dla Microsoft .NET
+3. Zapoznaj się z obrazami `hello-world`, `busybox`, `ubuntu` lub `fedora`, `mariadb` lub `nginx`, `node` (dla Node.js), `runtime`, `aspnet` i `sdk` (dla Microsoft .NET)
    - uruchom je
    - sprawdź ich rozmiary
    - sprawdź kod wyjścia
@@ -31,4 +31,4 @@ Celem zajęć jest zestawienie środowiska skonteneryzowanego do pracy nad CI i 
    - Uruchom w trybie interaktywnym i zweryfikuj że jest tam ściągnięte nasze repozytorium
 8. Pokaż uruchomione ( != "działające" ) kontenery, wyczyść zakończone.
 9. Wyczyść obrazy przechowywane w lokalnym magazynie 
-10. Dodaj stworzone pliki `Dockefile` do folderu `Sprawozdanie1` w swoim katalogu, na odpowiedniej gałęzi w repozytorium.
+10. Dodaj stworzone pliki `Dockerfile` do folderu `Sprawozdanie1` w swoim katalogu, na odpowiedniej gałęzi w repozytorium.
