@@ -1,6 +1,44 @@
 # Sprawozdanie - MB423178
 
-## 1. Mój Git Hook
+## Środowisko uruchomieniowe
+Wszystkie opisane poniżej kroki zostały wykonane w wyizolowanym środowisku.
+* **System operacyjny:** Maszyna wirtualna z systemem Linux.
+* **Metoda dostępu:** Połączenie zdalne za pośrednictwem protokołu SSH (Secure Shell). Praca odbywała się na koncie standardowego użytkownika (bez logowania na konto `root` oraz bez użycia konsoli KVM).
+* **Narzędzia pracy:** Edytor Visual Studio Code z wtyczką *Remote - SSH*, zapewniający dostęp do terminala oraz zarządzanie plikami.
+
+## Lab 1 Wprowadzenie, Git, Gałęzie, SSH
+
+### 1. Git
+Zgodnie z poleceniem, upewniono się, że w systemie Linux zainstalowany jest klient Git. Następnie wykonano pierwsze, testowe klonowanie repozytorium przedmiotowego z użyciem protokołu HTTPS. Do uwierzytelnienia wykorzystano wygenerowany w panelu GitHub *Personal Access Token* (PAT).
+![Klonowanie HTTPS i autoryzacja](lab1_8.png)
+
+### 2. SSH
+Aby docelowo zabezpieczyć i ułatwić komunikację z serwerem, porzucono autoryzację HTTPS na rzecz kluczy SSH.
+* **Tworzenie kluczy:** Wygenerowano dwa klucze oparte o nowoczesne algorytmy (zrezygnowano z przestarzałego RSA):
+  1. Główny klucz `ED25519` zabezpieczony silnym hasłem (`ssh-keygen -t ed25519 -C "bednarczyk1mikolaj@gmail.com"`).
+  2. Zapasowy klucz `ECDSA` 521-bit (`ssh-keygen -t ecdsa -b 521`).
+  ![Generowanie głównego klucza ED25519](lab1_6.png)
+  ![Odczyt klucza publicznego ECDSA](lab1_18.png)
+* **Konfiguracja GitHub:** Klucze publiczne dodano do ustawień konta GitHub, a konto dodatkowo zabezpieczono uwierzytelnianiem dwuskładnikowym (2FA).
+  ![Zarządzanie kluczami w GitHub](lab1_17.png)
+* **Klonowanie repozytorium po SSH:** Z powodzeniem nawiązano połączenie (`ssh -T git@github.com`) i sklonowano repozytorium wykorzystując protokół SSH.
+  ![Klonowanie po SSH](lab1_9.png)
+
+### 3. Narzędzia
+Jako docelowe środowisko IDE skonfigurowano **Visual Studio Code**. Użyto rozszerzenia *Remote - SSH*, co wyeliminowało potrzebę instalowania zewnętrznych menedżerów plików (np. FileZilla). Wbudowany eksplorator zapewnił natychmiastową wymianę plików i wygodny podgląd dokumentacji Markdown.
+![Podgląd plików i terminala w VS Code](lab1_15.png)
+![Edycja i renderowanie Markdown w VS Code](lab1_16.png)
+
+### 4. Gałąź i struktura katalogów
+Zarządzanie repozytorium rozpoczęto od przełączenia się na gałąź `main`, a następnie na gałąź grupy `GCL1`.
+* Utworzono własną gałąź roboczą o nazwie `MB423178` (inicjały i numer indeksu).
+* Wewnątrz katalogu grupowego utworzono dedykowany folder roboczy `MB423178`.
+  ![Tworzenie gałęzi i struktury](lab1_10.png)
+
+**Napisanie i wdrożenie Git Hooka**
+Aby wymusić poprawne konwencje nazewnicze, przygotowano skrypt `commit-msg` weryfikujący, czy wiadomość commita zaczyna się od zadanego prefiksu. Skrypt dodano do folderu roboczego, a następnie skopiowano do ukrytego katalogu `.git/hooks` nadając mu prawa do wykonania (`chmod +x`).
+
+## Mój Git Hook
 Oto skrypt, który napisałem, aby wymusić poprawne nazewnictwo commitów:
 
 ```bash
@@ -12,6 +50,15 @@ if [[ ! $commit_msg == $PREFIX* ]]; then
     exit 1
 fi
 ```
+### 5. Praca z serwerem i rozwiązywanie konfliktów
+Zgodnie z instrukcją dodano pliki sprawozdania wraz ze zrzutami ekranu i spróbowano wciągnąć zmiany do gałęzi grupowej. W tym procesie napotkano na problem, który przetestował działanie stworzonego Git Hooka.
+
+Problem z git push i odrzucenie zmian: Zdalne repozytorium odrzuciło wysyłanie zmian z powodu rozbieżności historii (ktoś inny dodał w międzyczasie commity na serwerze).
+
+Aktywacja Git Hooka podczas git pull: Przy próbie integracji serwerowych zmian, system Git usiłował stworzyć automatyczny "Merge commit". Zostało to jednak zablokowane przez mój własny skrypt powłoki, ponieważ domyślna wiadomość scalająca nie posiadała wymaganego prefiksu MB423178.
+
+Rozwiązanie: Należało ręcznie sfinalizować proces scalania, wywołując polecenie git commit z podaniem precyzyjnego tytułu spełniającego warunki Hooka (np. MB423178: Złączenie plików z serwerem). Operacja ta zakończyła się sukcesem i pozwoliła na poprawne zaktualizowanie serwera (git push).
+
 <img width="1072" height="668" alt="Zrzut ekranu 2026-03-06 093141" src="https://github.com/user-attachments/assets/dafbeb0d-83d5-4cee-aeef-8ade44e40c82" />
 <img width="1034" height="684" alt="Zrzut ekranu 2026-03-06 093354" src="https://github.com/user-attachments/assets/2dbd0ad5-4d76-4afc-9406-0d0369e63182" />
 <img width="1262" height="485" alt="Zrzut ekranu 2026-03-06 095359" src="https://github.com/user-attachments/assets/1a876885-c948-4c3f-802a-eb54fcf9ffbe" />
@@ -137,3 +184,18 @@ Celem tej części zadania było zbadanie przepustowości sieciowej oraz udowodn
 
 ### Dyskusja: Analiza przepustowości
 Z wykonanych pomiarów wnika, że przepustowość komunikacji wynosi około **21 - 23 Gbits/sec**. Tak ogromna prędkość wynika z faktu, że ruch między kontenerami nigdy nie trafia na fizyczną kartę sieciową. Pakiety są routowane całkowicie wewnątrz systemu hosta poprzez wirtualny przełącznik (software bridge) w pamięci RAM. W rzeczywistości wynik ten mierzy głównie wydajność procesora maszyny wirtualnej, a nie przepustowość prawdziwego łącza.
+
+## Część 3: Usługi w rozumieniu systemu, kontenera i klastra (SSHD)
+Uruchomiono kontener `rastasheep/ubuntu-sshd:18.04` ze zintegrowaną usługą SSH. Następnie zalogowano się do niego pomyślnie z poziomu hosta za pomocą polecenia `ssh root@localhost -p 2222`.
+![Logowanie SSH do kontenera](lab4_13.png)
+
+## Część 4: Przygotowanie serwera Jenkins (DIND)
+Zgodnie z oficjalną dokumentacją skonfigurowano środowisko Jenkinsa w architekturze Docker-in-Docker (DIND), co pozwoli agentom na swobodne uruchamianie kontenerów w przyszłych zadaniach CI/CD.
+
+1. **Inicjalizacja środowiska:** Utworzono dedykowaną sieć `jenkins` oraz uruchomiono główne kontenery, co zweryfikowano poleceniem `docker ps`.
+   ![Uruchomienie kontenerów Jenkinsa](lab4_14.png)
+2. **Odzyskanie hasła i dowód trwałości danych:** Ponieważ główny kontener został zrestartowany z flagą `--rm`, dostęp do początkowych logów został utracony. Wykorzystano jednak fakt, że dane Jenkinsa są bezpieczne na woluminie `jenkins-data`. Przy pomocy tymczasowego kontenera odczytano plik `initialAdminPassword` bezpośrednio z wirtualnego dysku.
+   ![Odzyskanie hasła z woluminu](lab4_17.png)
+3. **Ekran logowania i konfiguracja:** Przekierowano port `8080` do środowiska lokalnego, odblokowano interfejs w przeglądarce odzyskanym hasłem i rozpoczęto instalację sugerowanych wtyczek.
+   ![Ekran Odblokuj Jenkinsa](lab4_15.png)
+   ![Instalacja wtyczek Jenkins](lab4_16.png)
