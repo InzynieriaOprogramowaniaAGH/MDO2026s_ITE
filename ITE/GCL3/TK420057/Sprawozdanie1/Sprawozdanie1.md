@@ -95,5 +95,5 @@ CMD ["bash"]
 
 ## Jenkins
 
-![Zrzut 28](../lab4/Obraz1.png)
-![Zrzut 29](../lab4/Obraz1.png)
+![Zrzut 28](../lab4/Obraz12.png)
+![Zrzut 29](../lab4/Obraz13.png)
