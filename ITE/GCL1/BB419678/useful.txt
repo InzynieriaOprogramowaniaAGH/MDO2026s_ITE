@@ -1,10 +1,10 @@
 ## regex do plików .png (ctrl-h)
 
-*(Zrzut)\s(ekranu)\s(.*?)\s(.*?\.png)
+ITE/GCL1/BB419678/screenshots/Zrzut\s+ekranu\s+(.*?)\s+(.*)\.png
 
- $1%20$2%20$3%20$4
+![img](../screenshots/Zrzut%20ekranu%20$1%20$2.png)
 
 
-ITE/GCL1/BB419678/screenshots/Zrzut ekranu (.*?) (.*?\.png)
+\n\n![img](../screenshots/Zrzut%20ekranu%20$1%20$2.png)
 
-![img](../screenshots/Zrzut%20ekranu%20$1%20$2)
+find ITE/GCL1/BB419678/screenshots -type f -name "*2026-03-26*.png" | sort
