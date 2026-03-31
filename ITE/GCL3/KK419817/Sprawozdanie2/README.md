@@ -123,7 +123,7 @@ docker images | grep ubuntu
 
 ![alt text](image-6.png)
 
-Pierwszy failował bo padł kontener dind. Uruchomiłem go ponownie tym poleceniem co na początku zajęć. Następne buildy już zadziałały poprawnie.
+Pierwszy failował bo padł kontener dind. Uruchomiłem go ponownie tym samym poleceniem co na początku zajęć. Następne buildy już zadziałały poprawnie.
 
 ---
 
@@ -143,11 +143,54 @@ pipeline {
                 echo 'Repozytorium zostało sklonowane.'
             }
         }
-    }
 }
 ```
 
 Sukces:
 ![clone sukces](image-7.png)
 
+Po ustawieniu odpowiednich ścieżek, stworzono końcowy skrypt pipelinu:
+
+```sh
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Start'
+                git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git', branch: 'KK419817'
+                echo 'Repozytorium zostało sklonowane.'
+            }
+        }
+        stage('Build') {
+            steps {
+                 dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    sh 'docker build -f Dockerfile.build -t express-build .'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    echo 'Start testów'
+                    sh 'docker build -f Dockerfile.test -t express-test .'
+                    sh 'docker run --rm express-test'
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline zakończony sukcesem!'
+        }
+        failure {
+            echo 'Pipeline zakończony błędem!'
+        }
+    }
+}
+```
+
+Zadziałał poprawnie, zbudowano obrazy (tak jak wcześniej lokalnie) i włączono testy:
+![sukces_pipeline](image-8.png)
 
