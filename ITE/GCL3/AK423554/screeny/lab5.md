@@ -14,6 +14,8 @@ pipeline
 
 <img width="861" height="636" alt="image" src="https://github.com/user-attachments/assets/c92512a8-d2cb-44cd-ad26-895285233b2b" />
 
+<img width="660" height="202" alt="image" src="https://github.com/user-attachments/assets/aeb5b3db-66b8-4367-825f-423213c9e653" />
+
 W ramach etapu `Build & Run Tests` uruchomiono pełny zestaw testów frameworka Fastify. Pipeline pomyślnie wyizolował proces testowy w dedykowanym kontenerze.
 
 **Podsumowanie wykonania:**
