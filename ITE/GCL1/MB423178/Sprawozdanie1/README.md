@@ -41,7 +41,6 @@ Jako docelowe środowisko IDE skonfigurowałem **Visual Studio Code**. Użyłem 
 
 ![Podgląd plików i terminala w VS Code](lab1_15.png)
 
-![Edycja i renderowanie Markdown w VS Code](lab1_16.png)
 
 ### 4. Gałąź i struktura katalogów
 
@@ -54,7 +53,7 @@ Zarządzanie repozytorium rozpocząłem od przełączenia się na gałąź `main
 **Napisanie i wdrożenie Git Hooka**
 Aby wymusić poprawne konwencje nazewnicze, przygotowałem skrypt `commit-msg` weryfikujący, czy wiadomość commita zaczyna się od zadanego prefiksu. Skrypt dodałem do folderu roboczego, a następnie skopiowano do ukrytego katalogu `.git/hooks` nadając mu prawa do wykonania poleceniem (`chmod +x`).
 
-## Mój Git Hook
+### Mój Git Hook
 Oto skrypt, który napisałem, aby wymusić poprawne nazewnictwo commitów:
 
 ```bash
@@ -157,7 +156,7 @@ Potwierdziłem, że proces działa w tle, wykonując z drugiego terminala na ho�
 sudo docker ps
 ```
 
-![Działający kontener Ubuntu (ps)](dockerScreen (9).png)
+![Działający kontener Ubuntu (ps)](dockerScreen(9).png)
 
 ### 7. Budowa własnego obrazu (Dockerfile)
 Stworzyłem własny plik `Dockerfile` definiujący nowe środowisko oparte na `ubuntu:24.04`, wyposażone w narzędzie `git` oraz pobrany kod repozytorium zajęciowego. 
@@ -186,11 +185,11 @@ ls -la MDO2026s_ITE/
 
 Repozytorium było na swoim miejscu.
 
-![Tworzenie pliku Dockerfile](dockerScreen (8).png)
+![Tworzenie pliku Dockerfile](dockerScreen(8).png)
 
-![Proces budowania - docker build](dockerScreen (7).png)
+![Proces budowania - docker build](dockerScreen(7).png)
 
-![Weryfikacja sklonowanego repozytorium wewnątrz kontenera](dockerScreen (6).png)
+![Weryfikacja sklonowanego repozytorium wewnątrz kontenera](dockerScreen(6).png)
 
 ### 8. Zarządzanie kontenerami i czyszczenie (Prune)
 Wyświetliłem pełną listę kontenerów (działających oraz zatrzymanych) komendą `ps -a`. Następnie użyłem komendy czyszczącej, aby hurtem usunąć z systemu wszystkie kontenery, które zakończyły swoje działanie:
@@ -200,9 +199,9 @@ sudo docker ps -a
 sudo docker container prune -f
 ```
 
-![Lista wszystkich kontenerów](dockerScreen (5).png)
+![Lista wszystkich kontenerów](dockerScreen(5).png)
 
-![Czyszczenie zatrzymanych kontenerów](dockerScreen (4).png)
+![Czyszczenie zatrzymanych kontenerów](dockerScreen(4).png)
 
 ### 9. Oczyszczanie lokalnego magazynu obrazów
 Po wyczyszczeniu kontenerów wykonałem polecenie usuwające nieużywane obrazy pobrane do lokalnego cache demona, aby odzyskać przestrzeń dyskową na maszynie wirtualnej:
@@ -213,9 +212,9 @@ sudo docker image prune -a -f
 
 Proces ten odzyskał znaczne ilości wolnego miejsca. Mój plik `Dockerfile` został zachowany na dysku w celach raportowych.
 
-![Komenda image ls](dockerScreen (1).png)
+![Komenda image ls](dockerScreen(1).png)
 
-![Odzyskanie miejsca przez usunięcie obrazów](dockerScreen (2).png)
+![Odzyskanie miejsca przez usunięcie obrazów](dockerScreen(2).png)
 
 ---
 
