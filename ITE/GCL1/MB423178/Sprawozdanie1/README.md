@@ -54,7 +54,9 @@ Zarządzanie repozytorium rozpocząłem od przełączenia się na gałąź `main
 Aby wymusić poprawne konwencje nazewnicze, przygotowałem skrypt `commit-msg` weryfikujący, czy wiadomość commita zaczyna się od zadanego prefiksu. Skrypt dodałem do folderu roboczego, a następnie skopiowano do ukrytego katalogu `.git/hooks` nadając mu prawa do wykonania poleceniem (`chmod +x`).
 
 ### Mój Git Hook
-Oto skrypt, który napisałem, aby wymusić poprawne nazewnictwo commitów:
+Aby utworzyć ten skrypt lokalnie, użyłem wbudowanego edytora tekstu `nano`. W terminalu wpisałem polecenie `nano hook_skrypt.sh`, napisałem poniższy kod, a następnie zapisałem plik (skrót `Ctrl+O`, `Enter`) i zamknąłem edytor (`Ctrl+X`).
+
+Oto dokładna treść, która znalazła się wewnątrz pliku:
 
 ```bash
 #!/bin/bash
@@ -158,13 +160,24 @@ sudo docker ps
 
 ### 7. Budowa własnego obrazu (Dockerfile)
 Stworzyłem własny plik `Dockerfile` definiujący nowe środowisko oparte na `ubuntu:24.04`, wyposażone w narzędzie `git` oraz pobrany kod repozytorium zajęciowego. 
+Zanim zbudowałem obraz, musiałem fizycznie utworzyć plik z instrukcjami. W terminalu wpisałem polecenie `nano Dockerfile` (wielkość liter ma znaczenie), napisałem poniższą zawartość, zapisałem plik (`Ctrl+O`, `Enter`) i wyszedłem z edytora (`Ctrl+X`).
 
 **Treść `Dockerfile`:**
 ```dockerfile
+# FROM - Określa obraz bazowy (nowoczesne wydanie LTS Ubuntu)
 FROM ubuntu:24.04
+
+# RUN - Wykonuje polecenia podczas budowania warstwy. 
+# Zgrupowanie poleceń update i install w jednej linijce to dobra praktyka oszczędzająca ilość warstw obrazu.
 RUN apt-get update && apt-get install -y git
+
+# WORKDIR - Ustawia katalog roboczy dla kolejnych instrukcji w kontenerze
 WORKDIR /app
+
+# RUN - Sklonowanie repozytorium przedmiotowego do katalogu roboczego
 RUN git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+
+# CMD - Definiuje domyślny proces (powłokę), który zostanie uruchomiony po starcie kontenera
 CMD ["bash"]
 ```
 
@@ -265,7 +278,7 @@ cd spring-petclinic
 ### 3. Automatyzacja procesu (Dockerfiles)
 Ręczny proces przekułem w zautomatyzowane ramy. Zgodnie z instrukcją, przygotowałem dwa oddzielne pliki `Dockerfile`:
 
-**Plik 1: `Dockerfile.petClinic.build`** (odpowiada wyłącznie za pobranie i zbudowanie kodu):
+**Plik 1: `Dockerfile.petClinic.build`** (odpowiada wyłącznie za pobranie i zbudowanie kodu). Utworzyłem go wpisując w terminalu `nano Dockerfile.petClinic.build`i piosząc w nim  taki kod:
 
 ```dockerfile
 FROM eclipse-temurin:17-jdk
@@ -275,13 +288,21 @@ RUN git clone https://github.com/spring-projects/spring-petclinic.git .
 RUN ./mvnw package -DskipTests
 ```
 
-**Plik 2: `Dockerfile.petClinic.test`** (bazuje na obrazie budującym i definiuje proces testowania):
+**Wyjaśnienie użytych dyrektyw:**
+* **`FROM`**: Określa obraz bazowy, na którym będzie opierał się nasz kontener. W tym przypadku jest to gotowe środowisko Java (JDK 17), niezbędne do skompilowania projektu.
+* **`WORKDIR`**: Tworzy i ustawia domyślny katalog roboczy (`/app`) wewnątrz kontenera. Wszystkie kolejne instrukcje będą wykonywane w tym folderze.
+* **`RUN`**: Służy do uruchamiania poleceń powłoki w trakcie budowania (tworzenia warstw) obrazu. Najpierw użyłem go do instalacji narzędzia Git, następnie do pobrania kodu źródłowego aplikacji z GitHuba, a na końcu do uruchomienia Mavena (`./mvnw package`), który skompilował projekt do pliku wykonywalnego z pominięciem testów.
+
+**Plik 2: `Dockerfile.petClinic.test`** (bazuje na obrazie budującym i definiuje proces testowania). Utworzyłem go wpisując w terminalu `nano Dockerfile.petClinic.build`i piosząc w nim  taki kod:
 
 ```dockerfile
 FROM petclinic-build:latest
 CMD ["./mvnw", "test"]
 ```
 
+**Wyjaśnienie użytych dyrektyw:**
+* **`FROM`**: Jako bazy nie używa czystego systemu, lecz naszego lokalnego obrazu `petclinic-build:latest`, który zbudowaliśmy w poprzednim kroku. Dzięki temu kontener testowy dziedziczy całe środowisko wraz z już pobranym i skompilowanym kodem.
+* **`CMD`**: Definiuje polecenie, które ma zostać uruchomione jako główny proces w momencie startu gotowego kontenera (w przeciwieństwie do `RUN`, które działa tylko podczas budowania obrazu). Tutaj wymusza wykonanie zestawu testów jednostkowych za pomocą narzędzia Maven.
 Zbudowałem oba obrazy:
 
 ```bash
@@ -304,7 +325,7 @@ sudo docker run --name tester-petclinic petclinic-test
 **Różnica między obrazem a kontenerem:** Obraz (`petclinic-test`) to wyłącznie "przepis" – statyczna, niezmienna warstwa plików zawierająca system operacyjny, kod źródłowy i skompilowaną aplikację. Kontener (`tester-petclinic`) to uruchomiona instancja tego obrazu. Wnętrze tego kontenera to pracujący proces, którym w tym przypadku jest środowisko **Java Virtual Machine (JVM)** wykonujące bibliotekę narzędziową Maven na skompilowanych plikach klas.
 
 ### 4. Zadania dodatkowe: Docker Compose
-Zamiast wdrażać kontenery ręcznie z użyciem CLI, ująłem proces testowy w kompozycję `docker-compose.yml`:
+Zamiast wdrażać kontenery ręcznie z użyciem CLI, ująłem proces testowy w kompozycję. W tym celu utworzyłem nowy plik wpisując `nano docker-compose.yml`, napisałem w nim poniższą konfigurację i zapisałem:
 
 ```yaml
 version: '3.8'
@@ -417,18 +438,26 @@ Jedynymi **uzasadnionymi przypadkami użycia** zintegrowanego SSH w kontenerze s
 2. Specyficzne, stare aplikacje (legacy), które twardo wymagają protokołu SSH do komunikacji wewnętrznej i nie da się ich zrefaktoryzować.
 
 ### 4. Serwer Jenkins (Docker-in-Docker)
-Zgodnie z wymogami projektu, skonfigurowałem architekturę DIND dla serwera Jenkins. Uruchomiłem główny węzeł oraz kontener pomocniczy we wspólnej sieci `jenkins`.
+Zgodnie z wymogami projektu, zapoznałem się z oficjalną dokumentacją instalacyjną Jenkinsa i na jej podstawie skonfigurowałem architekturę DIND (Docker-in-Docker). Utworzyłem dedykowaną sieć i uruchomiłem kontener za pomocą oficjalnie rekomendowanej komendy:
 
 ```bash
 docker network create jenkins
-# Uruchomienie jenkins-docker (DIND) oraz jenkins-blueocean z odpowiednimi woluminami i portami
+
+# Uruchomienie głównego kontenera Jenkinsa w stworzonej sieci z odpowiednimi portami i woluminem
+sudo docker run --name jenkins-blueocean --rm --detach --network jenkins --env DOCKER_HOST=tcp://docker:2376 --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 --publish 8080:8080 --publish 50000:50000 --volume jenkins-data:/var/jenkins_home --volume jenkins-docker-certs:/certs/client:ro jenkins/jenkins:lts
+
+# Weryfikacja działania
 docker ps
 ```
 
-![Uruchomienie kontenerów Jenkinsa](lab4_14.png)
+**Dlaczego użyto tak złożonej komendy? (Wyjaśnienie parametrów):**
+Zastosowanie tej dokładnej składni z dokumentacji było konieczne do poprawnego i bezpiecznego zestawienia środowiska:
+* **`--network jenkins`**: Izoluje Jenkinsa i pozwala mu komunikować się z wewnętrznym demonem Dockera po nazwie hosta.
+* **`--env DOCKER_...`**: Przekazuje zmienne środowiskowe wymagane do autoryzacji TLS przy tworzeniu kontenerów wewnątrz kontenera.
+* **`--publish 8080:8080` oraz `50000:50000`**: Mapuje port interfejsu graficznego (UI) oraz port komunikacyjny dla przyszłych agentów roboczych (JNLP).
+* **`--volume jenkins-data:/var/jenkins_home`**: To kluczowy element – montuje nazwany wolumin, dzięki któremu wtyczki, historia budowania i hasła administracyjne przetrwają nawet mimo obecności flagi `--rm` (usuwającej kontener po restarcie).
 
 Ponieważ kontener konfiguracyjny uruchomiłem z flagą `--rm`, po restarcie maszyny wyczyszczono logi z początkowym hasłem administratora. Zademonstrowałem jednak potęgę trwałości danych w Dockerze, odzyskując hasło bezpośrednio z utworzonego wcześniej woluminu `jenkins-data`:
-
 ```bash
 sudo docker run --rm -v jenkins-data:/var/jenkins_home alpine cat /var/jenkins_home/secrets/initialAdminPassword
 ```
