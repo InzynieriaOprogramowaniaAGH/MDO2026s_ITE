@@ -556,3 +556,25 @@ sudo docker run --rm -v jenkins-data:/var/jenkins_home alpine cat /var/jenkins_h
 
 ---
 
+## Ważna adnotacja dotycząca użycia AI
+Zgodnie ze ścisłymi wymaganiami zadanymi w dokumencie organizacyjnym (`Rules.md`), oświadczam, że podczas rozwiązywania problemów technicznych, poszukiwania optymalnych rozwiązań oraz formułowania struktury tego sprawozdania posiłkowałem się modelem LLM (Gemini).
+
+**Główne zapytania wysłane do modelu z podziałem na etapy pracy:**
+
+* **Zajęcia 01:**
+  1. *"Gdzie znaleźć lub jak stworzyć personal access token (PAT) na GitHubie?"*
+  2. *"Jakie mogą być bezpieczne klucze SSH inne niż przestarzały RSA? Podaj link do rzetelnego źródła na ten temat."*
+  3. *"Jak zapewnić natychmiastową wymianę plików z maszyną wirtualną w VS Code bez użycia FileZilli?"*
+* **Zajęcia 02:**
+  1. *"Jak sprawdzić PID głównego procesu wewnątrz czystego kontenera Ubuntu? Komenda `ps` nie działa, jakich pakietów muszę użyć, aby to udowodnić?"*
+* **Zajęcia 03:**
+  1. *"Jakie są najpopularniejsze otwarte licencje repozytoriów na GitHubie spełniające wymogi zadań uczelnianych? Podaj link, skąd czerpiesz te informacje."*
+  2. *"Wypisz różnice między obrazem a kontenerem w Dockerze. Co tak naprawdę pracuje w uruchomionym kontenerze? Podaj źródła do oficjalnej dokumentacji."*
+* **Zajęcia 04:**
+  1. *"Jakie są wady i zalety różnych sposobów dostarczania kodu do kontenera? Opisz dokładnie i porównaj: kontener pomocniczy z woluminem, bind mount z lokalnym katalogiem oraz bezpośrednie kopiowanie do /var/lib/docker. Podaj linki do czytelni."*
+  2. *"Opisz zalety i wady (oraz przypadki użycia) komunikacji z uruchomionym kontenerem z wykorzystaniem zintegrowanej w nim usługi SSH. Dlaczego uważa się to za antywzorzec?"*
+
+**Metody weryfikacji odpowiedzi:**
+Odpowiedzi wygenerowane przez sztuczną inteligencję były traktowane z krytycznym dystansem, wyłącznie jako propozycje i wskazówki deweloperskie, a ich weryfikacja opierała się na dwóch filarach:
+1. **Weryfikacja praktyczna:** Wszelkie sugestie dotyczące komend powłoki (bash/docker/git) czy konfiguracji środowiska (np. rozszerzenia VS Code, woluminy) były najpierw analizowane merytorycznie, a następnie uruchamiane ręcznie w wyizolowanym środowisku. Dowodem ich poprawnego działania są uwiecznione logi i zrzuty ekranu.
+2. **Sprawdzanie źródeł :** W przypadku zapytań o teorię, wady i zalety architektoniczne oraz prośby o linki, wygenerowane materiały były konfrontowane z oficjalną dokumentacją dostawców technologii (Docker Docs, GitHub Docs). Linki dostarczone przez AI były ręcznie odwiedzane w celu wykluczenia zjawiska "halucynacji" modelu i potwierdzenia rzetelności informacji zawartych w sprawozdaniu.
