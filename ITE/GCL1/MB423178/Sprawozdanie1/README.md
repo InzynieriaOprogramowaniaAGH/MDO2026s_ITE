@@ -104,8 +104,6 @@ Do weryfikacji zajmowanego przez nie miejsca na dysku użyłem polecenia:
 sudo docker images
 ```
 
-![Pobieranie obrazów](docker2screen.png)
-
 ![Zestawienie rozmiarów pobranych obrazów](docker2-2screen.png)
 
 Aby przetestować uruchamianie kontenerów i zweryfikować kody wyjścia (exit codes), uruchomiłem obraz `hello-world`. Ponieważ program ten wykonuje zadanie i natychmiast się kończy, po jego wykonaniu odczytałem status ostatniego polecenia systemowego:
