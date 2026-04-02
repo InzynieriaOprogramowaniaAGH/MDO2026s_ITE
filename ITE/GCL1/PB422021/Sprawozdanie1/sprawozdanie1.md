@@ -1,7 +1,32 @@
-Sprawozdanie nr 1
+# Sprawozdanie nr 1
+
+Wszystkie zadania wykonałam na Ubuntu Server 24.04 LTS w Hyper-V, poprzez połączenie zdalne przez protokół SSH z poziomu Visual Studio Code.
+
+## Lab 1
+
+Moim pierwszym zadaniem było przygotowanie klienta Git. Po upewnieniu się, że pakiet jest zainstalowany, sklonowałam repozytorium przedmiotu. Z racji, że GitHub nie wspiera uwierzytelniania zwykłym hasłem, wykorzystałam protoków HTTPS i Personal Acces Token, który wygenerowałam wcześniej w ustawieniach deweloperskich mojego konta na GitHubie.
+
+Następnie w celu zwiększenia bezpieczeństwa, skonfigurowałąm dostęp przez SSH. Zgodnie z instrukcją utworzyłam dwa różne klucze - klucz standardowy i klucz zabezpieczony hasłem, wymagający podania hasła przy każdej próbie użycia.
+
+![Błąd wyświetlania](lab1_ss/ss3.png)
+
+Następnie dodałam klucz publiczny do mojego profilu na GitHubie i sprawdziłam połączenie. Z racji, że miałam już skondfigurowane uwierzytelnianie dwuskładnikowe to pominęłam ten etap. 
+
+Następnie sprawdziłam adres ip mojej maszyny wirtualnej, aby móc się z nią połączyć przez Visual Studio Code za pomocą wtyczki Remote SSH.
+
+![Błąd wyświetlania](lab1_ss/ss4.png)
+
+Następnie przetestowałam natychmiastowe przesyłanie plikó programem FileZilla przenosząc plik hej.txt.
+
+ ![Błąd wyświetlania](lab1_ss/ss5.png)
+ ![Błąd wyświetlania](lab1_ss/ss6.png)
+
+W kolejnym kroku w odpowiedniej gałęzi grupy utworzyłam swoją gałąź o nazwie PB422021 i zaczęłam na niej prace. Napisałam Git hooka, weryfikującego każdego commita, aby zaczynał się od nazwy mojej gałęzi.
+
+![Utworzenie własnego folderu](lab1_ss/ss1.png)
 
 treść hooka:
-
+```bash
 #!/bin/bash
 INPUT_FILE=$1
 START_LINE=$(head -n 1 "$INPUT_FILE")
@@ -9,12 +34,13 @@ if [[ ! $START_LINE =~ ^PB422021 ]]; then
   echo "BŁĄD: Commit message musi zaczynać się od PB422021"
   exit 1
 fi
+```
+Jako ostatni krok nadałam odpowiednie uprawnienia dla hooka.
 
-Utworzenie własnego folderu z inicjałem i nr indeksu:
-![Utworzenie własnego folderu](ss1.png)
+ ![Błąd wyświetlania](lab1_ss/ss2.png)
 
+## Lab2
 
-lab2
 ### 1. Zapoznanie się z obrazami i ich rozmiarami
 Wyświetlenie listy pobranych obrazów wraz z ich rozmiarem:
 ![Lista obrazów](docker_images.png)
