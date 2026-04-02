@@ -1,50 +1,56 @@
 # Laboratorium 1
 
-#### Przejscie do odpowiednich branchy:
+#### Przełączono się na gałąź *main*, a następnie na grupową:
 ![Przejscie do odpowiednich branchy: ](1.1_main_i_grupa.png)
 
-#### Utworzenie wlasnej galezi:
+#### Utworzono własną gałąź (składającą się z inicjałów i numeru indeksu):
 ![Utworzenie wlasnej galezi: ](1.2_moj_branch.png)
 
-#### Utworzenie wlasnego folderu:
+#### Utworzono własny folder (o tej samej nazwie co gałąź):
 ![Utworzenie wlasnego folderu: ](1.3_moj_folder.png)
 
-#### Utworzenie hook'a i dodanie go do katalogu:
+#### Utworzono Git hook'a i dodano go do katalogu:
 ![Utworzenie hook'a i dodanie go do katalogu: ](1.4_moj_hook.png)
 
-#### Tresc hook'a:
+#### [Hook](commit-msg.sh):
 ![Tresc hook'a: ](1.5_moj_hook_kod.png)
 
-#### Skopiowanie hook'a do odpowiedniego folderu:
+*skrypt ma za zadanie weryfikować, czy każda wiadomość commit'a zaczyna się od inicjałów i numeru indeksu*
+
+#### Skopiowano hook'a do utworzonego wcześniej folderu:
 ![Skopiowanie hook'a do odpowiedniego folderu: ](1.6_przeniesienie_hooka.png)
 
-#### Modyfikacja uprawnien hook'a:
+#### Zmodyfikowano uprawnienia hook'a:
 ![Modyfikacja uprawnien hook'a: ](1.7_uprawnienia_hooka.png)
 
-#### Dodanie sprawozdania i zrzutow ekranu:
+*hook musi mieć nadane uprawnienia wykonania, by móc poprawnie funkcjonować*
+
+#### Dodano sprawozdanie i zrzuty ekranu:
 ![Dodanie sprawozdania i zrzutow ekranu: ](1.8_sprawozdanie_i_zrzuty.png)
 
-#### Efekt dzialania hook'a:
+#### Efekt działania hook'a:
 ![Efekt dzialania hook'a: ](1.9_niepoprawny_commit.png)
 
-#### Proba wciagniecia wlasnej galezi do grupowej:
+*nieprawidłowe nazwanie commit'a skutkuje odrzuceniem wykonania operacji*
+
+#### Dokonano próby wciągnięcia gałęzi własnej do grupowej:
 ![Proba wciagniecia wlasnej galezi do grupowej: ](1.10_proba_merge.png)
 
-
+*zabezpieczenia gałęzi grupowej nie pozwalają osobom nieuprawnionym na wypchnięcie zmian*
 
 # Laboratorium 2
 
-#### Instalacja Docker'a:
+#### Zainstalowano Docker'a:
 ![Instalacja Docker'a: ](2.1.1_instalacja_dockera.png)
 ![Instalacja Docker'a: ](2.1.2_instalacja_dockera.png)
 
-#### Weryfikacja instalacji:
+#### Zweryfikowano instalację:
 ![Weryfikacja instalacji: ](2.2_weryfikacja_instalacji.png)
 
-#### Zarejestrowanie sie do Docker Hub'a:
+#### Zarejestrowano się do Docker Hub'a:
 ![Zarejestrowanie sie do Docker Hub'a: ](2.3_rejestracja_docker_hub.png)
 
-#### Uruchomienie poszczegolnych obrazow i sprawdzenie ich kodow wyjscia:
+#### Uruchomiono poszczególnych obrazy i sprawdzono ich kody wyjścia:
 * hello-world
 
 ![hello-world: ](2.4_hello-world.png)
@@ -73,42 +79,39 @@
 
 ![sdk: ](2.4_ms_sdk.png)
 
-#### Sprawdzenie rozmiarow obrazow:
+#### Sprawdzono rozmiary obrazów:
 ![Sprawdzenie rozmiarow obrazow: ](2.5_rozmiary_obrazow.png)
 
-#### Uruchomienie kontenera z obrazu Busybox:
+#### Uruchomiono kontener z obrazu Busybox:
 ![Uruchomienie kontenera z obrazu Busybox: ](2.6_busybox_uruchomienie.png)
 
-#### Podlaczenie i sprawdzenie wersji:
+#### Podłaczono się do niego i sprawdzono jego wersję:
 ![Podlaczenie i sprawdzenie wersji: ](2.7_busybox_wersja.png)
 
-#### Uruchomienie kontenera z obrazu Ubuntu (prezentacja procesow, aktualizacja pakietow):
+#### Uruchomiono kontener z obrazu Ubuntu, zaprezentowano PID1, dokonano aktualizacji pakietów i prezentacji procesów Docker'a na hoście:
 ![Uruchomienie kontenera z obrazu Ubuntu (prezentacja procesow, aktualizacja pakietow): ](2.8.1_ubuntu.png)
 ![Uruchomienie kontenera z obrazu Ubuntu (prezentacja procesow, aktualizacja pakietow): ](2.8.2_ubuntu.png)
 
-#### Stworzenie wlasnego obrazu:
+#### Stworzono własny obraz [Dockerfile](Dockerfile):
 ![Stworzenie wlasnego obrazu: ](2.9.1_moj_obraz.png)
-
 ![Stworzenie wlasnego obrazu: ](2.9.2_moj_obraz.png)
 
-#### Uruchomione kontenery:
+#### Zaprezentowano uruchomione kontenery:
 ![Uruchomione kontenery: ](2.10_uruchomione_kontenery.png)
 
-#### Pozbycie sie zakonczonych kontenerow:
+#### Pozbyto się zakończonych kontenerów:
 ![Pozbycie sie zakonczonych kontenerow: ](2.11_czyszczenie_kontenerow.png)
 
-#### Pozbycie sie obrazow:
+#### Pozbyto się obrazów:
 ![Pozbycie sie obrazow](2.12_czyszczenie_obrazow.png)
-
-
 
 # Laboratorium 3
 
-#### Instalacja zaleznosci:
+#### Zainstalowano zależności wymagane do uruchomienia wybranego oprogramowania:
 ![Instalacja zaleznosci: ](3.1.1_instalacja_zaleznosci.png)
 ![Instalacja zaleznosci: ](3.1.2_instalacja_zaleznosci.png)
 
-#### Sklonowanie repozytorium:
+#### Sklonowano repozytorium zawierające kod wybranego oprogramowania:
 ![Sklonowanie repozytorium: ](3.2_sklonowanie_repozytorium.png)
 
 #### Przygotowanie:
@@ -126,15 +129,17 @@
 ![Testy: ](3.6.1_testy.png)
 ![Testy: ](3.6.2_testy.png)
 
-#### Uruchomienie kontenera:
+## Wszystkie przeprowadzone do tej pory z poziomu hosta operacje mają teraz zostać wykonane interaktywnie, z wnętrza kontenera.
+
+#### Uruchomiono kontener:
 ![Uruchomienie kontenera: ](3.7_uruchomienie_kontenera.png)
 
-#### Instalacja zaleznosci:
+#### Zainstalowano wewnątrz wymagane zależności:
 ![Instalacja zaleznosci: ](3.8.1_instalacja_zaleznosci.png)
 ![Instalacja zaleznosci: ](3.8.2_instalacja_zaleznosci.png)
 ![Instalacja zaleznosci: ](3.8.3_instalacja_zaleznosci.png)
 
-#### Sklonowanie repozytorium:
+#### Sklonowano repozytorium:
 ![Sklonowanie repozytorium: ](3.9_sklonowanie_repozytorium.png)
 
 #### Przygotowanie:
@@ -151,13 +156,15 @@
 ![Testy: ](3.13.1_testy.png)
 ![Testy: ](3.13.2_testy.png)
 
-#### Kontenery i obraz:
+#### Zaprezentowano kontener i obraz:
 ![Kontenery i obrazy: ](3.14_kontener_i_obraz.png)
 
-#### Dockerfile.build:
+## Teraz proces ma zostać zautomatyzowany poprzez wykorzystanie dwóch kontenerów.
+
+#### [Dockerfile.build](Dockerfile.build):
 ![Dockerfile.build: ](3.15_Dockerfile.build.png)
 
-#### Dockerfile.test:
+#### [Dockerfile.test](Dockerfile.test):
 ![Dockerfile.test: ](3.16_Dockerfile.test.png)
 
 #### Budowanie:
@@ -167,15 +174,95 @@
 ![Budowanie: ](3.17.4_Dockerfile_build.png)
 ![Budowanie: ](3.17.5_Dockerfile_build.png)
 
-#### Dockerfile-compose:
+## Zastąpiono ręczne wdrażanie kontenerów kompozycją
+
+#### [Dockerfile-compose](docker-compose.yml):
 ![Dockerfile-compose: ](3.18_dockerfile-compose.png)
 
 #### Budowanie:
 ![Budowanie: ](3.19.1_docker-compose_build.png)
 ![Budowanie: ](3.19.2_docker-compose_build.png)
 
-#### Kontenery:
+#### Zaprezentowano kontenery:
 ![Kontenery: ](3.20_kontenery.png)
 
-#### Obrazy:
+#### Zaprezentowano obrazy:
 ![Obrazy: ](3.21_obrazy.png)
+
+# Laboratorium 4
+
+#### Przygotowano woluminy (wejściowy i wyjściowy:)
+![Wolumin wejsciowy i wyjsciowy: ](4.1_utworzenie_woluminow.png)
+
+#### Sklonowano repozytorium na wolumin wejściowy za pomocą kontenera pomocniczego:
+![Sklonowanie repozytorium na wolumin wejściowy za pomocą kontenera pomocniczego:](4.2_klonowanie_bez_gita.png)
+
+#### Uruchomiono budowanie w kontenerze i zapisano powstałe pliki na woluminie wyjściowym:
+![Budowanie: ](4.3.1_uruchomienie_i_build.png)
+![Budowanie: ](4.3.2_uruchomienie_i_build.png)
+![Budowanie: ](4.3.3_uruchomienie_i_build.png)
+![Budowanie: ](4.3.4_uruchomienie_i_build.png)
+![Budowanie: ](4.3.5_uruchomienie_i_build.png)
+
+## Ponowne przeprowadzenie powyższych działań, ale wykonując klonowanie wewnątrz kontenera 
+
+#### Utworzono nowy wolumin wejściowy:
+![Utworzenie nowego woluminu wejściowego:](4.4_utworzenie_dodatkowego_woluminu.png)
+
+#### Uruchomiono budowanie w kontenerze i zapisano powstałe pliki na woluminie wyjściowym:
+![Budowanie: ](4.5_uruchomienie_i_build_druga_metoda.png)
+
+#### Zaprezentowano wyniki:
+![Zbudowane pliki: ](4.6_zbudowane_pliki.png)
+![Zbudowane pliki: ](4.7.1_pliki_zbudowane_metoda_1.png)
+![Zbudowane pliki: ](4.7.2_pliki_zbudowane_metoda_2.png)
+
+#### Uruchomiono serwer iperf i sprawdzono jego adres IP:
+![Uruchomienie serwera iperf i sprawdzenie adresu IP: ](4.8_serwer_iperf.png)
+
+#### Połączono się z drugiego kontenera z serwerem:
+![Połączenie z drugiego kontenera z serwerem: ](4.9_polaczenie_iperf.png)
+
+## Powtórne wykonanie powyższych operacji, ale z wykorzystaniem własnej sieci mostkowej.
+
+#### Utworzono własną sieć i uruchomiono w niej serwer iperf:
+![Utworzenie własnej sieci i uruchomienie w niej serwera iperf:](4.10_serwer_iperf_z_wlasna_siecia.png)
+
+#### Połączono się z drugiego kontenera z serwerem wykorzystując rozwiązywanie nazw:
+![Połączenie z drugiego kontenera z serwerem: ](4.11_polaczenie_iperf_z_wlasna_siecia.png)
+
+#### Uruchomiono nowy serwer iperf:
+![Uruchomienie serwera iperf: ](4.12_serwer_iperf.png)
+
+#### Połączono się z serwerem z hosta:
+![Połączenie z serwerem z hosta: ](4.13_polaczenie_iperf_z_hosta.png)
+
+#### Połączono się z serwerem spoza hosta:
+![Połączenie z serwerem spoza hosta:](4.14_polaczenie_iperf_spoza_hosta.png)
+
+#### Zestawiono w kontenerze usługę ssh:
+![Zestawienie usługi ssh w kontenerze: ](4.15_zestawienie_uslugi_ssh.png)
+
+#### Połączono się z usługą ssh:
+![Połączenie z usługą ssh:](4.16_polaczenie_z_usluga_ssh.png)
+
+#### Utworzono sieć i woluminy dla Jenkins'a:
+![Utworzenie sieci i woluminów dla Jenkins'a: ](4.17_siec_i_woluminy_jenkinsa.png)
+
+#### Zainstalowano Jenkins'a:
+![Instalacja Jenkins'a:](4.18_instalacja_jenkinsa.png)
+
+#### Zainicjalizowano instancję Jenkins'a:
+![Inicjalizacja instancji Jenkins'a: ](4.19_inicjalizacja_instancji.png)
+
+#### Zaprezentowano kontenery:
+![Prezentacja kontenerów: ](4.20_wykaz_kontenerow.png)
+
+#### Zweryfikowano poprawność uruchomienia Jenkins'a:
+![Weryfikacja poprawności uruchomienia Jenkins'a: ](4.21_naglowek_http_jenkinsa.png)
+
+#### Ekran logowania:
+![Ekran logowania: ](4.22_ekran_logowania.png)
+
+#### Zalogowano się do Jenkins'a:
+![Zalogowanie sie do Jenkins'a: ](4.23_strona_glowna_jenkinsa.png)
