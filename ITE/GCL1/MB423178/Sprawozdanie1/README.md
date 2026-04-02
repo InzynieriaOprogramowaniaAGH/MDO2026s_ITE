@@ -3,7 +3,7 @@
 ## Środowisko uruchomieniowe
 Wszystkie opisane poniżej kroki zostały wykonane w wyizolowanym środowisku.
 * **System operacyjny:** Maszyna wirtualna z systemem Linux.
-* **Metoda dostępu:** Połączenie zdalne za pośrednictwem protokołu SSH (Secure Shell). Praca odbywała się na koncie standardowego użytkownika (bez logowania na konto `root` oraz bez użycia konsoli KVM).
+* **Metoda dostępu:** Połączenie zdalne za pośrednictwem protokołu SSH (Secure Shell). Zgodnie z wytycznymi, cała praca odbywała się na koncie standardowego użytkownika (bez stałej sesji root ani logowania przez su). Polecenia demona Docker uruchamiałem jednak z użyciem przedrostka sudo. Wynika to z faktu, że nie przypisywałem na stałe swojego konta do grupy docker w systemie operacyjnym maszyny wirtualnej. Praca odbywała się bez użycia konsoli KVM.
 * **Narzędzia pracy:** Edytor Visual Studio Code z wtyczką *Remote - SSH*, zapewniający dostęp do terminala oraz zarządzanie plikami.
 
 ## Lab 1 Wprowadzenie, Git, Gałęzie, SSH
@@ -11,13 +11,13 @@ Wszystkie opisane poniżej kroki zostały wykonane w wyizolowanym środowisku.
 Celem zajęć było przygotowanie stanowiska pracy, w tym konfiguracja narzędzi, uwierzytelniania SSH oraz struktury repozytorium.
 
 ### 1. Git
-Zgodnie z poleceniem, upewniłem się, że w systemie Linux zainstalowany jest klient Git. Następnie wykonałem pierwsze, testowe klonowanie repozytorium przedmiotowego z użyciem protokołu HTTPS. Do uwierzytelnienia wykorzystałem wygenerowany w panelu GitHub *Personal Access Token* (PAT).
+ Na początku sprawdziłem, czy w systemie jest zainstalowany klient Git. Następnie wykonałem pierwsze, testowe klonowanie repozytorium przedmiotowego z użyciem protokołu HTTPS. Do uwierzytelnienia wykorzystałem wygenerowany w panelu GitHub *Personal Access Token* (PAT).
 
 ![Klonowanie HTTPS i autoryzacja](lab1_9.png)
 
 ### 2. SSH
 
-Aby docelowo zabezpieczyć i ułatwić komunikację z serwerem, wdrożyłem autoryzację opartą o klucze SSH.
+Aby zabezpieczyć komunikację z serwerem, skonfigurowałem klucze SSH.
 
 * **Tworzenie kluczy:** Wygenerowałem dwa klucze oparte o nowoczesne algorytmy inne niż RSA:
   1. Główny klucz `ED25519` zabezpieczony silnym hasłem (`ssh-keygen -t ed25519 -C "bednarczyk1mikolaj@gmail.com"`).
@@ -31,30 +31,30 @@ Aby docelowo zabezpieczyć i ułatwić komunikację z serwerem, wdrożyłem auto
 
   ![Zarządzanie kluczami w GitHub](lab1_17.png)
 
-* **Klonowanie repozytorium po SSH:** Z powodzeniem nawiązano połączenie (`ssh -T git@github.com`) i sklonowałem repozytorium wykorzystując protokół SSH.
+* **Klonowanie repozytorium po SSH:** Przetestowałem połączenie poleceniem (`ssh -T git@github.com`) i sklonowałem repozytorium wykorzystując protokół SSH.
 
   ![Klonowanie po SSH](lab1_8.png)
 
 ### 3. Narzędzia
 
-Jako docelowe środowisko IDE skonfigurowałem **Visual Studio Code**. Użyłem rozszerzenia *Remote - SSH*, co wyeliminowało potrzebę instalowania zewnętrznych menedżerów plików (np. FileZilla). Wbudowany eksplorator zapewnił natychmiastową wymianę plików i wygodny podgląd dokumentacji Markdown.
+Jako środowisko pracy wybrałem **Visual Studio Code** z rozszerzeniem *Remote - SSH*. Dzięki temu mogłem edytować pliki i korzystać z terminala bezpośrednio na maszynie wirtualnej, co znacznie ułatwiło i przyspieszyło pracę, zapewniło natychmiastową wymianę plików.
 
 ![Podgląd plików i terminala w VS Code](lab1_15.png)
 
 
 ### 4. Gałąź i struktura katalogów
 
-Zarządzanie repozytorium rozpocząłem od przełączenia się na gałąź `main`, a następnie na gałąź grupy `GCL1`.
-* Stworzyłem nową gałąź roboczą (brnach) o nazwie `MB423178` (inicjały i numer indeksu) od gałęzi grupowej.
+Pracę z repozytorium zacząłem od przejścia na gałąź `main`, a potem na gałąź mojej grupy `GCL1`.
+* Stworzyłem nową gałąź roboczą (branch) o nazwie `MB423178` (inicjały i numer indeksu) od gałęzi grupowej.
 * Wewnątrz powiązanego katalogu utworzyłem dedykowany katalog roboczy `MB423178`.
 
   ![Tworzenie gałęzi i struktury](lab1_10.png)
 
 **Napisanie i wdrożenie Git Hooka**
-Aby wymusić poprawne konwencje nazewnicze, przygotowałem skrypt `commit-msg` weryfikujący, czy wiadomość commita zaczyna się od zadanego prefiksu. Skrypt dodałem do folderu roboczego, a następnie skopiowano do ukrytego katalogu `.git/hooks` nadając mu prawa do wykonania poleceniem (`chmod +x`).
+Aby wymusić poprawną konwencję nazewnictwa, przygotowałem skrypt `commit-msg` weryfikujący, czy wiadomość commita zaczyna się od zadanego prefiksu. Dodałem go do folderu roboczego, a następnie skopiowałem do katalogu `.git/hooks`, nadając mu prawa do wykonywania (`chmod +x`).
 
 ### Mój Git Hook
-Aby utworzyć ten skrypt lokalnie, użyłem wbudowanego edytora tekstu `nano`. W terminalu wpisałem polecenie `nano hook_skrypt.sh`, napisałem poniższy kod, a następnie zapisałem plik (skrót `Ctrl+O`, `Enter`) i zamknąłem edytor (`Ctrl+X`).
+Skrypt utworzyłem lokalnie, użyłem do tego wbudowanego edytora tekstu `nano`. W terminalu wpisałem polecenie `nano hook_skrypt.sh`, napisałem poniższy kod, a następnie zapisałem plik (skrót `Ctrl+O`, `Enter`) i zamknąłem edytor (`Ctrl+X`).
 
 Oto dokładna treść, która znalazła się wewnątrz pliku:
 
@@ -69,9 +69,9 @@ fi
 ```
 
 ### 5. Praca z serwerem i rozwiązywanie konfliktów
-Zgodnie z instrukcją dodałem pliki sprawozdania wraz ze zrzutami ekranu i spróbowałem zrobić `git push` żeby wypchnąć zmiany do gałęzi grupowej. W tym procesie wystąpił problem, który przetestował działanie stworzonego Git Hooka.
+Po dodaniu plików i zrzutów ekranu spróbowałem zrobić `git push`. Wystąpił konflikt, co pozwoliło zweryfikować poprawne działanie przygotowanego Git Hooka.
 
-1. **Problem z `git push`:** Serwer odrzucił wysyłanie zmian, ponieważ zdalne repozytorium zawierało pracę, której nie posiadałem lokalnie (konieczność pobrania gałęzi grupowej).
+1. **Problem z `git push`:** Serwer odrzucił wysłanie zmian, ponieważ na zdalnym repozytorium znajdowały się commity, których nie miałem pobranych lokalnie.
 
    ![Odrzucenie pusha](lab1_11.png)
 
@@ -81,7 +81,7 @@ Zgodnie z instrukcją dodałem pliki sprawozdania wraz ze zrzutami ekranu i spr�
 
    ![Hook blokuje automatyczny merge commit](lab1_13.png)
 
-3. **Rozwiązanie:** Aby prawidłowo połączyć pliki z pominięciem blokady, wykonałem commita ręcznie, nadając mu tytuł spełniający wymogi skryptu (`MB423178: Złączenie plików z serwerem`). Operacja ta zakończyła się sukcesem i pozwoliła na poprawne zaktualizowanie serwera (`git push`).
+3. **Rozwiązanie:** Aby prawidłowo połączyć pliki z pominięciem blokady, wykonałem commita ręcznie, nadając mu tytuł spełniający wymogi skryptu (`MB423178: Złączenie plików z serwerem`). Dzięki temu mogłem poprawnie wysłać zmiany na serwer (`git push`).
 
    ![Ręczny commit i poprawny push](lab1_14.png)
 
@@ -89,10 +89,11 @@ Zgodnie z instrukcją dodałem pliki sprawozdania wraz ze zrzutami ekranu i spr�
 
 # LAB 2 Docker Git, Docker - Zestawienie środowiska skonteneryzowanego
 
-Celem tych zajęć było skonfigurowanie środowiska Docker oraz zapoznanie się z cyklem życia kontenerów i budową własnych obrazów, co posłużyło mi jako fundament do dalszej pracy nad CI.
+Celem zajęć była konfiguracja Dockera, zapoznanie się z cyklem życia kontenerów oraz budową własnych obrazów.
 
 ### 1. Instalacja Dockera
-Zgodnie z wymogami, zainstalowałem demona Docker bezpośrednio z natywnego repozytorium dystrybucji Ubuntu, unikając pakietów typu Snap czy Flatpak. Poprawność instalacji zweryfikowałem sprawdzając wersję narzędzia:
+Dockera zainstalowałem bezpośrednio z natywnego repozytorium dystrybucji Ubuntu, unikając ciężkich pakietów typu Snap czy Flatpak, które często wprowadzają niepotrzebny narzut wirtualizacji i problemy z uprawnieniami do plików systemowych. Poprawność instalacji potwierdziłem sprawdzając wersję narzędzia:
+
 ```bash
 docker --version
 ```
@@ -130,7 +131,7 @@ sudo docker run -it busybox sh
 ![Praca interaktywna w busybox](docker4screen.png)
 
 ### 5. System w kontenerze i demonstracja PID 1
-W celu udowodnienia izolacji procesów w Dockerze, uruchomiłem pełnoprawny system operacyjny (`ubuntu`) w kontenerze:
+Aby sprawdzić procesy wewnątrz kontenera, uruchomiłem obraz ubuntu w kontenerze:
 
 ```bash
 sudo docker run -it ubuntu bash
@@ -144,7 +145,7 @@ apt install procps -y
 ps -p 1
 ```
 
-Z wykonanego polecenia jasno wynika, że główny proces systemowy (PID 1) to moja powłoka `bash`. Kontener to odizolowane "pudełko", które nie widzi procesów mojej maszyny hosta.
+Wynik polecenia potwierdza, że głównym procesem (PID 1) wewnątrz kontenera jest powłoka `bash`. Świadczy to o pełnej izolacji środowiska od procesów pracujących na maszynie hosta.
 
 ![Uruchomienie Ubuntu i aktualizacja apt](docker5screen.png)
 
@@ -160,7 +161,7 @@ sudo docker ps
 
 ### 7. Budowa własnego obrazu (Dockerfile)
 Stworzyłem własny plik `Dockerfile` definiujący nowe środowisko oparte na `ubuntu:24.04`, wyposażone w narzędzie `git` oraz pobrany kod repozytorium zajęciowego. 
-Zanim zbudowałem obraz, musiałem fizycznie utworzyć plik z instrukcjami. W terminalu wpisałem polecenie `nano Dockerfile` (wielkość liter ma znaczenie), napisałem poniższą zawartość, zapisałem plik (`Ctrl+O`, `Enter`) i wyszedłem z edytora (`Ctrl+X`).
+Zanim zbudowałem obraz, musiałem fizycznie utworzyć plik z instrukcjami. W terminalu wpisałem polecenie `nano Dockerfile` (wielkość liter ma znaczenie), napisałem w nim poniższą zawartość, zapisałem plik (`Ctrl+O`, `Enter`) i wyszedłem z edytora (`Ctrl+X`).
 
 **Treść `Dockerfile`:**
 ```dockerfile
@@ -221,7 +222,7 @@ Po wyczyszczeniu kontenerów wykonałem polecenie usuwające nieużywane obrazy 
 sudo docker image prune -a -f
 ```
 
-Proces ten odzyskał znaczne ilości wolnego miejsca. Mój plik `Dockerfile` został zachowany na dysku w celach raportowych.
+Wykonanie tej komendy zwolniło miejsce na dysku, zachowując jednocześnie plik `Dockerfile`.
 
 ![Komenda image ls](dockerScreen(1).png)
 
@@ -229,12 +230,12 @@ Proces ten odzyskał znaczne ilości wolnego miejsca. Mój plik `Dockerfile` zos
 
 ---
 
-## ZAJĘCIA 03: Dockerfiles - kontener jako definicja etapu
+## Lab 03: Dockerfiles - kontener jako definicja etapu
 
 Celem zajęć było zbudowanie oprogramowania w powtarzalnym środowisku CI, gwarantującym przenośność procesu pomiędzy różnymi systemami.
 
 ### 1. Wybór oprogramowania i budowa lokalna na hoście
-Na obiekt testowy wybrałem projekt **Spring PetClinic**. Spełnia on wszystkie wymagania instrukcji: posiada otwartą licencję (Apache 2.0), opiera się na popularnym narzędziu do budowania (Maven - `./mvnw`) oraz zawiera zdefiniowane testy jednostkowe z czytelnym raportem końcowym.
+Na obiekt testowy wybrałem projekt **Spring PetClinic**. Projekt idealnie pasuje do polecenia: ma licencję Apache 2.0, używa Mavena (./mvnw) i ma już napisane testy jednostkowe z raportem końcowym.
 
 W pierwszej kolejności przygotowałem środowisko na maszynie hosta, doinstalowując niezbędne pakiety (Java JDK 17 i Git), a następnie zbudowałem i przetestowałem projekt lokalnie:
 
@@ -276,7 +277,7 @@ cd spring-petclinic
 ![Sukces fazy test w kontenerze](lab3_8.png)
 
 ### 3. Automatyzacja procesu (Dockerfiles)
-Ręczny proces przekułem w zautomatyzowane ramy. Zgodnie z instrukcją, przygotowałem dwa oddzielne pliki `Dockerfile`:
+Zautomatyzowałem powyższy proces tworząc pliki Dockerfile.:
 
 **Plik 1: `Dockerfile.petClinic.build`** (odpowiada wyłącznie za pobranie i zbudowanie kodu). Utworzyłem go wpisując w terminalu `nano Dockerfile.petClinic.build`i piosząc w nim  taki kod:
 
@@ -322,10 +323,10 @@ sudo docker run --name tester-petclinic petclinic-test
 
 ![Działanie testów w kontenerze](lab3_11.png)
 
-**Różnica między obrazem a kontenerem:** Obraz (`petclinic-test`) to wyłącznie "przepis" – statyczna, niezmienna warstwa plików zawierająca system operacyjny, kod źródłowy i skompilowaną aplikację. Kontener (`tester-petclinic`) to uruchomiona instancja tego obrazu. Wnętrze tego kontenera to pracujący proces, którym w tym przypadku jest środowisko **Java Virtual Machine (JVM)** wykonujące bibliotekę narzędziową Maven na skompilowanych plikach klas.
+**Różnica między obrazem a kontenerem:** Obraz (`petclinic-test`) to statyczna paczka, niezmienna warstwa plików zawierająca system operacyjny, kod źródłowy i skompilowaną aplikację. Kontener (`tester-petclinic`) to uruchomiony na jej podstawie proces – w tym konkretnym wypadku jest to działająca maszyna Javy (JVM) odpalająca testy w Mavenie.
 
 ### 4. Zadania dodatkowe: Docker Compose
-Zamiast wdrażać kontenery ręcznie z użyciem CLI, ująłem proces testowy w kompozycję. W tym celu utworzyłem nowy plik wpisując `nano docker-compose.yml`, napisałem w nim poniższą konfigurację i zapisałem:
+Aby zautomatyzować proces budowania i testowania, przygotowałem plik `docker-compose.yml`, napisałem w nim poniższą konfigurację i zapisałem:
 
 ```yaml
 version: '3.8'
@@ -343,18 +344,18 @@ Uruchomiłem całość zautomatyzowaną komendą `sudo docker-compose up`. Proce
 ![Poprawne zakończenie działania kompozycji](lab3_13.png)
 
 ### 5. Przygotowanie do wdrożenia (Deploy) - Dyskusja
-Analizując cykl życia aplikacji i końcowy artefakt zająłem stanowisko w dyskusji dotyczącej publikowania oprogramowania:
+Odpowiedzi na pytania z instrukcji:
 
-* **Czy program nadaje się jako kontener?** Tak, Spring PetClinic to typowa aplikacja serwerowa/mikroserwisowa (backend webowy). Aplikacje tego typu idealnie nadają się do wdrażania bezpośrednio jako kontenery do klastrów takich jak Kubernetes czy Docker Swarm. Interakcja odbywa się przez porty sieciowe (np. HTTP 8080), co jest natywne dla systemów kontenerowych.
-* **Oczyszczanie po buildzie (Multi-stage build):** Aplikacja absolutnie **nie może** być wdrożona w obecnej postaci. Utworzony obraz zawiera pełne środowisko JDK, narzędzie Git oraz cały kod źródłowy. Zwiększa to wagę kontenera o setki megabajtów i drastycznie poszerza pole ataku (security risk). Konieczne jest zastosowanie mechanizmu **Multi-stage build**, w którym docelowy obraz wykorzystuje tylko środowisko uruchomieniowe (np. `eclipse-temurin:17-jre`), do którego kopiowany jest wyłącznie gotowy, pojedynczy artefakt z warstwy budującej.
-* **Format dystrybucji:** Gotowy artefakt z frameworka Spring Boot jest dystrybuowany jako plik typu pakiet **`JAR` (Java ARchive)**. Zawiera on wbudowany serwer aplikacyjny (np. Tomcat). Inne środowiska mogą wymagać pakietów `DEB` czy `RPM` na poziomie OS, ale dla ekosystemu Javy skonteneryzowany, wykonywalny plik `JAR` jest standardem przemysłowym.
+* **Czy program nadaje się jako kontener?** PetClinic to aplikacja webowa komunikująca się przez port 8080, co czyni ją bardzo dobrym kandydatem do konteneryzacji i potencjalnej orkiestracji np. w Kubernetesie.
+* **Oczyszczanie po buildzie:** Obecny obraz deweloperski zawiera pełne środowisko JDK i kod źródłowy, co niepotrzebnie zwiększa jego rozmiar oraz powierzchnię ataku. Przed wdrożeniem na produkcję należy zastosować mechanizm *Multi-stage build* – kompilacja kodu następuje w pierwszej warstwie, a do drugiego, lekkiego obrazu (zawierającego tylko środowisko uruchomieniowe JRE) kopiowany jest wyłącznie gotowy artefakt.
+* **Format dystrybucji:** Docelowym artefaktem dla frameworka Spring Boot jest plik `.jar` z wbudowanym serwerem aplikacyjnym np. Tomcat, więc do uruchomienia całości wystarczy samo polecenie `java -jar`.
 
 ---
 
-## ZAJĘCIA 04: Woluminy, Sieci, Usługi i Jenkins
+## Lab 04: Woluminy, Sieci, Usługi i Jenkins
 
 ### 1. Zachowywanie stanu (Woluminy Dockera)
-Zadanie polegało na zachowaniu wygenerowanego pliku `.jar` nawet po zniszczeniu kontenera budującego.
+Zadanie polegało na zachowaniu wygenerowanego pliku `.jar` nawet po usunięciu kontenera budującego.
 Utworzyłem woluminy wirtualne:
 
 ```bash
@@ -372,10 +373,11 @@ docker run --rm -v wejscie:/data alpine/git clone [https://github.com/spring-pro
 
 ![Klonowanie kontenerem pomocniczym](lab4_2.png)
 
-**Dlaczego wybrano kontener pomocniczy zamiast innych metod? (Dyskusja)**
-* **Bind mount z lokalnym katalogiem:** Zastosowanie bind mount uzależnia kontener od specyficznej ścieżki i struktury plików na maszynie hosta. Łamie to zasadę przenośności (portability), a kontener przestaje być w pełni odizolowany.
-* **Kopiowanie bezpośrednio do `/var/lib/docker`:** Modyfikowanie plików w tym katalogu na hoście to skrajny antywzorzec. Wymaga to użycia uprawnień `root` omijających demona Dockera, co może prowadzić do uszkodzenia struktury woluminów i problemów z prawami dostępu (permissions).
-* **Zaleta kontenera pomocniczego:** Jest to najbezpieczniejsza i w pełni natywna metoda w ekosystemie Dockera. Pozwala zaciągnąć dane do izolowanego woluminu w sposób kontrolowany, po czym kontener sam się usuwa (`--rm`), zostawiając czyste dane gotowe do użycia przez inny obraz.
+**Dlaczego użyłem kontenera pomocniczego, a nie innych metod?**
+**Uzasadnienie użycia kontenera pomocniczego:** Wykorzystanie tymczasowego kontenera pozwoliło sklonować repozytorium bezpośrednio na wolumin Dockera, z pominięciem lokalnego systemu plików hosta. Gwarantuje to wyższą przenośność (brak zależności od lokalnych ścieżek, jak w przypadku *bind mount*) i omija problemy z uprawnieniami, które mogłyby wystąpić przy ręcznym kopiowaniu plików do systemowego katalogu `/var/lib/docker`.
+* **Bind mount z lokalnym folderem:** Gdybym po prostu zmapował lokalny katalog z kodem do kontenera, mój setup działałby tylko na tej konkretnej maszynie i tylko w tej konkretnej ścieżce. To psuje główną zaletę Dockera, czyli przenośność.
+* **Ręczne kopiowanie do `/var/lib/docker`:** Grzebanie bezpośrednio w plikach systemowych Dockera na hoście to najgorsze, co można zrobić. Trzeba by to robić z konta root, co na 99% zepsułoby uprawnienia do plików i wywaliło błędy w samym demonie.
+* **Kontener pomocniczy:** To najczystsze wyjście. Tworzymały, jednorazowy kontener, który po prostu pobiera repozytorium z sieci prosto na dockerowy wolumin, a potem sam się usuwa (dzięki fladze `--rm`).
 
 Następnie uruchomiłem kontener budujący, podpinając oba woluminy, i skopiowałem wynik na wolumin wyjściowy:
 
@@ -393,10 +395,10 @@ Ponowiłem test interaktywnie z instalacją Gita wewnątrz kontenera i zapisanie
 ![Sukces ponowienia](lab4_7.png)
 ![Dwa pliki na woluminie po ponowieniu interaktywnym](lab4_8.png)
 
-**Dyskusja Wykorzystanie `docker build` (`RUN --mount`):** Manipulację zewnętrznymi woluminami podczas budowy można by w ogóle pominąć, stosując dyrektywę `RUN --mount=type=bind` wewnątrz pliku `Dockerfile`. Pozwala to kompilatorowi na jednorazowe, nietrwałe "podglądnięcie" lokalnego kodu hosta na czas kompilacji, bez powiększania rozmiaru warstw końcowego obrazu. Omija to konieczność ręcznego tworzenia woluminów z poziomu CLI.
+**Alternatywa z wykorzystaniem dyrektywy `RUN --mount`:** Operacje na zewnętrznych woluminach podczas budowy można zoptymalizować, stosując dyrektywę `RUN --mount=type=bind` w pliku `Dockerfile`. Pozwala to na dostęp do lokalnego kodu na czas kompilacji bez trwałego kopiowania go do warstw obrazu, co upraszcza proces i eliminuje konieczność ręcznego tworzenia woluminów w CLI. Pozwala to zaoszczędzić trochę wpisywania komend w terminalu.
 
 ### 2. Eksponowanie portów i łączność (Sieci)
-Wykonałem badanie łączności z użyciem narzędzia `iperf3`.
+Do testów łączności użyłem narzędzia `iperf3`.
 
 W **sieci domyślnej (default bridge)** uruchomiłem serwer i odpytałem go z klienta za pomocą statycznego adresu IP wyciągniętego narzędziem `docker inspect`:
 
@@ -410,7 +412,7 @@ docker run -it --rm networkstatic/iperf3 -c <ZWRÓCONE_IP>
 
 ![Wynik testu po adresie IP](lab4_11.png)
 
-Następnie utworzyłem **własną sieć mostkową (custom bridge)**. Wykazałem, że nowa sieć posiada zintegrowany serwer DNS, umożliwiając komunikację po nazwie hosta (`serwer-dns`), bez znajomości adresu IP:
+Następnie utworzyłem własną sieć mostkową (custom bridge). Taka konfiguracja uaktywnia wbudowany w Dockera serwer DNS, co pozwoliło mi na nawiązanie połączenia przy użyciu samej nazwy hosta (`serwer-dns`), bez konieczności sprawdzania jego IP:
 
 ```bash
 docker network create moja-siec
@@ -420,6 +422,9 @@ docker run -it --rm --network moja-siec networkstatic/iperf3 -c serwer-dns
 
 ![Wynik testu po nazwie DNS we własnej sieci](lab4_12.png)
 
+**Wnioski z testów przepustowości (iperf3):**
+Jak widać na powyższych zrzutach ekranu, przepustowość komunikacji w domyślnej sieci mostkowej wyniosła średnio **23.0 Gbits/sec**, a w dedykowanej sieci z rozwiązywaniem nazw DNS osiągnęła **21.4 Gbits/sec**. Oba wyniki są do siebie bardzo zbliżone. Wynika z tego, że narzut z wirtualizacji sieci Dockera jest znikomy. 
+Warto również zauważyć, dlaczego te wartości są tak ogromne – ponieważ oba kontenery działają na tej samej fizycznej maszynie, cały ruch sieciowy odbywa się przez wirtualny interfejs loopback. Program w rzeczywistości nie testuje tu przepustowości fizycznej karty sieciowej, lecz wydajność procesora i pamięci RAM przy przerzucaniu buforów danych.
 
 ### 3. Usługi w systemie i klastrze (SSHD)
 Uruchomiłem kontener realizujący usługę SSH i zalogowałem się do niego z poziomu mojej maszyny:
@@ -431,14 +436,12 @@ ssh root@localhost -p 2222
 
 ![Logowanie SSH do kontenera](lab4_13.png)
 
-
-**Wnioski i przypadki użycia (Zalety/Wady):** Uruchamianie serwera SSH w kontenerze zasadniczo łamie zasadę pojedynczej odpowiedzialności (Single Responsibility Principle) – kontener zaczyna zarządzać dwoma procesami naraz. Instalowanie demona SSH wewnątrz kontenera jest uznawane za antywzorzec, ponieważ utrudnia zbieranie logów i stwarza luki w bezpieczeństwie. Bezpieczny, natywny dostęp administracyjny zapewnia polecenie `docker exec -it <nazwa_kontenera> bash`.
-Jedynymi **uzasadnionymi przypadkami użycia** zintegrowanego SSH w kontenerze są:
-1. Tworzenie kontenerów typu *Honeypot* (pułapki na hakerów skanujących sieć w poszukiwaniu otwartego portu 22).
-2. Specyficzne, stare aplikacje (legacy), które twardo wymagają protokołu SSH do komunikacji wewnętrznej i nie da się ich zrefaktoryzować.
+**Po co SSH w kontenerze?**
+**Wnioski dotyczące usługi SSH w kontenerze:**
+Uruchamianie serwera SSH w kontenerze jest uznawane za antywzorzec. Łamie to zasadę jednego procesu na kontener, utrudnia centralizację logów i stwarza niepotrzebne ryzyko bezpieczeństwa. Do standardowej interakcji ze środowiskiem należy używać polecenia `docker exec -it <nazwa> bash`. Wyjątkami uzasadniającymi implementację SSH w kontenerze są bardzo specyficzne scenariusze, takie jak tworzenie środowisk typu *Honeypot* do analizy ataków sieciowych lub konieczność konteneryzacji przestarzałych aplikacji (legacy), które wymuszają taki typ komunikacji.
 
 ### 4. Serwer Jenkins (Docker-in-Docker)
-Zgodnie z wymogami projektu, zapoznałem się z oficjalną dokumentacją instalacyjną Jenkinsa i na jej podstawie skonfigurowałem architekturę DIND (Docker-in-Docker). Utworzyłem dedykowaną sieć i uruchomiłem kontener za pomocą oficjalnie rekomendowanej komendy:
+Przejrzałem oficjalną dokumentację Jenkinsa i na jej podstawie uruchomiłem środowisko Jenkins w konfiguracji DIND (Docker-in-Docker). Utworzyłem dedykowaną sieć i uruchomiłem kontener za pomocą oficjalnie rekomendowanej komendy:
 
 ```bash
 docker network create jenkins
@@ -449,15 +452,14 @@ sudo docker run --name jenkins-blueocean --rm --detach --network jenkins --env D
 # Weryfikacja działania
 docker ps
 ```
+**Kluczowe parametry użytej komendy:**
+* `--network jenkins`: Podłącza kontener do dedykowanej sieci.
+* Zmienne środowiskowe (`--env DOCKER_...`): Odpowiadają za autoryzację i bezpieczne połączenie TLS z demonem Dockera.
+* Przekierowanie portów (`-p 8080:8080` i `-p 50000:50000`): Udostępnia interfejs graficzny oraz port do komunikacji z agentami.
+* Mapowanie woluminów (`-v jenkins-data...`): Pozwala na zachowanie wtyczek, konfiguracji oraz hasła administratora po restarcie kontenera (co normalnie zostałoby utracone przez użycie flagi `--rm`).
 
-**Dlaczego użyto tak złożonej komendy? (Wyjaśnienie parametrów):**
-Zastosowanie tej dokładnej składni z dokumentacji było konieczne do poprawnego i bezpiecznego zestawienia środowiska:
-* **`--network jenkins`**: Izoluje Jenkinsa i pozwala mu komunikować się z wewnętrznym demonem Dockera po nazwie hosta.
-* **`--env DOCKER_...`**: Przekazuje zmienne środowiskowe wymagane do autoryzacji TLS przy tworzeniu kontenerów wewnątrz kontenera.
-* **`--publish 8080:8080` oraz `50000:50000`**: Mapuje port interfejsu graficznego (UI) oraz port komunikacyjny dla przyszłych agentów roboczych (JNLP).
-* **`--volume jenkins-data:/var/jenkins_home`**: To kluczowy element – montuje nazwany wolumin, dzięki któremu wtyczki, historia budowania i hasła administracyjne przetrwają nawet mimo obecności flagi `--rm` (usuwającej kontener po restarcie).
+Ponieważ główny kontener uruchomiłem z flagą `--rm`, po jego restarcie przepadły logi z początkowym hasłem administratora. Udało mi się je jednak bez problemu odzyskać z podpiętego woluminu `jenkins-data`:
 
-Ponieważ kontener konfiguracyjny uruchomiłem z flagą `--rm`, po restarcie maszyny wyczyszczono logi z początkowym hasłem administratora. Zademonstrowałem jednak potęgę trwałości danych w Dockerze, odzyskując hasło bezpośrednio z utworzonego wcześniej woluminu `jenkins-data`:
 ```bash
 sudo docker run --rm -v jenkins-data:/var/jenkins_home alpine cat /var/jenkins_home/secrets/initialAdminPassword
 ```
@@ -557,7 +559,7 @@ sudo docker run --rm -v jenkins-data:/var/jenkins_home alpine cat /var/jenkins_h
 ---
 
 ## Ważna adnotacja dotycząca użycia AI
-Zgodnie ze ścisłymi wymaganiami zadanymi w dokumencie organizacyjnym (`Rules.md`), oświadczam, że podczas rozwiązywania problemów technicznych, poszukiwania optymalnych rozwiązań oraz formułowania struktury tego sprawozdania posiłkowałem się modelem LLM (Gemini).
+Zgodnie z prośbą z Rules.md, daję znać, że przy rozwiązywaniu niektórych problemów technicznych i układaniu struktury sprawozdania korzystałem z pomocy LLM (Gemini).
 
 **Główne zapytania wysłane do modelu z podziałem na etapy pracy:**
 
@@ -575,6 +577,6 @@ Zgodnie ze ścisłymi wymaganiami zadanymi w dokumencie organizacyjnym (`Rules.m
   2. *"Opisz zalety i wady (oraz przypadki użycia) komunikacji z uruchomionym kontenerem z wykorzystaniem zintegrowanej w nim usługi SSH. Dlaczego uważa się to za antywzorzec?"*
 
 **Metody weryfikacji odpowiedzi:**
-Odpowiedzi wygenerowane przez sztuczną inteligencję były traktowane z krytycznym dystansem, wyłącznie jako propozycje i wskazówki deweloperskie, a ich weryfikacja opierała się na dwóch filarach:
+Odpowiedzi modelu traktowałem jako wskazówki. Weryfikowałem je na dwa sposoby: po pierwsze, uruchamiając podane komendy w maszynie wirtualnej (co widac na screenach), a po drugie, sprawdzając informacje z oficjalną dokumentacją Dockera i GitHuba.
 1. **Weryfikacja praktyczna:** Wszelkie sugestie dotyczące komend powłoki (bash/docker/git) czy konfiguracji środowiska (np. rozszerzenia VS Code, woluminy) były najpierw analizowane merytorycznie, a następnie uruchamiane ręcznie w wyizolowanym środowisku. Dowodem ich poprawnego działania są uwiecznione logi i zrzuty ekranu.
 2. **Sprawdzanie źródeł :** W przypadku zapytań o teorię, wady i zalety architektoniczne oraz prośby o linki, wygenerowane materiały były konfrontowane z oficjalną dokumentacją dostawców technologii (Docker Docs, GitHub Docs). Linki dostarczone przez AI były ręcznie odwiedzane w celu wykluczenia zjawiska "halucynacji" modelu i potwierdzenia rzetelności informacji zawartych w sprawozdaniu.
