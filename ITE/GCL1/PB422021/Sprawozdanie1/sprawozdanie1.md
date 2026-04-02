@@ -50,6 +50,9 @@ fi
  ![Błąd wyświetlania](lab1_ss/ss2.png)
 
 
+
+
+
 # Lab2
 
 ### W pierwszej kolejności zainstalowałam dockera w moim środowisku.
@@ -102,6 +105,9 @@ fi
 ### Usunęłam zakończone kontenery:
 
 ![Błąd wyświetlania](lab2_ss/ss_3.png)
+
+
+
 
 
 # LAB3 
@@ -186,35 +192,148 @@ CMD ["npm", "run", "test"]
  ![Błąd wyświetlania](lab3_ss/lab3ss14.png)
 
 
- #### LAB 4
 
-1. Woluminy - wersja bez zainstalowanego gita.
+
+
+ # LAB 4
+
+### Pracę z woluminami rozpoczęłam w wersji bez zainstalowanego gita. Utworzyłąm zatem dwa woluminy - wejściowy i wyjściowy. Woluminy zostały utworzone niejawnie podczas uruchamiania kontenera przy użyciu flagi -v. Docker automatycznie zainicjalizował nazwane woluminy lab4_wejscie i lab4_wyjscie. 
+
+### W pierwszej wersji przygotowałam kontener bazowy, który nie posiada gita, więc zrobiłam to na obrazie node:20-slim. 
 
   ![Błąd wyświetlania](lab4_ss/lab4ss1.png)
 
+  ### Ponieważ kontener nie mógł sam pobrać kodu skożystałam z kontenera pomocniczego. Uruchomilam tymczasowy kontener oparty na obrazie alpine/git. Podczas jego startu podmontowałam wolumin lab4_wejscie do katalogu /target wewnątzr kontenera. Następnie sklonowałam repo na ten wolumin.
+
   ![Błąd wyświetlania](lab4_ss/lab4ss2.png)
+
+  ### Jest to rozwiązanie, który pozwala zachować obraz budujący czysty, bez zbędnych zależności. Kontener pomocniczy wypełnia swoje zadanie i jest od razu usuwany, zostawiając dane na wspólnym woluminie. Dla porównania Bind Mount wymagałby posiadania Gita na hoście i ręcznego zarządzania uprawnieniami do plików między hostem a kontenerem. Natomiast kopiowanie do /var/lib/docker ingeruje w wewnętrzne pliki systemowe Dockera, co może prowadzić do uszkodzenia danych.
 
   ![Błąd wyświetlania](lab4_ss/lab4ss3.png)
 
   ![Błąd wyświetlania](lab4_ss/lab4ss4.png)
 
+  ### Następnie uruchomiłam build w kontenerze.
+
   ![Błąd wyświetlania](lab4_ss/lab4ss5.png)
 
   ![Błąd wyświetlania](lab4_ss/lab4ss6.png)
 
+  ### Skopiowałam zbudowany folder dist na wolumin wyjściowy:
+
   ![Błąd wyświetlania](lab4_ss/lab4ss7.png)
+
+  ### Następnie, aby sprawdzić czy dane przetrwały, całkowicie usunęłam kontener lab4-base i podpięłam wolumin wyjściowy do zupełnie nowego kontenera busybox.
 
   ![Błąd wyświetlania](lab4_ss/lab4ss8.png)
 
+  ### Na ekranie pojawiła się pełna struktura skompilowanych plików JavaScript, co potwierdza to, że proces budowania zakończył się sukcesem.
 
-  Następnie zrobiłam to samo, ale klonawanie na wolumin wejściowy przeprowadziłam wewnątrz kontenera już z wykorzystaniem Gita w kontenerze.
+
+  ### Następnie zrobiłam to samo, ale klonawanie na wolumin wejściowy przeprowadziłam wewnątrz kontenera już z wykorzystaniem Gita w kontenerze.
 
  ![Błąd wyświetlania](lab4_ss/lab4ss9.png)
 
- Po uruchomieniu nowego kontenera w folderze input nadal były stare pliki, więc musiałam je usunąć przed zaciągnięciem repo do tego folderu. Po usunięciu pierwszej instancji kontenera i uruchomieniu nowej z tym samym montowaniem, pliki z poprzedniej sesji były nadal dostępne. Ponieważ narzędzie Git wymaga pustego katalogu docelowego do wykonania operacji clone, konieczne było wyczyszczenie zawartości woluminu przed ponownym pobraniem kodu.
+ ### Po uruchomieniu nowego kontenera w folderze input nadal były stare pliki, więc musiałam je usunąć przed zaciągnięciem repo do tego folderu. Po usunięciu pierwszej instancji kontenera i uruchomieniu nowej z tym samym montowaniem, pliki z poprzedniej sesji były nadal dostępne. Ponieważ narzędzie Git wymaga pustego katalogu docelowego do wykonania operacji clone, konieczne było wyczyszczenie zawartości woluminu przed ponownym pobraniem kodu.
 
   ![Błąd wyświetlania](lab4_ss/lab4ss10.png)
 
   ![Błąd wyświetlania](lab4_ss/lab4ss11.png)
   ![Błąd wyświetlania](lab4_ss/lab4ss12.png)
   ![Błąd wyświetlania](lab4_ss/lab4ss13.png)
+
+ ### Ta metoda jest szybsza w konfiguracji, ale powoduje że finalny obraz kontenera jest znacznie cięższy.
+
+  ### Prezanalizowałam również możliwość automatyzacji opisanych kroków za pomocą pliku Dockerfile i instrukcji RUN --mount, kóra pozwala na tymczasowe podpięcie zasobów wyłącznie na czas budowania obrazu. Umożliwiłoby to dostarczenie kodu źródłowego do kompilacji bez koniecnzości jego trwałego kopiowania do warstw obrazu czy instalacji Gita wewnątrz kontenera bazowego. Takie podejście pozwala na stworzenie minimalistycznego obrazu zawierającego folder dist jednocześnie eliminując konieczność zarządzania. woluminami wejściowymi i wyjściowymi. 
+
+
+  ### Następnie rozpoczęłam kolejną część laboratoriów dotyczącą łączności między kontenerami.
+
+  ### Do uruchomienia serweru iperf wykorzystałam gotowy obraz. 
+
+ ![Błąd wyświetlania](lab4_ss/lab4_ss14.png)
+
+ ### Następnie sprawdziłam adres IP serwera:
+
+ ![Błąd wyświetlania](lab4_ss/lab4_ss15.png)
+
+ ### Uruchomiłam drugi kontener, który posłuży jako klient i połączyłam się z drugim kontenerem. W ten sposób zabadałam ruch sieciowy. 
+
+  ![Błąd wyświetlania](lab4_ss/lab4_ss16.png)
+
+  ### Sprawdziłam adres ip drugiego kontenera.
+
+   ![Błąd wyświetlania](lab4_ss/lab4_ss17.png)
+
+   ### Jednocześnie został wykonany test przepustowości. Wyniki są na poziomie 66,8 Gbits/sec, co jest bardzo dobrym wynikiem.
+
+   ### W celu potwierdzenia połączenia między dwoma kontenerami wyświetliłam logi:
+
+   ![Błąd wyświetlania](lab4_ss/lab4_ss18.png)
+
+   ### Następnie przeszłam do utworzenia dedykowanej sieci mostkowej.
+
+   ![Błąd wyświetlania](lab4_ss/lab4_ss19.png)
+
+   ### Aby móc skorzystać z tej samej nazwy serwera usunęlam stary serwer, a następnie uruchomiłam nowy serwer w sieci lab4_network.
+
+   ![Błąd wyświetlania](lab4_ss/lab4_ss20.png)
+
+   ### Tym razem połączyłam się z wykorzystaniem nazw zamiast adresów IP. Test zakończył się sukcesem, co udowodniło poprawność działania wewnętrznego mechanizmu DNS Dockera w sieciach użytkownika.
+
+   ![Błąd wyświetlania](lab4_ss/lab4_ss21.png)
+
+   ### W kolejnym kroku, aby połączyć się spoza kontenera ponownie usunęłam poprzedni serwer i uruchomiłam nowy z mapowaniem portów.
+
+   ![Błąd wyświetlania](lab4_ss/lab4_ss22.png)
+
+
+### Najpierw połączyłam się z poziomu hosta z mojego ubuntu. W tym celu najpierw zainstalowałam Ierf3 na moim ubuntu. 
+
+### Następnie uruchomiłam test łacząc się z adresem localhost.
+
+![Błąd wyświetlania](lab4_ss/lab4_ss23.png)
+
+### Test zakończył się powodzeniem, zatem przeszłam do testu łączności spoza hosta - z mojego windowsa. W konsoli powershell wykonałam test i również zakończył się powodzeniem.
+
+![Błąd wyświetlania](lab4_ss/lab4_ss24.png)
+
+![Błąd wyświetlania](lab4_ss/lab4_ss25.png)
+
+![Błąd wyświetlania](lab4_ss/lab4_ss26.png)
+
+
+### Następnie przystąpiłam do kolejnej części laboratorium. Przygotowałam kontener z SSHD.
+
+![Błąd wyświetlania](lab4_ss/lab4_ss27.png)
+
+![Błąd wyświetlania](lab4_ss/lab4_ss28.png)
+
+### Teraz otwierając nowy terminal w sprawdziłam połączenie.
+
+![Błąd wyświetlania](lab4_ss/lab4_ss29.png)
+
+   
+### Główną zaletą SSH jest wygoda i możliwość korzystania z różnych narzędzi. Dodatkowo można w prosty sposób kopiować pliki z mojego komputera bezpośrednio do wnętrza kontenera. To rozwiązanie ma jednak też wady. Kontener ma większy rozmiar - konieczne było zainstalowanie dodatkowych pakietó takich jak openssh-server. 
+
+
+### Przeszłam do ostatniego etapu instrukcji, czyli uruchomienie Jenkinsa wewnątrz Dockera. 
+
+### Zastosowałam obraz docker:dind w trybie --privileged. Pozwoliło to na stworzenie dedykowanego środowiska, w którym Jenkins może samodzielnie zarządzać kontenerami. Natomiast użycie woluminów zapewniło trwałość certyfikatów TLS oraz danych konfiguracyjnych.
+  
+![Błąd wyświetlania](lab4_ss/lab4_ss30.png)
+
+
+
+### Uruchomiłam główny kontener serwera Jenkins, wykorzystując obraz jenkinsci/blueocean. luczowym elementem konfiguracji było zdefiniowanie zmiennych środowiskowych DOCKER_HOST, DOCKER_CERT_PATH, które wskazały Jenkinsowi drogę do zewnętrznego silnika Docker-in-Docker.
+
+![Błąd wyświetlania](lab4_ss/lab4_ss31.png)
+
+![Błąd wyświetlania](lab4_ss/lab4_ss32.png)
+
+### Następnie wyświetliłam logi, aby uzyskać hasło. Wpisałam w przeglądarkę windowsa adres [..... ](http://172.25.100.132:8080/) i się zalogowałam.
+
+
+![Błąd wyświetlania](lab4_ss/lab4_ss33.png)
+
+![Błąd wyświetlania](lab4_ss/lab4_ss34.png)
