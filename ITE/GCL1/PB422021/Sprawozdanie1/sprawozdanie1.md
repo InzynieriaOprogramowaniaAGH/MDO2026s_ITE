@@ -1,31 +1,40 @@
 # Sprawozdanie nr 1
 
-Wszystkie zadania wykonałam na Ubuntu Server 24.04 LTS w Hyper-V, poprzez połączenie zdalne przez protokół SSH z poziomu Visual Studio Code.
+#### Wszystkie zadania wykonałam na Ubuntu Server 24.04 LTS w Hyper-V, poprzez połączenie zdalne przez protokół SSH z poziomu Visual Studio Code.
 
-## Lab 1
+# Lab 1
 
-Moim pierwszym zadaniem było przygotowanie klienta Git. Po upewnieniu się, że pakiet jest zainstalowany, sklonowałam repozytorium przedmiotu. Z racji, że GitHub nie wspiera uwierzytelniania zwykłym hasłem, wykorzystałam protoków HTTPS i Personal Acces Token, który wygenerowałam wcześniej w ustawieniach deweloperskich mojego konta na GitHubie.
+### Moim pierwszym zadaniem było przygotowanie klienta Git. Po upewnieniu się, że pakiet jest zainstalowany, sklonowałam repozytorium przedmiotu. Z racji, że GitHub nie wspiera uwierzytelniania zwykłym hasłem, wykorzystałam protoków HTTPS i Personal Acces Token, który wygenerowałam wcześniej w ustawieniach deweloperskich mojego konta na GitHubie.
 
-Następnie w celu zwiększenia bezpieczeństwa, skonfigurowałąm dostęp przez SSH. Zgodnie z instrukcją utworzyłam dwa różne klucze - klucz standardowy i klucz zabezpieczony hasłem, wymagający podania hasła przy każdej próbie użycia.
+### Następnie w celu zwiększenia bezpieczeństwa, skonfigurowałąm dostęp przez SSH. Zgodnie z instrukcją utworzyłam dwa różne klucze - klucz standardowy i klucz zabezpieczony hasłem, wymagający podania hasła przy każdej próbie użycia.
+
 
 ![Błąd wyświetlania](lab1_ss/ss3.png)
 
-Następnie dodałam klucz publiczny do mojego profilu na GitHubie i sprawdziłam połączenie. Z racji, że miałam już skondfigurowane uwierzytelnianie dwuskładnikowe to pominęłam ten etap. 
 
-Następnie sprawdziłam adres ip mojej maszyny wirtualnej, aby móc się z nią połączyć przez Visual Studio Code za pomocą wtyczki Remote SSH.
+### Następnie dodałam klucz publiczny do mojego profilu na GitHubie i sprawdziłam połączenie. Z racji, że miałam już skondfigurowane uwierzytelnianie dwuskładnikowe to pominęłam ten etap. 
+
+### Następnie sprawdziłam adres ip mojej maszyny wirtualnej, aby móc się z nią połączyć przez Visual Studio Code za pomocą wtyczki Remote SSH.
+
 
 ![Błąd wyświetlania](lab1_ss/ss4.png)
 
-Następnie przetestowałam natychmiastowe przesyłanie plikó programem FileZilla przenosząc plik hej.txt.
+
+### Następnie przetestowałam natychmiastowe przesyłanie plikó programem FileZilla przenosząc plik hej.txt.
+
 
  ![Błąd wyświetlania](lab1_ss/ss5.png)
+
  ![Błąd wyświetlania](lab1_ss/ss6.png)
 
-W kolejnym kroku w odpowiedniej gałęzi grupy utworzyłam swoją gałąź o nazwie PB422021 i zaczęłam na niej prace. Napisałam Git hooka, weryfikującego każdego commita, aby zaczynał się od nazwy mojej gałęzi.
+
+### W kolejnym kroku w odpowiedniej gałęzi grupy utworzyłam swoją gałąź o nazwie PB422021 i zaczęłam na niej prace. Napisałam Git hooka, weryfikującego każdego commita, aby zaczynał się od nazwy mojej gałęzi.
+
 
 ![Utworzenie własnego folderu](lab1_ss/ss1.png)
 
-treść hooka:
+
+### treść hooka:
 ```bash
 #!/bin/bash
 INPUT_FILE=$1
@@ -35,52 +44,67 @@ if [[ ! $START_LINE =~ ^PB422021 ]]; then
   exit 1
 fi
 ```
-Jako ostatni krok nadałam odpowiednie uprawnienia dla hooka.
+### Jako ostatni krok nadałam odpowiednie uprawnienia dla hooka.
+
 
  ![Błąd wyświetlania](lab1_ss/ss2.png)
 
-## Lab2
 
-### 1. Zapoznanie się z obrazami i ich rozmiarami
-Wyświetlenie listy pobranych obrazów wraz z ich rozmiarem:
-![Lista obrazów](docker_images.png)
+# Lab2
 
-### 2. Uruchomienie obrazów i sprawdzenie kodów wyjścia
-Uruchomienie przykładowych kontenerów i weryfikacja komendą `echo $?`:
-![Docker run echo](docker_run_echo.png)
-![Docker run echo 2](docker_run_echo2.png)
+### W pierwszej kolejności zainstalowałam dockera w moim środowisku.
 
-### 3. Praca interaktywna - Busybox
-Uruchomienie kontenera Busybox w trybie interaktywnym i sprawdzenie wersji:
-![Busybox interaktywnie](busybox_uruchmienie_interaktywne.png)
+![Błąd wyświetlania](lab2_ss/ss_1.png)
+![Błąd wyświetlania](lab2_ss/ss_2.png)
 
-### 4. Izolacja procesów (PID1)
-Prezentacja procesu o identyfikatorze 1 wewnątrz kontenera:
-![PID1 w kontenerze](PID1.png)
+### Następnie zpaoznałam się z wypisanymi w instrukcji obrazami i kolejno każdy z nich uruchomiłam, sprawdziłam rozmiary oraz kody wyjścia komendą `echo $?`.
 
-Prezentacja procesów Dockera widzianych z poziomu hosta:
-![Procesy na hoście](procesy_dockera_na_hoście.png)
+![Lista obrazów](lab2_ss/docker_images.png)
 
-### 5. Aktualizacja systemu w kontenerze
-Weryfikacja poprawności działania sieci i aktualizacji pakietów:
-![Aktualizacja pakietów](aktualizacja_pakietów.png)
+![Docker run echo](lab2_ss/docker_run_echo.png)
 
-### 6. Własny plik Dockerfile
-Zawartość przygotowanego pliku Dockerfile (screen):
-![Plik Dockerfile](dockerfile.png)
+![Docker run echo 2](lab2_ss/docker_run_echo2.png)
 
-Proces budowania własnego obrazu:
-![Budowanie obrazu](budowanie_obrazy(dockerfile).png)
+### Uruchomiłam kontener Busybox w trybie interaktywnym i sprawdziłam nr wersji. Tryb interaktywny pozwolił na bezpośrednią pracę w powłoką wewnątrz kontenera.
 
-Uruchomienie i weryfikacja (ls -la) zawartości sklonowanego repozytorium:
-![Weryfikacja Dockerfile](uruchomieni_i_weryfikacja_dockerfile.png)
+![Busybox interaktywnie](lab2_ss/busybox_uruchmienie_interaktywne.png)
 
-### 7. Porządki i historia
-Wyświetlenie historii wszystkich kontenerów (zarówno działających, jak i zatrzymanych):
-![Historia kontenerów](historia_kontenerów.png)
+### Następnie uruchomiłam kontener z obrazem ubuntu, aby zweryfikować izolację procesów.  
+
+### W kontenerze polecenie `ps -ef` wykazało, że procesem o PID 1 jest mojapowłoka /bin/bash, co oznacza, że dla kontenera nie istnieje świat zewnętrzny.
+
+![PID1 w kontenerze](lab2_ss/PID1.png)
+
+### W tym samym czasie, w drugim terminalu SSH, sprawdziłam procesy dockera. Proces bash miał tam zupełnie inny numer PID. 
+
+![Procesy na hoście](lab2_ss/procesy_dockera_na_hoście.png)
+
+### Zaktualizowałam pakiety wewnątrz kontenera.
+
+![Aktualizacja pakietów](lab2_ss/aktualizacja_pakietów.png)
+
+### Następnie stworzyłam własny plik Dockerfile, który automatyzuje przygotowanie środowiska z Gitem.
+
+![Plik Dockerfile](lab2_ss/dockerfile.png)
+
+### Zbudowałam obraz:
+
+![Budowanie obrazu](lab2_ss/budowanie_obrazy(dockerfile).png)
+
+### Uruchomiłam i zweryfikowałam (ls -la) zawartości sklonowanego repozytorium:
+
+![Weryfikacja Dockerfile](lab2_ss/uruchomieni_i_weryfikacja_dockerfile.png)
+
+### Na koniec wyświetliłam wszytskie kontenery.
+
+![Historia kontenerów](lab2_ss/historia_kontenerów.png)
+
+### Usunęłam zakończone kontenery:
+
+![Błąd wyświetlania](lab2_ss/ss_3.png)
 
 
-#### LAB3 
+# LAB3 
 
  1. Po sklonowaniu repo na systemie Ubuntu Server próba zbudowania zakończyła się niepowodzeniem. Wybrane repozytorium wymaga środowiska Node.js w wersji >= 20, podczas gdy system operacyjny oferuje wersję 18.19.1.
 
