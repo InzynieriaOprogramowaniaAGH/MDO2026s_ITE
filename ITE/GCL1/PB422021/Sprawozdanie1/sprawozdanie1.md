@@ -106,40 +106,48 @@ fi
 
 # LAB3 
 
- 1. Po sklonowaniu repo na systemie Ubuntu Server próba zbudowania zakończyła się niepowodzeniem. Wybrane repozytorium wymaga środowiska Node.js w wersji >= 20, podczas gdy system operacyjny oferuje wersję 18.19.1.
+### Do realizacji laboratorium wybrałam repozytorium NestJS TypeScript Starter: [NestJS TypeScript Starter](https://github.com/nestjs/typescript-starter.git). Spełnia on wymagania instrukcji - posiada skrypty budowania (npm run build) oraz testy jednostkowe (npm run test). Ma też licencję MIT.
+
+ ### Po sklonowaniu repo na systemie Ubuntu Server próba zbudowania zakończyła się niepowodzeniem. Wybrane repozytorium wymaga środowiska Node.js w wersji >= 20, podczas gdy system operacyjny oferuje wersję 18.19.1.
 
  ![Błąd wyświetlania](lab3_ss/lab3ss1.png)
 
- Z tego powodu przechodzę do wykonania kolejnej części instrukcji, ay wykonać to bez potrzeby instalacji nowej wersji node na ubuntu.
+ ### Z tego powodu przechodzę do wykonania kolejnej części instrukcji, aby wykonać to bez potrzeby instalacji nowej wersji node na ubuntu.
 
- 2. Uruchomiałam i pobrałąm nowy obraz node:20 
+ ### Uruchomiałam i pobrałam nowy obraz node:20 
  
  ![Błąd wyświetlania](lab3_ss/lab3ss2.png)
 
- Zainstalowałam gita 
+ ### Zainstalowałam gita 
 
   ![Błąd wyświetlania](lab3_ss/lab3ss3.png)
 
- Sklonowałam repozytorium do folderu app.
+ ### Sklonowałam repozytorium do folderu app.
 
   ![Błąd wyświetlania](lab3_ss/lab3ss4.png)
 
-Repozytorium zostało pobrane poprawnie.
+### Repozytorium zostało pobrane poprawnie.
 
  ![Błąd wyświetlania](lab3_ss/lab3ss5.png)
 
-Zainstalowałam zależności 
+### Następnie zainstalowałam zależności. 
  ![Błąd wyświetlania](lab3_ss/lab3ss6.png)
 
-Uruchomiłam build, po tej komendzie pojawił sięnowy folder dist, co wskazuje na poprawne zbudowanie programu. 
+### Uruchomiłam build, po tej komendzie pojawił się nowy folder dist, co wskazuje na poprawne zbudowanie programu. 
+
  ![Błąd wyświetlania](lab3_ss/lab3ss7.png)
 
-Następnie uruchomiłam testy, które przeszły poprawnie.
+### Następnie uruchomiłam testy, które przeszły poprawnie.
+
  ![Błąd wyświetlania](lab3_ss/lab3ss8.png)
 
-3. W kolejnym kroku przeszłam do utworzenia plików Dockerfile, które zautomatyzują to co było wykonane wcześniej. 
+
+### W kolejnym kroku przeszłam do utworzenia plików Dockerfile, które zautomatyzują to co było wykonane wcześniej. 
+
+### Dockerfile.build przygotowuje środowisko, klonuje kod i kompiluje aplikację.
 
 Dockerfile.build:
+```bash
 FROM node:20
 
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
@@ -152,21 +160,29 @@ RUN npm install
 RUN npm run build
 
 CMD ["npm", "run", "start:prod"]
+```
 
- ![Błąd wyświetlania](lab3_ss/lab3ss9.png)
+ 
+ ### Dockerfile.test natomiast nie buduje aplikacji od nowa a dziedziczy wszystko po wcześniej napisanycm Dockerfile i tylko uruchamia testy.
 
 Dockerfile.test:
+```bash
 FROM app-build
 
 CMD ["npm", "run", "test"]
+```
 
- ![Błąd wyświetlania](lab3_ss/lab3ss10.png)
+### Następnie zbudowałam program i przetestowałam przy użyciu napisanych Dockerfile'ów.
 
  ![Błąd wyświetlania](lab3_ss/lab3ss11.png)
  ![Błąd wyświetlania](lab3_ss/lab3ss12.png)
+
+ ### W kolejnym kroku uruchomiłam kontener testowy:
+
  ![Błąd wyświetlania](lab3_ss/lab3ss13.png)
 
-To, że i w tym przypadku testy przeszły poprawnie potwierdza poprawność wdrożenia.
+### To, że i w tym przypadku testy przeszły poprawnie potwierdza poprawność wdrożenia.
+
  ![Błąd wyświetlania](lab3_ss/lab3ss14.png)
 
 
