@@ -57,11 +57,13 @@ Testowanie hook'a dla git'a:
 
 ![img](../screenshots/lab1-4/Zrzut%20ekranu%202026-03-06%20165005.png)
 
+Jak widać, bez odpowiedniego formatu "commit message", nie jesteśmy w stanie spushować zmian na nasz branch w repozytorium.
+
+
 Próba wciągnięcią gałęzi do grupowej:
 
 ![img](../screenshots/lab1-4/Zrzut%20ekranu%202026-03-06%20172309.png)
 
-Jak widać, bez odpowiedniego formatu "commit message", nie jesteśmy w stanie spushować zmian na nasz branch w repozytorium.
 
 ## Temat 2
 
