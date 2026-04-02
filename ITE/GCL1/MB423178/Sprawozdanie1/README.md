@@ -1,4 +1,8 @@
-# Sprawozdanie - MB423178
+# Sprawozdanie 1 - MB423178
+
+Mikołj Bednarczyk
+
+data: 02.04.2026
 
 ## Środowisko uruchomieniowe
 Wszystkie opisane poniżej kroki zostały wykonane w wyizolowanym środowisku.
