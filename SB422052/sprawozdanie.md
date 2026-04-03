@@ -65,3 +65,28 @@ Kiedy kod leżał już  na woluminie, uruchomiłem docelowy kontener bazowy (`no
 Poniżej screen pokazujący, że dane przetrwały zamknięcie kontenera (wylistowałem zawartość woluminu wyjściowego z poziomu szybkiego, testowego kontenera alpine):
 
 ![Woluminy wyjściowe](screeny/voluminy.png)
+
+### 2. Eksponowanie portu i łączność między kontenerami (iperf3)
+W tej części zbadałem przepustowość sieci między kontenerami za pomocą narzędzia `iperf3`.
+
+**Krok 1: Domyślna sieć i łączenie po IP**
+Najpierw odpaliłem serwer `iperf3` w domyślnej sieci Dockera i wyciągnąłem jego adres IP (np. `172.17.0.2`). Następnie uruchomiłem klienta, który połączył się z tym adresem. Przepustowość była ogromna (rzędu kilkudziesięciu Gbit/s), ponieważ ruch odbywa się w całości wewnątrz pamięci RAM hosta (maszyny wirtualnej), a nie po fizycznym kablu.
+
+**Krok 2: Dedykowana sieć i rozwiązywanie nazw (DNS)**
+Następnie utworzyłem własną sieć mostkową (`docker network create iperf_siec`). Dzięki temu mogłem połączyć kontenery używając ich nazw, a nie adresów IP. Odpaliłem serwer z flagą `--network iperf_siec` oraz portem wystawionym na zewnątrz (`-p 5201:5201`), a klienta połączyłem po prostu wpisując nazwę kontenera-serwera (`iperf-serwer-dns`).
+![Test w dedykowanej sieci](screeny/iperf_dns.png)
+
+**Krok 3: Połączenie spoza Dockera (z hosta)**
+Na koniec zainstalowałem `iperf3` bezpośrednio na moim systemie Ubuntu (hoście) i połączyłem się z serwerem działającym w kontenerze, uderzając na `127.0.0.1`. Było to możliwe właśnie dzięki temu, że wcześniej wyeksponowałem port z kontenera na hosta parametrem `-p`.
+![Test z hosta](screeny/iperf_host.png)
+### 4. Przygotowanie serwera CI Jenkins (z Docker-in-Docker)
+Zgodnie z wytycznymi z oficjalnej dokumentacji, postawiłem środowisko Jenkins w oparciu o dwa kontenery i dedykowaną sieć.
+
+**Kroki instalacji:**
+1. Utworzyłem sieć mostkową `jenkins` (`docker network create jenkins`).
+2. Uruchomiłem kontener "pomocnika" `docker:dind` (Docker-in-Docker) z certyfikatami i przypisałem go do sieci `jenkins`.
+3. Uruchomiłem główny kontener z Jenkinsem (`jenkins/jenkins:lts`), eksponując porty `8080` (panel webowy) oraz `50000` (dla agentów) i łącząc go z demonem Docker wewnątrz DinD.
+4. Oba kontenery działają poprawnie:
+![Działające kontenery Jenkinsa](screeny/jenkins_ps.png)
+5. Z kontenera wyciągnąłem początkowe hasło administratora (`initialAdminPassword`), odblokowałem instancję pod adresem hosta i zainstalowałem sugerowane wtyczki. Środowisko jest zainicjalizowane i gotowe do pracy:
+![Panel główny Jenkinsa](screeny/jenkins_dashboard.png)
