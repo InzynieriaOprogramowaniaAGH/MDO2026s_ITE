@@ -108,3 +108,8 @@ Wykonano proces weryfikacji działających kontenerów:
 
 Następnie z logów woluminu pobrano początkowe hasło administratora (`initialAdminPassword`), zalogowano się poprzez przeglądarkę i zainstalowano sugerowane wtyczki. Poniżej dowód ukończenia inicjalizacji instancji:
 ![Panel główny Jenkinsa](screeny/jenkins_dashboard.png)
+
+
+Pomoc AI 
+Zapytanie:
+"Przeredaguj tak aby było jednolite oraz usuń błędy ortograficzne itp." 
