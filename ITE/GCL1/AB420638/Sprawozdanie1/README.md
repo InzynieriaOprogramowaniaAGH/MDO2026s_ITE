@@ -220,7 +220,7 @@ Następnie usunąłem z lokalnego magazynu zbędne i nieużywane obrazy bazowe p
 
 ### 9. Zapisanie wyników w repozytorium
 
-Ostatnim etapem pracy na tych zajęciach było zarchiwizowanie postępów. Wszystkie utworzone pliki (w tym `Dockerfile` oraz katalog na sprawozdanie) dodałem do przestrzeni roboczej systemu Git. Następnie utworzyłem zatwierdzenie (commit) opatrzone wiadomością rozpoczynającą się od wymaganego identyfikatora (`AB420638`) i wypchnąłem zmiany na zdalny serwer (poleceniem `git push`) w ramach mojej przypisanej gałęzi.
+Ostatnim etapem pracy na tych zajęciach było zarchiwizowanie postępów. Wszystkie utworzone pliki (w tym `Dockerfile` oraz katalog na sprawozdanie) dodałem do przestrzeni roboczej systemu Git. Następnie utworzyłem commit z wiadomością rozpoczynającą się od wymaganego identyfikatora (`AB420638`) i wypchnąłem zmiany na serwer (poleceniem `git push`) do mojej gałęzi.
 
 ![Wysłanie plików na repozytorium GitHub](screenshoty/wyslanie_na_serwer.png)
 
@@ -250,7 +250,7 @@ Po udanej kompilacji (za pomocą polecenia `make`), uruchomiłem wbudowane w pro
 
 ![Proces wykonywania testów](screenshoty/test_xz_3.png)
 
-Testy zakończyły się pełnym sukcesem. Zgodnie z wygenerowanym podsumowaniem (Testsuite summary for XZ Utils 5.8.2), wszystkie 19 testów zostało zaliczonych poprawnie, bez żadnych błędów.
+Testy zakończyły się pełnym sukcesem. Zgodnie z wygenerowanym podsumowaniem, wszystkie 19 testów zostało zaliczonych poprawnie, bez żadnych błędów.
 
 ![Podsumowanie testów na hoście](screenshoty/test_xz_4.png)
 
@@ -264,7 +264,7 @@ Będąc wewnątrz odizolowanego środowiska, zainstalowałem wszystkie pakiety n
 
 ![Instalacja zależności w kontenerze](screenshoty/install_dependencies.png)
 
-Mając przygotowane narzędzia, sklonowałem repozytorium ze źródłami projektu XZ Utils.
+Mając przygotowane narzędzia, sklonowałem repozytorium XZ Utils.
 
 ![Klonowanie repozytorium w kontenerze](screenshoty/pull_xz.png)
 
@@ -316,7 +316,7 @@ Następnie zbudowałem obraz poleceniem `docker build -t xzbld -f Dockerfile.xz.
 
 Zgodnie z poleceniem, uruchamianie testów powinno być oddzielnym etapem. W tym celu stworzyłem drugi plik konfiguracyjny o nazwie `Dockerfile.xz.test`. 
 
-Jego konstrukcja jest bardzo prosta – bazuje on bezpośrednio na utworzonym przed chwilą obrazie kompilacyjnym (`FROM xzbld`). Dzięki temu zawiera on już gotowy, skompilowany program, i jego jedynym zadaniem jest wywołanie warstwy testującej komendą `RUN make check`. Różnica polega na tym, że ten kontener nie wykonuje ponownego budowania kodu (tzw. "builda").
+Jego konstrukcja bazuje bezpośrednio na utworzonym przed chwilą obrazie kompilacyjnym (`FROM xzbld`). Dzięki temu zawiera on już gotowy, skompilowany program, i jego jedynym zadaniem jest wywołanie warstwy testującej komendą `RUN make check`. Różnica polega na tym, że ten kontener nie wykonuje ponownego budowania kodu.
 
 ![Plik Dockerfile odpowiedzialny za testowanie](screenshoty/dockerfile_test.png)
 
@@ -361,7 +361,8 @@ Na zrzutach ekranu możemy zobaczyć, że utworzenie woluminu odbyło się popra
 
 ![server_pull](screenshoty/server_pull.png)
 
-Ostatnim etapem procesu było poprawne wyeksportowanie zbudowanego oprogramowania z powrotem na maszynę hosta, tak aby efekty pracy nie przepadły po usunięciu kontenera. 
+Będąc w katalogu /wejscie, przeprowadziłem standardową procedurę budowania oprogramowania, tak aby efekty pracy nie przepadły po usunięciu kontenera. 
+
 ```bash
 ./autogen.sh
 ./configure
@@ -378,13 +379,13 @@ make install DESTDIR=/wyjscie/xz_zbudowane
 
 ![xz_build_output](screenshoty/xz_build_in_output.png)
 
-Wolumin `wyjscie` równiez został zamontowany poprawnie, co widać na poniższych zrzutach ekranu:
+Wolumin wyjscie również zadziałał prawidłowo, trwale zapisując strukturę skompilowanych plików bezpośrednio na dysku maszyny hosta:
 
 ![xz_build_directory](screenshoty/xz_build_directory.png)
 
 ![xz_build_directory_host](screenshoty/xz_build_directory_host.png)
 
-Następnie ponawiamy operację, ale klonowanie na wolumin wejściowy przeprowadzamy już wewnątrz kontenera. Do tego posłużyłem się gitem. Na początku utworzyłem dwa foldery wejścia i wyjścia i uruchomiłem kontener z zamontowanymi woluminami:
+W drugiej części tego zadania ponowiłem operację, ale tym razem proces klonowania kodu miał odbyć się wewnątrz kontenera. Utworzyłem na hoście dwa nowe, puste foldery i zamontowałem je do nowego kontenera `xz_odwrotnie`:
 
 ```bash
 mkdir -p wejscie_z_srodka wyjscie_z_srodka
@@ -415,6 +416,14 @@ zbudowałem bibliotekę do woluminu `wyjscie`. Na poniższych zrzutach ekranu wi
 
 ![4.9.5](screenshoty/4.9.5_quit_and_check.png)
 
+### Wykorzystanie Dockerfile i instrukcji RUN --mount
+Opisane wyżej kroki można w pełni zautomatyzować na etapie budowania obrazu za pomocą `docker build`, wykorzystując nowoczesne funkcje silnika `BuildKit`. Kluczowa jest tu instrukcja `RUN --mount.`
+Zamiast ręcznie montować woluminy flagą `-v` przy uruchamianiu, w pliku Dockerfile można użyć zapisu:
+
+`RUN --mount=type=bind,source=.,target=/wejscie`
+
+Pozwala to na tymczasowe, bezpieczne podmontowanie lokalnego kodu źródłowego na czas kompilacji. Kod jest dostępny dla kompilatora, ale nie jest trwale kopiowany do warstw budowanego obrazu, jak miałoby to miejsce przy użyciu instrukcji COPY. Powoduje to znaczne zmniejszenie rozmiaru finalnego obrazu oraz przyspiesza cały proces wdrażania CI/CD.
+
 ### 2. Eksponowanie portu i łączność między kontenerami
 
 ### Celem zadania była analiza wydajności i mechanizmów komunikacji sieciowej w środowisku docker. Zadanie miało na celu przetestowanie przepustowości łącza za pomocą iperf3 w różnych konfiguracjach: wewnątrz domyślnej sieci, z wykorzystaniem DNS i przy bezpośrednim mapowaniu portów
@@ -440,11 +449,11 @@ apt update && apt install -y iperf3
 ```
 ![4.10.3](screenshoty/4.10.3_client.png)
 
-### Po połączeniu się z serwerem otrzymałem przepustowość na poziomie 34 Gbit/s. Wynik ten pochodzi stąd, że dwa kontenery są na tym samym hoście. Oznacza to, że dane nie opuszczają fizycznie maszyny - połączone są przez wirutalny most. W naszym przypadku to po prostu kopiowanie danych z jednego obszaru RAM do drugiego.
+### Po połączeniu się z serwerem otrzymałem przepustowość na poziomie 34 Gbit/s. Ponieważ oba kontenery współdzielą fizycznie tę samą maszynę hosta, dane nie przechodziły przez sprzętowe interfejsy sieciowe, lecz były wymieniane za pośrednictwem wirtualnego mostu sieciowego bezpośrednio w pamięci RAM serwera.
 
 ![4.10.4](screenshoty/4.10.4_connected.png)
 
-### Kolejne zadanie polegało na ponowieniu tego kroku, ale z wykorzystaniem dedykowanej sieci mostkowej. Sieci te oferują automatycznie rozwiązywanie nazw, czyli DNS. W ramach tego kroku:
+### Kolejne zadanie polegało na ponowieniu tego kroku, ale z wykorzystaniem dedykowanej sieci mostkowej. Sieci te oferują automatycznie rozwiązywanie nazw - DNS. co pozwala zrezygnować z niestabilnych adresów IP na rzecz sztywnych nazw kontenerów
 -Utworzyłem dedykowaną sieć poleceniem docker network create, następnie uruchomiłem kontener, zainstalowałem zależności i stworzyłem serwer:
 
 ```bash
@@ -474,7 +483,7 @@ apt update && apt install -y iperf3
 Uzyskałem wyniki na poziomie 31.8Gbit/s. Jest to o 2.2 Gbit/s mniej od pierwszego badania. Najprawdopodobniej spowodowane jest to dodatkowym narzutem 
 spowodowanym dodatkową logiką wirtualnego mostka, co zmniejsza nieznacznie przepustowość.
 
-Ostatnim badaniem w tym temacie było połączenie się z serwerem z zewnątrz kontenera. Aby to zrobić, musiałem otworzyć port `5201` - domyślny port `iperf3`. Co jeszcze ważne, użyłem flagi `-d` która odpala kontener w tle, przez co nie blokuje on terminala.
+Ostatnim badaniem w tym temacie było połączenie się z serwerem z zewnątrz kontenera. Aby to zrobić, musiałem otworzyć port `5201` - domyślny port `iperf3`. Co należy zauważyć, użyłem flagi `-d` która odpala kontener w tle, przez co nie blokuje on terminala.
 
 ```bash
 docker run -d --rm --name iperf-serwer-port -p 5201:5201 ubuntu bash -c "apt update && apt install -y iperf3 && iperf3 -s"
@@ -490,7 +499,7 @@ iperf3 -c localhost
 
 ![4.10.10](screenshoty/4.10.10_port_working.png)
 
-Otrzymałem tutaj przepustowość rzędu 50,2Gbit/s. Jest ona najwyższa z otrzymanych, ponieważ przy tej konfiguracji ścieżka, którą muszą pokonać dane, jest najprostsza - omijamy wirtualny mostek i routing, przez co nasza przepustowość to realna prędkość kopiowania danych wewnątrz pamięci operacyjnej.
+Otrzymałem tutaj przepustowość rzędu 50,2Gbit/s. Jest ona najwyższa z otrzymanych, ponieważ przy tej konfiguracji ścieżka, którą muszą pokonać dane, jest najprostsza - omijamy wirtualny mostek i routing, co pozwala osiągnąć rzeczywiste maksimum szybkości operacji w pamięci.
 
 ### 3. Usługi w rozumieniu systemu, kontenera i klastra
 
@@ -530,7 +539,7 @@ ssh root@localhost -p 2222
 
 ### Cel zadania: Zestawienie złożonego środowiska CI/CD w oparciu o architekturę Docker-in-Docker (DIND). Celem było poprawne skonfigurowanie współzależnych kontenerów (serwera Jenkins oraz pomocniczego silnika Docker), zapewnienie im wspólnej sieci komunikacyjnej oraz przeprowadzenie pełnej inicjalizacji systemu wraz z weryfikacją poprawności wdrożenia poprzez interfejs przeglądarkowy.
 
-Po zapoznaniu się z dokumentacją Jenkinsa, zacząłem instalację od utworzenia kontenera docker:dind:
+Po zapoznaniu się z dokumentacją Jenkinsa, zacząłem instalację od utworzenia kontenera udostępniającego silnik Dockera:
 
 ```bash
 docker run \
@@ -550,7 +559,7 @@ docker run \
 
   ![4.12.1](screenshoty/4.12.1_jenkins_prepare.png)
 
-  Następnie, zgodnie z dokumentacją, utworzyłem `Dockerfile`:
+Następnie, zgodnie z dokumentacją, utworzyłem `Dockerfile`:
 
 ```bash
 FROM jenkins/jenkins:2.541.3-jdk21
@@ -593,7 +602,7 @@ docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
 
 ![4.12.6](screenshoty/4.12.6_pass.png)
 
-Ostatnim krokiem było rozpoczęcie instalacji Jenkinsa w przeglądarce na hoście. Otworzyłem adres: `172.26.2.165:8080`, a następnie wkleiłem w puste pole skopiowane wcześniej hasło inicjalizacyjne:
+Ostatnim krokiem było rozpoczęcie instalacji Jenkinsa w przeglądarce na hoście. Otworzyłem adres: `172.26.2.165:8080`, przeszedłem do interfejsu graficznego i wkleiłem wydobyte z pliku hasło autoryzacyjne.:
 
 ![4.12.7](screenshoty/4.12.7_unlock_jenkins.png)
 
