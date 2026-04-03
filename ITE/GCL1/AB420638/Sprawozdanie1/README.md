@@ -332,3 +332,291 @@ Poprawność wdrożenia obrazów została potwierdzona komunikatami systemowymi 
 
 ### Kontener (Container): To uruchomiona, żywa instancja obrazu. Stanowi on izolowany proces w systemie hosta. Kontener posiada dodatkową, zapisywalną warstwę, która pozwala mu na wykonywanie operacji np. kompilację kodu lub uruchamianie testów w czasie rzeczywistym.
 
+## Lab 04: Dodatkowa terminologia w konteneryzacji, instancja Jenkins
+
+### 1. Zachowywanie stanu między kontenerami
+
+### Celem tego zadania było rozdzielenie procesu pobierania kodu źródłowego od procesu jego budowania przy użyciu woluminów (Volumes/Bind Mounts). Pozwala to na zachowanie czystości kontenera budującego, który nie musi posiadać zainstalowanego klienta Git.
+
+Zamiast instalować Gita w kontenerze budującym, zdecydowałem się pobrać kod źródłowy projektu `xz` bezpośrednio na maszynie hosta do katalogu, który następnie został zamontowany do kontenera. Wykorzystałem strukturę folderów wejscie (dla kodu źródłowego) oraz wyjscie (dla skompilowanych plików).
+
+![clone_xz_input](screenshoty/clone_xz_input.png)
+
+Następnie uruchomiłem kontener i zainstalowałem konieczne zależności:
+```bash
+docker run -it --name xz-builder -v $(pwd)/wejscie:/wejscie -v $(pwd)/wyjscie:/wyjscie ubuntu bash
+```
+
+![docker_volumes](screenshoty/docker_volumes.png)
+
+```bash
+apt install -y make gcc automake autoconf libtool gettext autopoint po4a
+```
+
+![dependencies](screenshoty/docker_install_dependencies.png)
+
+Na zrzutach ekranu możemy zobaczyć, że utworzenie woluminu odbyło się poprawnie - repozytorium jest widoczne zarówno na hoście, jak i kontenerze:
+
+![docker_volume_working](screenshoty/docker_volume_working.png)
+
+![server_pull](screenshoty/server_pull.png)
+
+Ostatnim etapem procesu było poprawne wyeksportowanie zbudowanego oprogramowania z powrotem na maszynę hosta, tak aby efekty pracy nie przepadły po usunięciu kontenera. 
+```bash
+./autogen.sh
+./configure
+```
+
+Build został wykonany pomyślnie:
+
+![build_succesful](screenshoty/build_succesful.png)
+
+Następnie posłużyłem się zmienną środowiskową `DESTDIR`, aby zapisać strukturę plików do zamontowanego woluminu `wyjscie`
+```bash
+make install DESTDIR=/wyjscie/xz_zbudowane
+```
+
+![xz_build_output](screenshoty/xz_build_in_output.png)
+
+Wolumin `wyjscie` równiez został zamontowany poprawnie, co widać na poniższych zrzutach ekranu:
+
+![xz_build_directory](screenshoty/xz_build_directory.png)
+
+![xz_build_directory_host](screenshoty/xz_build_directory_host.png)
+
+Następnie ponawiamy operację, ale klonowanie na wolumin wejściowy przeprowadzamy już wewnątrz kontenera. Do tego posłużyłem się gitem. Na początku utworzyłem dwa foldery wejścia i wyjścia i uruchomiłem kontener z zamontowanymi woluminami:
+
+```bash
+mkdir -p wejscie_z_srodka wyjscie_z_srodka
+docker run -it --name xz_odwrotnie -v $(pwd)/wejscie_z_srodka:/wejscie -v $(pwd)/wyjscie_z_srodka:/wyjscie ubuntu bash
+```
+
+![4.9.1](screenshoty/4.9.1_create_directory_volumes.png)
+
+Następnie zainstalowałem zależności (należy zauważyć, że wśród nich jest wcześniej wspomniany git) i sklonowałem repozytorium do woluminu wejściowego
+
+```bash
+apt update
+apt install -y git make gcc automake autconf libtool gettext autopoint po4a
+```
+
+![4.9.3](screenshoty/4.9.3_cloning_git.png)
+
+Następnie za pomocą tych samych komend
+```bash
+./autogen.sh
+./configure
+make install DESTDIR=/wyjscie/zbudowane_odwrotnie
+```
+
+zbudowałem bibliotekę do woluminu `wyjscie`. Na poniższych zrzutach ekranu widać, że wolumin został zamontowany poprawnie:
+
+![4.9.4](screenshoty/4.9.4_build_inverse.png)
+
+![4.9.5](screenshoty/4.9.5_quit_and_check.png)
+
+### 2. Eksponowanie portu i łączność między kontenerami
+
+### Celem zadania była analiza wydajności i mechanizmów komunikacji sieciowej w środowisku docker. Zadanie miało na celu przetestowanie przepustowości łącza za pomocą iperf3 w różnych konfiguracjach: wewnątrz domyślnej sieci, z wykorzystaniem DNS i przy bezpośrednim mapowaniu portów
+
+### Na początku utworzyłem kontener, w którym zainstalowałem narzędzie `iperf3` oraz `iproute2` (aby mieć potem dostęp do komendy ip a):
+
+```bash
+docker run -it --rm --name iperf_serwer ubuntu bash
+apt update && apt install -y iperf3 iproute2
+```
+
+![4.10.1](screenshoty/4.10.1_iperf3_server.png)
+
+Następnie wykorzystałem wspomniane wcześniej polecenie ip a, aby odnaleźć adres IP kontenera, a następnie uruchomiłem serwer w mojej lokalnej sieci LAN:
+
+![4.10.2](screenshoty/4.10.2_ip_a.png)
+
+Kolejnym krokiem było utworzenie drugiego kontenera - klienta, który połączy się z serwerem:
+
+```bash
+docker run -it --rm --name iperf_klient ubuntu bash
+apt update && apt install -y iperf3
+```
+![4.10.3](screenshoty/4.10.3_client.png)
+
+### Po połączeniu się z serwerem otrzymałem przepustowość na poziomie 34 Gbit/s. Wynik ten pochodzi stąd, że dwa kontenery są na tym samym hoście. Oznacza to, że dane nie opuszczają fizycznie maszyny - połączone są przez wirutalny most. W naszym przypadku to po prostu kopiowanie danych z jednego obszaru RAM do drugiego.
+
+![4.10.4](screenshoty/4.10.4_connected.png)
+
+### Kolejne zadanie polegało na ponowieniu tego kroku, ale z wykorzystaniem dedykowanej sieci mostkowej. Sieci te oferują automatycznie rozwiązywanie nazw, czyli DNS. W ramach tego kroku:
+-Utworzyłem dedykowaną sieć poleceniem docker network create, następnie uruchomiłem kontener, zainstalowałem zależności i stworzyłem serwer:
+
+```bash
+docker network create moja_siec
+docker run -it --rm --name serwer --network moja_siec ubuntu bash
+apt update && apt install -y iperf3
+iperf3 -s
+```
+
+![4.10.5](screenshoty/4.10.5_docker_create_network.png)
+
+![4.10.6](screenshoty/4.10.6_iperf3.png)
+
+-Uruchomiłem kontenery serwera i klienta, przypisując je do nowej sieci oraz nadając im unikalne nazwy.
+
+```bash
+docker run -it --rm --ame klient2 --network moja_siec ubuntu bash
+apt update && apt install -y iperf3
+```
+
+![4.10.7](screenshoty/4.10.7_client2.png)
+
+-Przeprowadziłem test przepustowości iperf3, wskazując cel nie poprzez adres IP, ale bezpośrednio przez nazwę kontenera `serwer2`.
+
+![4.10.8](screenshoty/4.10.8_dns_wroking.png)
+
+Uzyskałem wyniki na poziomie 31.8Gbit/s. Jest to o 2.2 Gbit/s mniej od pierwszego badania. Najprawdopodobniej spowodowane jest to dodatkowym narzutem 
+spowodowanym dodatkową logiką wirtualnego mostka, co zmniejsza nieznacznie przepustowość.
+
+Ostatnim badaniem w tym temacie było połączenie się z serwerem z zewnątrz kontenera. Aby to zrobić, musiałem otworzyć port `5201` - domyślny port `iperf3`. Co jeszcze ważne, użyłem flagi `-d` która odpala kontener w tle, przez co nie blokuje on terminala.
+
+```bash
+docker run -d --rm --name iperf-serwer-port -p 5201:5201 ubuntu bash -c "apt update && apt install -y iperf3 && iperf3 -s"
+```
+
+![4.10.9](screenshoty/4.10.9_port.png)
+
+Następnie na hoście połączyłem sie z nowo utworzonym serwerem w kontenerze:
+
+```bash
+iperf3 -c localhost
+```
+
+![4.10.10](screenshoty/4.10.10_port_working.png)
+
+Otrzymałem tutaj przepustowość rzędu 50,2Gbit/s. Jest ona najwyższa z otrzymanych, ponieważ przy tej konfiguracji ścieżka, którą muszą pokonać dane, jest najprostsza - omijamy wirtualny mostek i routing, przez co nasza przepustowość to realna prędkość kopiowania danych wewnątrz pamięci operacyjnej.
+
+### 3. Usługi w rozumieniu systemu, kontenera i klastra
+
+### Celem zadania było zrozumienie różnic między tradycyjnym zarządzaniem usługami systemowymi a podejściem kontenerowym. Poprzez konfigurację demona sshd wewnątrz kontenera, zadanie miało wykazać techniczne możliwości dostępu zdalnego oraz pozwolić na krytyczną ocenę takiego rozwiązania jako antywzorca w stosunku do natywnych narzędzi takich jak `docker exec`.
+
+Utworzyłem kontener z otworzonym portem a następnie zainstalowałem w nim serwer SSH:
+
+```bash
+docker run -it --rm --name sejf_z_ssh -p 2222:22 ubuntu bash
+apt update && apt install  -y openssh-server
+```
+
+![4.11.1](screenshoty/4.11.1_create_container.png)
+
+Następnie utworzyłem folder do działania SSH, ustawiłem hasło dla użytkownika `root`, oraz pozwoliłem mu logować się przez SSH, a na końcu włączyłem demona SSH
+
+```bash
+mkdir -p /run/sshd
+echo 'root:studia' | chpasswd
+sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+/usr/sbin/sshd
+```
+
+![4.11.2](screenshoty/4.11.2_start_sshd.png)
+
+Następnie włączyłem drugi terminal i na hoście połączyłem się przez port `2222` do kontenera:
+
+```bash
+ssh root@localhost -p 2222
+```
+
+![4.11.3](screenshoty/4.11.3_succesfuly_logged_in.png)
+
+### Na zrzucie ekranu widać pomyślnie zalogowanie się przez SSH do wnętrza kontenera. Uważane jest to za antywzorzec, ponieważ Docker od lat ma komendę docker exec -it <nazwa> bash, która pozwala wejść do kontenera bez żadnych haseł, instalowania SSH i otwierania portów. Dodatkowo, łamiemy tym zasadę jednej odpowiedzialności - kontener powinien uruchamiać tylko jeden proces główny. Ponadto, przez instalację demona `openssh-server` i bibliotek do niego potrzebnych skrajnie zwiększamy wagę obrazu oraz zużycie pamięci RAM.
+
+## 4. Przygotowanie do uruchomienia serwera Jenkins
+
+### Cel zadania: Zestawienie złożonego środowiska CI/CD w oparciu o architekturę Docker-in-Docker (DIND). Celem było poprawne skonfigurowanie współzależnych kontenerów (serwera Jenkins oraz pomocniczego silnika Docker), zapewnienie im wspólnej sieci komunikacyjnej oraz przeprowadzenie pełnej inicjalizacji systemu wraz z weryfikacją poprawności wdrożenia poprzez interfejs przeglądarkowy.
+
+Po zapoznaniu się z dokumentacją Jenkinsa, zacząłem instalację od utworzenia kontenera docker:dind:
+
+```bash
+docker run \
+  --name jenkins-docker \
+  --rm \
+  --detach \
+  --privileged \
+  --network jenkins \
+  --network-alias docker \
+  --env DOCKER_TLS_CERTDIR=/certs \
+  --volume jenkins-docker-certs:/certs/client \
+  --volume jenkins-data:/var/jenkins_home \
+  --publish 2376:2376 \
+  docker:dind \
+  --storage-driver overlay2
+  ```
+
+  ![4.12.1](screenshoty/4.12.1_jenkins_prepare.png)
+
+  Następnie, zgodnie z dokumentacją, utworzyłem `Dockerfile`:
+
+```bash
+FROM jenkins/jenkins:2.541.3-jdk21
+USER root
+RUN apt-get update && apt-get install -y lsb-release ca-certificates curl && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc && \
+    chmod a+r /etc/apt/keyrings/docker.asc && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+    https://download.docker.com/linux/debian $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" \
+    | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && apt-get install -y docker-ce-cli && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+USER jenkins
+RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api"
+```
+
+![4.12.2](screenshoty/4.12.2_jenkins_dockerfile.png)
+
+a nastepnie utworzyłem obraz:
+
+```bash
+docker build -t myjenkins-blueocean:2.541.3-1 . 
+```
+
+![4.12.3](screenshoty/4.12.3_dockerfile_build.png)
+
+Następnie uruchomiłem obraz Jenkinsa jako kontener w dockerze za pomocą komendy `docker run`:
+
+![4.12.4](screenshoty/4.12.4_run_jenkins.png)
+
+Sprawdziłem działanie obu kontenerów za pomocą komendy `docker ps`
+
+![4.12.5](screenshoty/4.12.5_jenkins_running.png)
+
+Kolejnym krokiem było zobycie hasła inicjalizacyjnego, wyciągnąłem je dzięki wcześniej tłumaczonemu `docker exec`:
+```bash
+docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+![4.12.6](screenshoty/4.12.6_pass.png)
+
+Ostatnim krokiem było rozpoczęcie instalacji Jenkinsa w przeglądarce na hoście. Otworzyłem adres: `172.26.2.165:8080`, a następnie wkleiłem w puste pole skopiowane wcześniej hasło inicjalizacyjne:
+
+![4.12.7](screenshoty/4.12.7_unlock_jenkins.png)
+
+Na końcu rozpocząłem instalację z zalecanymi ustawieniami:
+
+![4.12.8](screenshoty/4.12.8_jenkins_installing.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

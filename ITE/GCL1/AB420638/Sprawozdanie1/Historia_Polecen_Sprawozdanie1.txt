@@ -1,0 +1,288 @@
+    1  ls
+    2  ssh-keygen -t ed25519 -C arkadiuszbbb@gmail.com
+    3  cat ~/.ssh/id_ed25519.pub
+    4  ssh -T git@github.com
+    5  git clone git@github.com:k1tek/NumCppLib.git
+    6  ls
+    7  ip o
+    8  ip
+    9  ip a
+   10  ls
+   11  git
+   12  mkdir mdo
+   13  git status
+   14  ls
+   15  cd ..
+   16  mv MDO2026s_ITE zepsute_mdo
+   17  git clone git@github.com:InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+   18  ls
+   19  cd MDO2026s_ITE/
+   20  ls
+   21  git checkout AB420638
+   22  ls
+   23  cd GCL1
+   24  ls
+   25  cd ..
+   26  git status
+   27  ls
+   28  touch commit-msg
+   29  cp commit-msg ../../../.git/hooks/commit-msg
+   30  ls
+   31  cp commit-msg /../.git/hooks/commit-msg
+   32  cp commit-msg ../.git/hooks/commit-msg
+   33  cp commit-msg .git/hooks/commit-msg
+   34  chmod +x $(git rev-parse --git-dir)/hooks/commit-msg
+   35  git add .
+   36  git commit -m "dodanie skryptu i sprawozdania"
+   37  git commit -m "AB420638 dodanie skryptu"
+   38  git push
+   39  sudo apt update
+   40  sudo apt install docker.io docker-compose
+   41  ls
+   42  cd GCL1
+   43  sudo usermod -aG docker $USER
+   44  newgrp docker
+   45  docker --version
+   46  docker login
+   47  docker pull hello-world
+   48  docker pull busybox
+   49  docker pull ubuntu
+   50  docker run hello-world
+   51  docker run busybox "Busybox dziala"
+   52  docker run busybox echo "Busybox dziala"
+   53  docker run ubuntu
+   54  docker run -it ubuntu
+   55  docker images
+   56  docker ps -a
+   57  docker run -it busybox sh
+   58  git add .
+   59  ls
+   60  cd ..
+   61  ls
+   62  git add .
+   63  git commit -m "AB420638 instalacja Dockera i testy obrazu busybox"
+   64  git push
+   65  git add .
+   66  git commit "AB420638 Edycja sprawozdania do sprawdzenia wersji busybox"
+   67  git push
+   68  git commit -m "AB420638 Edycja sprawozdania do sprawdzenia wersji busybox"
+   69  git push
+   70  git status
+   71  sudo poweroff
+   72  ip
+   73  ip -s
+   74  ip -a
+   75  clear
+   76  ip a
+   77  ls
+   78  cd MDO2026s_ITE/
+   79  ls
+   80  git pull
+   81  ls
+   82  cd GCL1/Lab03
+   83  ls
+   84  docker build -t xzbld -f Dockerfile.xz.bld .
+   85  docker build -t xztest -f Dockerifle.xz.test
+   86  docker build -t xztest -f Dockerifle.xz.test .
+   87  docker build -t xztest -f Dockerfile.xz.test .
+   88  docker build -t xzbld -f Dockerfile.xz.bld .
+   89  docker build -t xztest -f Dockerfile.xz.test .
+   90  docker build --no-cache -t xztest -f Dockerfile.xz.test .
+   91  git clone https://github.com/tukaani-project/xz.git
+   92  cd xz
+   93  ls
+   94  sudo apt-get update
+   95  sudo apt-get install -y git make gcc automake autoconf libtool gettext po4a
+   96  ./autogen.sh
+   97  sudo apt-get install -y autopoint
+   98  ./autogen.sh
+   99  ./configure
+  100  make
+  101  make check
+  102  docker run -it --name xz-ubuntu ubuntu /bin/bash
+  103  ls 
+  104  cd ..
+  105  ls
+  106  docker run -it --name xz-ubuntu ubuntu /bin/bash
+  107  docker container prune
+  108  docker run -it ubuntu bash
+  109  ls
+  110  docker build -t xzbld -f Dockerfile.xz.bld .
+  111  docker build -t xztest -f Dockerfile.xz.test .
+  112  docker build --no-cache -t xztest -f Dockerfile.xz.test .
+  113  docker build -t xztest -f Dockerfile.xz.test .
+  114  git add .
+  115  git rm --cached GCL1/Lab03/xz
+  116  cd ..
+  117  git rm --cached GCL1/Lab03/xz
+  118  git rm -f --cached GCL1/Lab03/xz
+  119  rm -rf GCL1/Lab03/xz/.git
+  120  git add .
+  121  git status
+  122  echo "GCL1/Lab03/xz/" >> .gitignore
+  123  git rm -r --cached GCL1/Lab03/xz
+  124  git add .
+  125  git status
+  126  git add .gitignore
+  127  git commit -m "Added dockerfiles, gitignore (for xz library), screenshots"
+  128  git commit -m "AB420638 Added dockerfiles, gitignore (for xz library), screenshots"
+  129  git push
+  130  git status
+  131  git pull
+  132  docker run -it ubuntu bash
+  133  ps aux | grep docker
+  134  ls
+  135  cd GCL1
+  136  ls
+  137  mkdir Zajecia02
+  138  cd Zajecia02/
+  139  touch Dockerfile
+  140  docker build -t moje-repo
+  141  ls
+  142  docker build -t moje-repo .
+  143  docker run -it moje-repo
+  144  docker ps -a
+  145  docker container prune
+  146  docker image prune -a
+  147  lsa
+  148  ls
+  149  cd ..
+  150  ls
+  151  cd ..
+  152  git add .
+  153  git commit -m "AB420638 dodanie pliku Dockerfile i folderu Sprawozdanie1"
+  154  git push
+  155  ls
+  156  cd GCL1
+  157  ls
+  158  cd Sprawozdanie1/
+  159  mkdir Screenshoty
+  160  mv Screenshoty screenshoty
+  161  cd ..
+  162  git add .
+  163  git commit "AB420638 update sprawozdania"
+  164  git commit -m "AB420638 update sprawozdania"
+  165  git push
+  166  ls
+  167  cd GCL1
+  168  ls
+  169  cd Lab03
+  170  cd Laab03
+  171  ls
+  172  cd ..
+  173  ls
+  174  cd GCL1
+  175  cd Sprawozdanie1/
+  176  ls
+  177  cd ..
+  178  ls
+  179  cd Lab03
+  180  ls
+  181  nano Dockerfile.zlib.bld
+  182  ls
+  183  docker build -t zlibbld -f Dockerfile.zlib.bld
+  184  docker build -t zlibbld -f Dockerfile.zlib.bld .
+  185  docker build -t zlibtest -f Dockerfile.zlib.test
+  186  docker build -t zlibtest -f Dockerfile.zlib.test .
+  187  cd ..
+  188  ls
+  189  git add .
+  190  git commit "AB420638 zlib build and tests"
+  191  git -m add .
+  192  git -m commit "AB420638 zlib build and tests"
+  193  git commit -m "AB420638 zlib build and tests"
+  194  git push
+  195  ls
+  196  cd GCL1
+  197  ls
+  198  cd Lab03
+  199  ls
+  200  git rm -r -f zlib Dockerfile.zlib.bld Dockerfile.zlib.test
+  201  cd ..
+  202  ls
+  203  cd ..
+  204  git rm -r -f zlib Dockerfile.zlib.bld Dockerfile.zlib.test
+  205  ls
+  206  cd ..
+  207  ls
+  208  cd arkbacz3
+  209  ls
+  210  cd mdo
+  211  ls
+  212  git rm -r -f zlib Dockerfile.zlib.bld Dockerfile.zlib.test
+  213  cd MDO2026s_ITE/
+  214  git rm -r -f zlib Dockerfile.zlib.bld Dockerfile.zlib.test
+  215  ls
+  216  rm -rf zlib Dockerfile.zlib.bld Dockerfile.zlib.test
+  217  ls
+  218  cd GCL1
+  219  ls
+  220  cd Lab03
+  221  ls
+  222  docker build -t xzbld -f Dockerfile.xz.bld
+  223  docker build -t xzbld -f Dockerfile.xz.bld .
+  224  docker build -t xztest -f Dockerfile.xz.test .
+  225  git add .
+  226  git commit -m "AB420638 changed zlib to xz"
+  227  git push
+  228  docker run -it --rm --name iperf_klient ubuntu bash
+  229  docker run -it --rm --name klient2 --network moja_siec ubuntu bash
+  230  ssh root@localhost -p 2222
+  231  ls
+  232  cd GCL1
+  233  ls
+  234  cd Lab04
+  235  ls
+  236  docker run -it --rm --name iperf_serwer ubuntu bash
+  237  docker network create moja_siec
+  238  docker run -it --rm --name serwer2 --network moja_siec ubuntu bash
+  239  docker run -d --rm --name iperf_port -p 5201:5201 ubuntu bash -c "apt update && apt install -y iperf3 && iperf3 -s"
+  240  sudo apt install -y iperf3
+  241  iperf3 -c localhost
+  242  docker stop iperf_port
+  243  docker run -it --rm --name sshd -p2222:22 ubuntu bash
+  244  docker network create jenkins
+  245  docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind
+  246  docker stop jenkins_blueocean jenkins-docker
+  247  docker ps
+  248  clear
+  249  docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind --storage-driver overlay2
+  250  docker stop jenkins_blueocean jenkins-docker
+  251  docker ps
+  252  docker run   --name jenkins-docker   --rm   --detach   --privileged   --network jenkins   --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind   --storage-driver overlay2
+  253  docker build -t myjenkins-blueocean:2.541.3-1 .
+  254  docker run   --name jenkins-blueocean   --restart=on-failure   --detach   --network jenkins   --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client   --env DOCKER_TLS_VERIFY=1   --publish 8080:8080   --publish 50000:50000   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   myjenkins-blueocean:2.541.3-1
+  255  docker ps
+  256  docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+  257  git branch
+  258  git add .
+  259  git commit "AB420638 lab4 done"
+  260  git commit -m "AB420638 lab4 done"
+  261  git push
+  262  git checkout GCL1
+  263  git branch
+  264  mkdir -p ITE/GCL1/AB420638
+  265  ls
+  266  cd ITE
+  267  ls
+  268  cd GCL1
+  269  ls
+  270  cd ..
+  271  cd GCL1
+  272  mkdir AB42038
+  273  mkdir AB420638
+  274  git add .
+  275  git commit -m "Fixed folder hierarchy"
+  276  git commit -m "AB420638 Fixed folder hierarchy"
+  277  git push
+  278  cd ..
+  279  ls
+  280  cd MDO2026s_ITE/
+  281  git rm -r GCL1
+  282  git commit -m "AB420638 rm gcl1"
+  283  git push
+  284  git add .
+  285  git commit -m "AB420638 fixes"
+  286  git push
+  287  history
+  288  history > Historia_Polecen_Sprawozdanie1.txt
