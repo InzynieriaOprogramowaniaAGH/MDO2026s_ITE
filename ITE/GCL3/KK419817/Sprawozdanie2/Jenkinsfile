@@ -1,0 +1,43 @@
+pipeline {
+    agent {
+        docker {
+            image 'docker:latest'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            reuseNode true
+        }
+    }
+
+    stages {
+        // stage('Checkout') {
+        //     steps {
+        //         git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git',
+        //             branch: 'KK419817'
+        //     }
+        // }
+
+        stage('Build') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    sh 'docker build -f Dockerfile.build -t express-build .'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    sh 'docker run --rm express-build npm test'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline success'
+        }
+        failure {
+            echo 'Pipeline failed'
+        }
+    }
+}
