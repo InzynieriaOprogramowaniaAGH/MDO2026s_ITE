@@ -1,0 +1,11 @@
+#!/bin/bash
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+PATTERN="^ŁM420071"
+
+if [[ ! $COMMIT_MSG =~ $PATTERN ]]; then
+   
+    echo "BŁĄD: Nieprawidłowy format commita!"
+  
+    exit 1
+fi
