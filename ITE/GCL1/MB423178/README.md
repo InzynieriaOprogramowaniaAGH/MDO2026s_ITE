@@ -1,0 +1,1 @@
+Wszystko jest w README.md w odpowiednim folderze Sprawozdanie 1
