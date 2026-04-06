@@ -1,0 +1,7 @@
+FROM minimalpy_build:latest
+
+WORKDIR /app
+
+RUN pytest
+
+CMD ["bash"]

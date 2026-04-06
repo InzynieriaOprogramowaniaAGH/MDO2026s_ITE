@@ -1,0 +1,8 @@
+#!/bin/bash
+
+MESSAGE=$(cat $1)
+
+if [[ $MESSAGE != MŻ422030* ]]; then
+  echo "Commit musi sie zaczynac od: MŻ422030"
+  exit 1
+fi
