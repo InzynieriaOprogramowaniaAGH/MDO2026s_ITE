@@ -1,0 +1,13 @@
+#!/bin/bash
+
+COMMIT_MSG=$(head -n 1 "$1")
+
+REGEX="^IK424364: "
+
+if [[ ! $COMMIT_MSG =~ $REGEX ]]; then
+	echo "Error: Commit message should start with $REGEX"
+	echo "Your commit message: $COMMIT_MSG"
+	exit 1
+fi
+
+exit 0
