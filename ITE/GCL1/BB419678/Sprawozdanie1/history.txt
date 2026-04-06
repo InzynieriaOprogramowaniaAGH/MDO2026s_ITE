@@ -1,0 +1,345 @@
+    1  exit
+    2  l
+    3  ls
+    4  clear
+    5  lsblk
+    6  apt
+    7  clear
+    8  vim
+    9  clear
+   10  ip a
+   11  ip addr
+   12  systemd status --list
+   13  systemd status list
+   14  systemd status 
+   15  systemd 
+   16  htop
+   17  openssh
+   18  sshd
+   19  sudo systemd start sshd
+   20  sudo systemd status sshd
+   21  clear
+   22  sudo systemctl status ssh
+   23  sudo systemctl enable --now ssh
+   24  ss -tunlp | grep 22
+   25  tmux
+   26  clea
+   27  clear
+   28  ssh-keygen -t ed25519 -C "bartbod4@gmail.com"
+   29  dvcvm//n c
+   30  cat ~/.ssh/id_ed25519.pub 
+   31  ssh -T git@github.com
+   32  sudo apt install gh
+   33  l
+   34  mkdir devops-laby
+   35  cd devops-laby/
+   36  l
+   37  clear
+   38  sudo apt install build-essential 
+   39  sudo apt install git
+   40  clear
+   41  shutdown
+   42  sudo 
+   43  cleae
+   44  clear
+   45  sudo shutdown
+   46  exit
+   47  ls
+   48  clear
+   49  gedit
+   50  sudo apt install gedit
+   51  gedit test.txt
+   52  nvim
+   53  sudo apt install neovim
+   54  nvim .bashrc 
+   55  clear
+   56  source .bashrc
+   57  dir
+   58  clear
+   59  vim
+   60  clear
+   61  gcc
+   62  clear
+   63  g++
+   64  clear
+   65  neofecth
+   66  sudo apt install neofetch
+   67  sudo systemctl status ssh
+   68  sudo systemctl status sshd
+   69  clear
+   70  neofetch
+   71  ip addr
+   72  ls
+   73  ssh
+   74  clear
+   75  
+   76  [2~[2~
+   77  sudo apt install --install-recommends linux-virtual
+   78  ip addr
+   79  sshd
+   80  sudo systemctl status sshd
+   81  sudo apt update && sudo apt upgrade
+   82  clear
+   83  hostname -I
+   84  sudo apt install openssh-server
+   85  sudo systemctl status sshd
+   86  sudo ufw allow ssh
+   87  sudo ufw reload
+   88  ip addr
+   89  clear
+   90  sudo reboot
+   91  exit
+   92  clear
+   93  hostname
+   94  hostname -I
+   95  clear
+   96  gcc
+   97  cowsay
+   98  clear
+   99  exit
+  100  clear
+  101  ls
+  102  hostname -I
+  103  ssh-keygen --help
+  104  ls .ssh
+  105  rm -rf .ssh/
+  106  ls .ssh
+  107  clear
+  108  xdxdm//n dxdg~cg 
+  109  # Debian/Ubuntu
+  110  sudo mkdir -p /etc/apt/keyrings
+  111  curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+  112  echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
+  113  sudo apt update && sudo apt install glow
+  114  glow
+  115  clear
+  116  sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc | cut -f1)
+  117  # Add Docker's official GPG key:
+  118  sudo apt update
+  119  sudo apt install ca-certificates curl
+  120  sudo install -m 0755 -d /etc/apt/keyrings
+  121  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  122  sudo chmod a+r /etc/apt/keyrings/docker.asc
+  123  # Add the repository to Apt sources:
+  124  sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+  125  Types: deb
+  126  URIs: https://download.docker.com/linux/ubuntu
+  127  Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+  128  Components: stable
+  129  Signed-By: /etc/apt/keyrings/docker.asc
+  130  EOF
+  131  sudo apt update
+  132  sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  133  sudo systemctl status docker
+  134  clear
+  135  sudo docker run hello-world
+  136  exit
+  137  cd MDO2026s_ITE
+  138  git checkout BB419678 
+  139  git status
+  140  nvim ITE/GCL1/BB419678/Notes/lab3.txt 
+  141  git add .
+  142  git commit -m "BB419678 update lab3.txt"
+  143  git branhc
+  144  git branch
+  145  git push
+  146  clear
+  147  cd neovim
+  148  l
+  149  make CMAKE_BUILD_TYPE=RelWithDebInfo
+  150  make unittest
+  151  cd ..
+  152  docker run -it ubuntu:24.04 bash
+  153  docker build -t neovim-build -f Dockerfile.nvim.build .
+  154  cd MDO2026s_ITE/ITE/GCL1/BB419678/
+  155  clear
+  156  docker build -t neovim-build -f Dockerfiles_lab3/Dockerfile.nvim.build .
+  157  docker build -t neovim-test -f \ Dockerfile.test .
+  158  docker build -t neovim-test -f Dockerfiles_lab3/Dockerfile.nvim.test .
+  159  docker run neovim-test
+  160  docker build -t neovim-test -f Dockerfiles_lab3/Dockerfile.nvim.test .
+  161  docker run neovim-test
+  162  docker-compose build 
+  163  cd Dockerfiles_lab3
+  164  docker-compose build 
+  165  docker images
+  166  df -h
+  167  docker-compose up tester
+  168  exit
+  169  sudo growpart /dev/sda 3
+  170  df -h
+  171  lsblk
+  172  sudo pvresize /dev/sda3
+  173  sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
+  174  sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
+  175  df -h
+  176  sudo pvs
+  177  sudo vgs
+  178  sudo lvs
+  179  clear
+  180  cd MDO2026s_ITE/ITE/GCL1/BB419678/
+  181  l
+  182  clear
+  183  cat Dockerfile
+  184  clera
+  185  clear
+  186  docker
+  187  clera
+  188  clear
+  189  systemctl status docker
+  190  clear
+  191  ifconfig
+  192  sudo apt install net-tools
+  193  ifconfig
+  194  free -h
+  195  clear
+  196  docker volu,e
+  197  docker volume
+  198  clear
+  199  cd Dockerfiles_lab4
+  200  nvim Dockerfile.nvim.base
+  201  docker volume create nvim-wejscie
+  202  docker volume create nvim-wyjscie
+  203  docker run --rm -v nvim-wejscie:/kod alpine/git clone https://github.com/neovim/neovim.git /kod
+  204  docker run --rm -it   -v nvim-wejscie:/workspace   -v nvim-wyjscie:/out   nvim-base bash
+  205  l
+  206  docker volume ls
+  207  docker build -t nvim-base -f Dockerfile.base .
+  208  clear
+  209  docker build -t nvim-base -f Dockerfile.nvim.base .
+  210  docker run --rm -v nvim-wejscie:/kod alpine/git clone https://github.com/neovim/neovim.git /kod
+  211  l
+  212  docker run --rm -it   -v nvim-wejscie:/workspace   -v nvim-wyjscie:/out   nvim-base bash
+  213  docker run -it -v nvim-wejscie:/workspace nvim-base bash
+  214  docker ps
+  215  docker run -d --name serwer-iperf ubuntu:24.04 sh -c "apt update && apt install -y iperf3 && iperf3 -s"
+  216  docker inspect serwer-iperf | grep IPAddress
+  217  docker run -it --rm ubuntu:24.04 sh -c "apt update && apt install -y iperf3 && iperf3 -c 172.17.0.2"
+  218  docker network create moja-siec
+  219  docker run -d --name moj-serwer --network moja-siec ubuntu:24.04 sh -c "apt update && apt install -y iperf3 && iperf3 -s"
+  220  docker run -it --rm --network moja-siec ubuntu:24.04 sh -c "apt update && apt install -y iperf3 && iperf3 -c moj-serwer"
+  221  docker run -d --name serwer-zewnetrzny -p 5201:5201 ubuntu:24.04 sh -c "apt update && apt install -y iperf3 && iperf3 -s"
+  222  ifconfig
+  223  ipefr3
+  224  iperf3
+  225  sudo apt install iperf3
+  226  iperf3 -c 172.31.187.210
+  227  cd ..
+  228  git add .
+  229  git commit -m "BB419678 added lab4 files"
+  230  git push
+  231  git branch
+  232  clear
+  233  ls
+  234  sudo apt install xrdp
+  235  sudo apt update && sudo apt upgrade
+  236  sudo apt install xrdp
+  237  xstart
+  238  sudo tasksel
+  239  sudo apt install tasksel
+  240  sudo tasksel
+  241  clear
+  242  gnome
+  243  xstart
+  244  restart
+  245  sudo reboot
+  246  htop
+  247  glow
+  248  clear
+  249  ip a
+  250  ip ah
+  251  ip -h
+  252  ifconfig
+  253  clar
+  254  clear
+  255  hostname -I
+  256  exit
+  257  hostname -I
+  258  who a
+  259  who -a
+  260  exit
+  261  sudo apt install kate
+  262  exit
+  263  codium
+  264  sudo snap install codium
+  265  sudo snap install codium --classic
+  266  sudo apt remove kate
+  267  df -h
+  268  codium
+  269  clear
+  270  ls
+  271  rm MDO2026s_ITE_zepsute/ MDO2026s_ITE_zepsute_2/
+  272  rm -rf MDO2026s_ITE_zepsute/ MDO2026s_ITE_zepsute_2/
+  273  ls
+  274  cd MDO2026s_ITE/
+  275  git branch
+  276  xdg-open .
+  277  codium .
+  278  git branch
+  279  cd ITE/GCL1/BB419678/
+  280  docker run -d  --name serwer-zewnetrzny  -p 5201:5201 ubuntu:24.04 sh -c "apt update && apt install -y iperf3 && iperf3 -s"
+  281  docker ps
+  282  docker list
+  283  docker images
+  284  docker containers
+  285  docker container
+  286  docker container serwer-zewnetrzny start
+  287  docker container start serwer-zewnetrzny 
+  288  docker ps
+  289  iperf3 -c 127.0.0.1
+  290  docker run -d --name ssh-server -p 2222:22 ubuntu:24.04 sleep infinity
+  291  docker exec -it ssh-server bash
+  292  apt update && apt install -y openssh-server
+  293  mkdir /var/run/sshd
+  294  echo 'root:haslo123' | chpasswd  # ustawienie hasła dla root'a
+  295  # Zezwolenie na logowanie root'a z hasłem (wymagane w nowym Ubuntu)
+  296  echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+  297  # Uruchomienie demona SSH w tle w kontenerze
+  298  /usr/sbin/sshd
+  299  exit
+  300  ssh root@localhost -p 2222
+  301  ssh root@127.0.0.1 -p 2222
+  302  docker container
+  303  docker container start ssh-server
+  304  docker exec -it ssh-server bash
+  305  clear
+  306  cd ITE/GCL1/BB419678/
+  307  docker network create jenkins
+  308  docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind --storage-driver overlay2
+  309  docker run --name myjenkins-blueocean --rm --detach   --network jenkins --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1   --publish 8080:8080 --publish 50000:50000   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   jenkins/jenkins:lts-jdk17
+  310  docker ps | grep jenkins
+  311  docker exec myjenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+  312  ssh root@localhost -p 2222
+  313  clear
+  314  sudo apt install imagemagick
+  315  sudo apt autoremove
+  316  clear
+  317  cd ITE/GCL1/BB419678/screenshots/lab1-4/
+  318  for f in *.png; do   magick "$f" "${f%.png}.jpg"; done
+  319  for f in *.png; do   imagemagick "$f" "${f%.png}.jpg"; done
+  320  sudo apt install imagemagick
+  321  magick
+  322  for f in *.png; do   magick "$f" "${f%.png}.jpg"; done
+  323  for f in *.png; do   magick convert "$f" "${f%.png}.jpg"; done
+  324  for f in *.png; do  convert "$f" "${f%.png}.jpg"; done
+  325  rm *.jpg
+  326  clear
+  327  find ITE/GCL1/BB419678/screenshots -type f -name "*2026-03-26*.png" | sort
+  328  cd ..
+  329  find ITE/GCL1/BB419678/screenshots/lab1-4 -type f -name "*2026-03-26*.png" | sort
+  330  cd ../../../..
+  331  find ITE/GCL1/BB419678/screenshots/lab1-4 -type f -name "*2026-03-26*.png" | sort
+  332  find ITE/GCL1/BB419678/screenshots/lab1-4 -type f -name "*2026-04-02*.png" | sort
+  333  df -h
+  334  docker run --name myjenkins-blueocean --rm --detach   --network jenkins --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1   --publish 8080:8080 --publish 50000:50000   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   jenkins/jenkins:lts-jdk17
+  335  hostname -I
+  336  docker ps
+  337  clear
+  338  find ITE/GCL1/BB419678/screenshots -type f -name "*2026-03-26*.png" | sort
+  339  find ITE/GCL1/BB419678/screenshots -type f -name "*2026-04-02*.png" | sort
+  340  history
+  341  clera
+  342  clear
+  343  cd ITE/GCL1/BB419678/
+  344  cd Sprawozdanie1/
+  345  history > history.txt

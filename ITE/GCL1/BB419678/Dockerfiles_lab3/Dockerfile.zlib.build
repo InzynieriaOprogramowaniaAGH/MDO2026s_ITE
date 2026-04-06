@@ -1,0 +1,14 @@
+FROM ubuntu:22.04
+
+# zależności
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# pobranie kodu
+WORKDIR /app
+RUN git clone https://github.com/madler/zlib.git .
+
+# konfiguracja i kompilacja, bez testu
+RUN ./configure && make 

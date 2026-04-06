@@ -1,0 +1,5 @@
+FROM neovim-build:latest
+
+WORKDIR /workspace
+
+CMD ["make", "unittest"]

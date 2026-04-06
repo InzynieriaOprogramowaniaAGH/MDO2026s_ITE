@@ -1,0 +1,5 @@
+#  bazowy zostanie nazwany zlib-build
+FROM zlib-build
+
+#  testy
+CMD ["make", "check"]
