@@ -1,0 +1,15 @@
+#!/bin/sh
+
+REQUIRED_PREFIX="KK419817"
+
+FIRST_LINE=$(head -n 1 "$1")
+
+case "$FIRST_LINE" in
+  "$REQUIRED_PREFIX"*) 
+    exit 0
+    ;;
+  *)
+    echo "Commit message must start with '$REQUIRED_PREFIX'"
+    exit 1
+    ;;
+esac
