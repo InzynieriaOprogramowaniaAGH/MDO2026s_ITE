@@ -1,0 +1,10 @@
+#!/bin/bash
+HOUR=$(date +%H)
+echo "Obecna godzina: $HOUR"
+if [ $((HOUR % 2)) -ne 0 ]; then
+  echo "ŹLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE ALARM AALRM GODZINA NIEPARZYSTA"
+  exit 1
+else
+  echo "Godzina jest parzysta 🙂"
+  exit 0
+fi
