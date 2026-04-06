@@ -1,0 +1,6 @@
+FROM mdo-ite:sprawozdanie3-build
+
+WORKDIR /readme-aura
+
+CMD ["npm", "test"]
+
