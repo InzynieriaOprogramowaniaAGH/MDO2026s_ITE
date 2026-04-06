@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Pobieranie kodu ze wspólnego repozytorium (gałąź SK419875)...'
+                git branch: 'SK419875', url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+        
+        stage('Build Builder') {
+            steps {
+                echo 'Wejście do folderu lab3 i budowanie głównego obrazu...'
+                dir('ITE/GCL3/SK419875/lab3') {
+                    sh 'docker build -t marked-build:latest -f Dockerfile .'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Budowanie obrazu testowego i uruchamianie testów...'
+                dir('ITE/GCL3/SK419875/lab3') {
+                    sh 'docker build -t marked-test:latest -f Dockerfile.test .'
+                    sh 'docker run --rm marked-test:latest'
+                }
+            }
+        }
+    }
+}
