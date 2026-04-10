@@ -11,7 +11,6 @@ pipeline {
         stage('Test: Uruchomienie testów') {
             steps {
                 dir('ITE/GCL1/SB422052/Sprawozdanie1') {
-                    
                     sh '''
                     cat <<EOF > Dockerfile.test
                     FROM node:18-alpine
@@ -23,6 +22,37 @@ pipeline {
                     
                     docker build -t tester-lab5 -f Dockerfile.test .
                     docker run --rm tester-lab5
+                    '''
+                }
+            }
+        }
+        stage('Publish: Archiwizacja artefaktu') {
+            steps {
+                dir('ITE/GCL1/SB422052/Sprawozdanie1') {
+                    
+                    sh 'tar -czvf app-release.tar.gz .'
+                    
+                    archiveArtifacts artifacts: 'app-release.tar.gz', fingerprint: true
+                }
+            }
+        }
+        stage('Deploy: Uruchomienie (nieblokujące)') {
+            steps {
+                dir('ITE/GCL1/SB422052/Sprawozdanie1') {
+                    sh '''
+                    # Odpalamy kontener produkcyjny w tle (-d)
+                    docker run -d --name express-prod-app moj-express-lab5
+                    
+                    # Dajemy mu 3 sekundy na start
+                    sleep 3
+                    
+                    # Dowód działania: wyciągamy logi z uruchomionego kontenera
+                    echo "--- LOGI Z DZIAŁAJĄCEJ APLIKACJI ---"
+                    docker logs express-prod-app
+                    echo "-----------------------------------"
+                    
+                    # Sprzątamy po sobie 
+                    docker rm -f express-prod-app
                     '''
                 }
             }
