@@ -1,5 +1,5 @@
-FROM neovim-build:latest
+FROM neovim-builder-jenkins:latest
 
-WORKDIR /workspace
+WORKDIR /workspaces
 
 CMD ["make", "unittest"]
