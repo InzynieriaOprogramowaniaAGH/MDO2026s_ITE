@@ -12,7 +12,7 @@ Już z poziomu IDE zalogowano się do maszyny oraz skolonowano repozytorium i po
 
 ![Zdj_3](lab1/1_3.png)
 
-W trakcie zajęć nie dodano hook'a przez co wczesne commity nie posiadają na początku inicjałów oraz numeru indeksu, ale dodano go w trakcie tworzenia sprawozdania, poprzez nadpisanie pliku commit-msg.sample:
+W trakcie zajęć nie dodano hook'a przez co wczesne commity nie posiadają na początku inicjałów oraz numeru indeksu, ale dodano go w trakcie tworzenia sprawozdania, poprzez nadpisanie pliku commit-msg.sample i usunięcie jego rozszerzenia:
 
 <pre>
 #!/bin/sh
