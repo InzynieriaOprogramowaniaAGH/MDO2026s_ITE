@@ -1,0 +1,20 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build: Budowanie obrazu') {
+            steps {
+                dir('ITE/GCL1/SB422052/Sprawozdanie1') {
+                    sh 'docker build -t moj-express-lab5 .'
+                }
+            }
+        }
+        stage('Test: Uruchomienie testów') {
+            steps {
+                dir('ITE/GCL1/SB422052/Sprawozdanie1') {
+                    
+                    sh 'docker run --rm moj-express-lab5 npm test'
+                }
+            }
+        }
+    }
+}
