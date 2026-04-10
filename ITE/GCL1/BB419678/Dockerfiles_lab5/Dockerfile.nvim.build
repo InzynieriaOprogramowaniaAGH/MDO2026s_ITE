@@ -1,12 +1,15 @@
-FROM neovim-builder-jenkins:latest
+FROM ubuntu:24.04
 
-# 'tester' z katalogiem domowym
-RUN useradd -m tester && \
-    # folder z kodem, żeby mógł go kompilować/testować
-    chown -R tester:tester /workspace
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Przełączamy się na tego użytkownika 
-USER tester
+RUN apt-get update && apt-get install -y \
+    ninja-build gettext cmake unzip curl git build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /workspace
 
-CMD["make", "unittest"]
+RUN git clone https://github.com/neovim/neovim.git .
+
+RUN make CMAKE_BUILD_TYPE=RelWithDebInfo
+
+CMD ["/bin/bash"]

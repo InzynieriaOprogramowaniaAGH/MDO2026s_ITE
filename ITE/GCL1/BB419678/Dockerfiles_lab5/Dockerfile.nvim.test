@@ -1,5 +1,12 @@
 FROM neovim-builder-jenkins:latest
 
+# 'tester' z katalogiem domowym
+RUN useradd -m tester && \
+    # chown na dostep do kodu
+    chown -R tester:tester /workspace
+
+# to naprawi bledy w testach odnosnie $HOME
+USER tester
 WORKDIR /workspace
 
-CMD ["make", "unittest"]
+CMD["make", "unittest"]
