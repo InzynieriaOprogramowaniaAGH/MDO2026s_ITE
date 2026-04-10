@@ -133,7 +133,11 @@ pipeline {
 }
 ```
 
-Zapisałam skrypt i go uruchomiłam. Wszystko przeszło pomyślnie.
+Zapisałam skrypt i go uruchomiłam. Pierwsza próba zakończyła się niepowodzeniem na etapie testów. 
+
+![Błąd wyświetlania](lab5_ss/lab5ss23.png)
+
+Błąd wynikał z niepoprawnej nazwy buildera. Po jego poprawieniu wszystko przebiegło pomyślnie.
 
 ![Błąd wyświetlania](lab5_ss/lab5ss19.png)
 ![Błąd wyświetlania](lab5_ss/lab5ss20.png)
