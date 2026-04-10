@@ -9,4 +9,4 @@ RUN useradd -m tester && \
 USER tester
 WORKDIR /workspace
 
-CMD["make", "unittest"]
+CMD ["make", "unittest"]
