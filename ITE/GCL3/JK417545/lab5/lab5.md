@@ -81,3 +81,49 @@ docker images | grep ubuntu
 ```
 ![](zdj/l5-z4.png)
 
+### Zadanie wstępne: obiekt typu pipeline
+
+Utworzone obiekt typu pipeline
+W sekcji skrypt dodano:
+```dockerfile
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "url-shortener-builder"
+        DOCKERFILE_PATH = "ITE/GCL3/JK417545/lab3/Dockerfile.build"
+    }
+
+    stages {
+        stage('Checkout Repo') {
+            steps {
+                git branch: 'JK417545', 
+                    url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+
+        stage('Build Image') {
+            steps {
+                script {
+                    sh "docker build -t ${IMAGE_NAME} -f ${DOCKERFILE_PATH} ."
+                }
+            }
+        }
+
+        stage('Verify Build') {
+            steps {
+                sh "docker images | grep ${IMAGE_NAME}"
+            }
+        }
+    }
+}
+```
+![](zdj/l5-z6.png)
+![](zdj/l5-z7.png)
+
+### Wnioski laboratorium 5
+- Implementacja Docker-in-Docker wykazala skuteczność architektury w której Jenkins uruchomiony w kontenerze może zarządzać operacjami Dockera dzięki komunikacji z dedykowanym kontenerem jenkins-docker.
+
+- Pipeline umożliwia pełną kontrolę nad środowiskiem, pobieraniem kodu z repozytorium oraz budowaniem obrazów w sposób powtarzalny i przejrzysty dla innych.
+
+- Udany proces budowania obrazu wewnatrz potoku Pipeline potwierdza że środowisko Jenkinsa zostalo poprawnie skonfigurowane do obslugi zadań związanych z konteneryzacją. 
