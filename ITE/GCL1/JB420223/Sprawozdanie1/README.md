@@ -2,7 +2,7 @@
 Jakub Bednarczyk
 
 ## Lab 1 Wprowadzenie, Git, Gałęzie, SSH
-Na maszynie wirtualnej (HyperV) z systemem Ubuntu zaisntalowano git'a,
+Na maszynie wirtualnej (HyperV) z systemem Ubuntu zainstalowano git'a,
 od razu utworzono klucze SSH, aby łączyć się z maszyną przez Visual Studio Code.
 Już z poziomu IDE zalogowano się do maszyny oraz skolonowano repozytorium i połączono się z maszyną wirtualną poprzez program Filezilla w celu wygodnej wymiany plików
 
