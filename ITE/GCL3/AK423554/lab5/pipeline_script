@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout Source') {
+            steps {
+                git branch: 'AK423554', 
+                    url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    echo "Budowanie obrazu......"
+                    sh 'docker build  -t fastify-builder:latest -f ./ITE/GCL3/AK423554/lab3/Dockerfile.build ./ITE/GCL3/AK423554/lab3/'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    echo "Testowanie...."
+                    sh 'docker build -t fastify-test:latest -f ./ITE/GCL3/AK423554/lab3/Dockerfile.test ./ITE/GCL3/AK423554/lab3/'
+                    sh 'docker run --rm fastify-test:latest'
+                }
+            }
+        }
+    }
+}
