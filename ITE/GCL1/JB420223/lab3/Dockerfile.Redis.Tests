@@ -1,7 +1,5 @@
 FROM redis_build
 
-RUN dnf install -y tcl bash procps-ng
-
 WORKDIR /redis
 
-CMD ["bash", "runtest"]
+RUN bash runtest
