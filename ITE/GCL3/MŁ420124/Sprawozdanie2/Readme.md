@@ -55,3 +55,29 @@ pipeline {
 }
 ```
 
+Skrypt `docker-pull-test` (pipeline)
+```bash
+pipeline {
+    agent any
+    stages {
+        stage('clone repository') {
+            steps {
+                git branch: 'MŁ420124',
+                url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+        stage('build docker image') {
+            steps {
+                script {
+                    dir('ITE/GCL3/MŁ420124/Dockerfiles') {
+                        def customImage = docker.build(
+                            "devskillerbld:${env.BUILD_ID}",
+                            "-f Dockerfile.devskiller.bld ."
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+```
