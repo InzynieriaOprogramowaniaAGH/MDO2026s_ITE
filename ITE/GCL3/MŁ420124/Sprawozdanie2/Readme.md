@@ -1,3 +1,9 @@
+# Sprawozdanie 2
+
+## Class 05
+
+### Wstęp
+
 ```bash
 sudo docker network create jenkins
 sudo docker network ls
@@ -10,5 +16,42 @@ sudo docker network inspect jenkins
 
 sudo docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
 2f3df83f0662438eb60f21eede0d2574
+```
+
+
+Skrypt `uname-test`
+```bash
+uname -a
+```
+
+Skrypt `hour-test`
+```bash
+hour=$(date +%H)
+
+if [ $((hour % 2)) -ne 0 ]; then
+  echo "Errpr, hour is odd"
+  exit 1
+else
+  echo "Hour is even"
+fi
+```
+
+Skrypt `docker-pull-test` (pipeline)
+```bash
+pipeline {
+    agent any
+
+    stages {
+        stage('Pull Docker Image') {
+            steps {
+                sh '''
+                {
+                    docker pull ubuntu
+                }
+                '''
+            }
+        }
+    }
+}
 ```
 
