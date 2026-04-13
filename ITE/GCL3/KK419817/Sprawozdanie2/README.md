@@ -168,7 +168,7 @@ pipeline {
         stage('Build') {
             steps {
                  dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
-                    sh 'docker build -f Dockerfile.build -t express-build .'
+                    sh 'docker build --no-cache -f Dockerfile.build -t express-build .'
                 }
             }
         }
@@ -176,7 +176,7 @@ pipeline {
             steps {
                 dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
                     echo 'Start testów'
-                    sh 'docker build -f Dockerfile.test -t express-test .'
+                    sh 'docker build --no-cache -f Dockerfile.test -t express-test .'
                     sh 'docker run --rm express-test'
                 }
             }
@@ -201,12 +201,78 @@ Zadziałał poprawnie, zbudowano obrazy (tak jak wcześniej lokalnie) i włączo
 Pipeline przeszedł poprawnie conajmniej dwa razy.
 
 ---
+### Sekcja "Pipeline: składnia"
+
+Utworzyłem [Jenkinsfile](Jenkinsfile):
+
+```Jenkinsfile
+pipeline {
+    agent {
+        docker {
+            image 'docker:latest'
+            args '-u root  -v /var/run/docker.sock:/var/run/docker.sock'
+            reuseNode true
+        }
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git',
+                    branch: 'KK419817'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    sh 'docker build --no-cache -f Dockerfile.build -t express-build .'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    sh 'docker build --no-cache -f Dockerfile.test -t express-test .'
+                    sh 'docker run --rm express-test'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline success'
+        }
+        failure {
+            echo 'Pipeline failed'
+        }
+    }
+}
+```
 
 Skonfigurowałem nowy pipeline `pipeline-2-jenkinsfile`:
 ![alt text](image-10.png)
 
 Po poprawce (usunięcie MDO2026s_ITE ze ścieżki) pipeline uruchomił się poprawie.
 
+![alt text](image-11.png)
 
+Wykorzystałem podejście z agentem kontenerowym a nie z DinD. Polega ono na uruchomieniu tymczasowego kontenera z obrazem dockera, do którego montuję socket dockera z hosta. Dzięki temu wszystkie komendy docker build i docker run są wykonywane bezpośrednio przez dockera hosta. Jest to prostsze w konfiguracji niż osobny kontener DinD, ale mniej bezpieczne, ponieważ Jenkins zyskuje pełny dostęp do dockera hosta. W podejściu z DinD Jenkins łączyłby się z osobnym kontenerem udostępniającym własnego demona dockera, dająć lepszą izolację kosztem większej złożoności i gorszej wydajności.
 
 

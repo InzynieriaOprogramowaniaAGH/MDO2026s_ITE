@@ -18,7 +18,7 @@ pipeline {
         stage('Build') {
             steps {
                 dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
-                    sh 'docker build -f Dockerfile.build -t express-build .'
+                    sh 'docker build --no-cache -f Dockerfile.build -t express-build .'
                 }
             }
         }
@@ -26,7 +26,22 @@ pipeline {
         stage('Test') {
             steps {
                 dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
-                    sh 'docker run --rm express-build npm test'
+                    sh 'docker build --no-cache -f Dockerfile.test -t express-test .'
+                    sh 'docker run --rm express-test'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
                 }
             }
         }
