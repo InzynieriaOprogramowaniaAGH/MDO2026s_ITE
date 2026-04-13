@@ -125,6 +125,8 @@ docker images | grep ubuntu
 
 Pierwszy failował bo padł kontener dind. Uruchomiłem go ponownie tym samym poleceniem co na początku zajęć. Następne buildy już zadziałały poprawnie.
 
+(Można użyć `--restart=always` aby kontener zawsze się restartował po zakończeniu)
+
 ---
 
 Sprawdzam czy uda mi się sclonować repo:
@@ -193,4 +195,18 @@ pipeline {
 
 Zadziałał poprawnie, zbudowano obrazy (tak jak wcześniej lokalnie) i włączono testy:
 ![sukces_pipeline](image-8.png)
+
+![alt text](image-9.png)
+
+Pipeline przeszedł poprawnie conajmniej dwa razy.
+
+---
+
+Skonfigurowałem nowy pipeline `pipeline-2-jenkinsfile`:
+![alt text](image-10.png)
+
+Po poprawce (usunięcie MDO2026s_ITE ze ścieżki) pipeline uruchomił się poprawie.
+
+
+
 

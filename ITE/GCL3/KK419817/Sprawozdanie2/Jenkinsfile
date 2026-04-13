@@ -2,18 +2,18 @@ pipeline {
     agent {
         docker {
             image 'docker:latest'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            args '-u root  -v /var/run/docker.sock:/var/run/docker.sock'
             reuseNode true
         }
     }
 
     stages {
-        // stage('Checkout') {
-        //     steps {
-        //         git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git',
-        //             branch: 'KK419817'
-        //     }
-        // }
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git',
+                    branch: 'KK419817'
+            }
+        }
 
         stage('Build') {
             steps {
