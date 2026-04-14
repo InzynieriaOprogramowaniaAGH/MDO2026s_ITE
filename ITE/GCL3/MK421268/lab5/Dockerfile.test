@@ -1,0 +1,3 @@
+FROM express-build-image:latest 
+
+CMD ["npm", "test"]

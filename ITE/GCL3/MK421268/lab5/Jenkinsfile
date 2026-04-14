@@ -1,22 +1,23 @@
 pipeline {
-    agent {
-        docker { 
-            image 'node:20-alpine'
-            args '-u root:root'
-        }
-    }
+    agent any
 
     stages {
-        stage('Build') {
+        stage('1. Build') {
             steps {
-                echo 'Instalacja zależności NPM...'
-                sh 'npm ci'
+                dir('ITE/GCL3/MK421268/lab5') {
+                    echo 'Budowanie obrazu bazowego z kodem...'
+                    sh 'docker build -t express-build-image:latest -f Dockerfile.build .'
+                }
             }
         }
-        stage('Test') {
+
+        stage('2. Test') {
             steps {
-                echo 'Uruchamianie testów...'
-                sh 'npm test'
+                dir('ITE/GCL3/MK421268/lab5') {
+                    echo 'Budowanie i uruchamianie kontenera testowego...'
+                    sh 'docker build -t express-test-image:latest -f Dockerfile.test .'
+                    sh 'docker run --rm express-test-image:latest'
+                }
             }
         }
     }
