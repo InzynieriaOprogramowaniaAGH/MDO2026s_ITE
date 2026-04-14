@@ -245,8 +245,8 @@ docker run \
   myjenkins-blueocean:2.541.3-1
 ```
 
-![scr1](./cw3/Screenshot_11.png)
+![scr1](./cw4/Screenshot_11.png)
 
-![scr1](./cw3/Screenshot_12.png)
+![scr1](./cw4/Screenshot_12.png)
 
-![scr1](./cw3/Screenshot_13.png)
+![scr1](./cw4/Screenshot_13.png)
