@@ -23,5 +23,8 @@ pipeline przetestowano
 #L6
 
 dodano deploya i poprawiono builda i testa
++opisac builda w konsoli na testa
 ![curl z konsoli](image-13.png)
-jest git 404
++opisac/wkleic pipeline
+![wyplute artefakty](image-14.png)
+![output](image-15.png)
