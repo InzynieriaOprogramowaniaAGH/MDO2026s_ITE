@@ -1,0 +1,93 @@
+pipeline {
+    agent any
+    environment {
+        NETWORK_NAME = "app-network-${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                sh "docker build -t realworld-app:latest ."
+            }
+        }
+        stage('API Tests') {
+            steps {
+                sh "docker network create ${$NETWORK_NAME}"
+                sh "docker run -d --name app-container --network ${$NETWORK_NAME} realworld-app:latest"
+
+                def workspacePath = pwd()
+
+                echo "Czekanie na start aplikacji..."
+                waitUntil { // active waiting
+                    def status = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags || echo 0", returnStdout: true).trim()
+                    return status == '200'
+                }
+
+                def t1 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags", returnStdout: true).trim()
+
+                def t2 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/articles", returnStdout: true).trim()
+
+                def t3 = sh(script: """
+                    docker run --rm --network ${NETWORK_NAME} \
+                    -v ${workspacePath}/test-data:/data \
+                    curlimages/curl -s -o /dev/null -w '%{http_code}' \
+                    -X POST http://app-container:8080/api/users \
+                    -H 'Content-Type: application/json' \
+                    -d @/data/register.json
+                """, returnStdout: true).trim()
+
+                if (t1 == '200' && t2 == '200' && (t3 == '200' || t3 == '422')) {
+                    echo "Testy przeszli"
+                } else {
+                    error "Błąd w testach: Tags=${t1}, Articles=${t2}, Register=${t3}"
+                }
+            }
+            post {
+                always {
+                    sh 'docker stop app-container || true'
+                    sh 'docker rm app-container || true'
+                    sh "docker network rm ${NETWORK_NAME} || true"
+                }
+                failure {
+                    sh 'docker logs app-container'
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    echo "Deploying to production environment..."
+                    sh 'docker stop realworld-prod || true'
+                    sh 'docker rm realworld-prod || true'
+                    
+                    sh 'docker run -d --name realworld-prod -p 8081:8080 realworld-app:latest'
+                    
+                    sleep 10
+                    def smoke = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8081/api/tags", returnStdout: true).trim()
+                    
+                    if (smoke == '200') {
+                        echo "Deployment udany. Aplikacja działa na porcie 8081."
+                    } else {
+                        error "Еest nie przeszedł! Aplikacja nie wstała."
+                    }
+                }
+            }
+        }
+        stage('Publish') {
+            steps {
+                sh 'docker create --name temp-container realworld-app:latest'
+                sh 'docker cp temp-container:/app/app.jar ./realworld-app.jar'
+                sh 'docker rm temp-container'
+                archiveArtifacts artifacts: 'realworld-app.jar', fingerprint: true
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Sukces'
+        }
+        failure {
+            echo 'Błąd'
+        }
+    }
+}
