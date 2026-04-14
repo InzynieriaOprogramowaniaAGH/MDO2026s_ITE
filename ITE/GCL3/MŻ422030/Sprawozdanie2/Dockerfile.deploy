@@ -1,0 +1,10 @@
+FROM minimalpy_build:latest
+
+WORKDIR /app
+
+RUN pip install --upgrade pip
+RUN pip install .
+
+EXPOSE 5430
+
+CMD ["minimal"]

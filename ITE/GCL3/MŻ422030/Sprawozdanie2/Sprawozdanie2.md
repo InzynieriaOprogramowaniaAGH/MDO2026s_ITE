@@ -19,3 +19,9 @@ proste projekty uruchamiaja sie
 pipeline przetestowano
 ![piersze uruchomienie](image-10.png)
 ![drugie uruchomienie](image-11.png)
+
+#L6
+
+dodano deploya i poprawiono builda i testa
+![curl z konsoli](image-13.png)
+jest git 404
