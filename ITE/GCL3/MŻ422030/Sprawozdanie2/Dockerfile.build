@@ -11,7 +11,6 @@ RUN apt-get clean
 # RUN git clone https://github.com/blankdots/minimalpy.git .
 
 RUN pip install --upgrade pip
-RUN pip install -r ITE/GCL3/MŻ422030/minimalpy-jenkins/minimalpy/requirements.tx
-RUN pip install pytest
+RUN pip install pytest aiohttp==3.13.3 uvloop==0.21.0 gunicorn==25.1.0
 
 CMD ["bash"]
