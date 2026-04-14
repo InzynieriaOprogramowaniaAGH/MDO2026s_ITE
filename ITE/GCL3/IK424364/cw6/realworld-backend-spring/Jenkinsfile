@@ -12,34 +12,36 @@ pipeline {
         }
         stage('API Tests') {
             steps {
-                sh "docker network create ${$NETWORK_NAME}"
-                sh "docker run -d --name app-container --network ${$NETWORK_NAME} realworld-app:latest"
+                script {
+                    // ИСПРАВЛЕНО: Убраны лишние знаки $
+                    sh "docker network create ${NETWORK_NAME}"
+                    sh "docker run -d --name app-container --network ${NETWORK_NAME} realworld-app:latest"
 
-                def workspacePath = pwd()
+                    def workspacePath = pwd()
 
-                echo "Czekanie na start aplikacji..."
-                waitUntil { // active waiting
-                    def status = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags || echo 0", returnStdout: true).trim()
-                    return status == '200'
-                }
+                    echo "Czekanie na start aplikacji..."
+                    waitUntil {
+                        def status = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags || echo 0", returnStdout: true).trim()
+                        return status == '200'
+                    }
 
-                def t1 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags", returnStdout: true).trim()
+                    def t1 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags", returnStdout: true).trim()
+                    def t2 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/articles", returnStdout: true).trim()
 
-                def t2 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/articles", returnStdout: true).trim()
+                    def t3 = sh(script: """
+                        docker run --rm --network ${NETWORK_NAME} \
+                        -v ${workspacePath}/test-data:/data \
+                        curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' \
+                        -X POST http://app-container:8080/api/users \
+                        -H 'Content-Type: application/json' \
+                        -d @/data/register.json
+                    """, returnStdout: true).trim()
 
-                def t3 = sh(script: """
-                    docker run --rm --network ${NETWORK_NAME} \
-                    -v ${workspacePath}/test-data:/data \
-                    curlimages/curl -s -o /dev/null -w '%{http_code}' \
-                    -X POST http://app-container:8080/api/users \
-                    -H 'Content-Type: application/json' \
-                    -d @/data/register.json
-                """, returnStdout: true).trim()
-
-                if (t1 == '200' && t2 == '200' && (t3 == '200' || t3 == '422')) {
-                    echo "Testy przeszli"
-                } else {
-                    error "Błąd w testach: Tags=${t1}, Articles=${t2}, Register=${t3}"
+                    if (t1 == '200' && t2 == '200' && (t3 == '200' || t3 == '422')) {
+                        echo "Testy przeszły pomyślnie"
+                    } else {
+                        error "Błąd w testach: Tags=${t1}, Articles=${t2}, Register=${t3}"
+                    }
                 }
             }
             post {
@@ -68,17 +70,19 @@ pipeline {
                     if (smoke == '200') {
                         echo "Deployment udany. Aplikacja działa na porcie 8081."
                     } else {
-                        error "Еest nie przeszedł! Aplikacja nie wstała."
+                        error "Test nie przeszedł! Aplikacja nie wstała."
                     }
                 }
             }
         }
         stage('Publish') {
             steps {
-                sh 'docker create --name temp-container realworld-app:latest'
-                sh 'docker cp temp-container:/app/app.jar ./realworld-app.jar'
-                sh 'docker rm temp-container'
-                archiveArtifacts artifacts: 'realworld-app.jar', fingerprint: true
+                script {
+                    sh 'docker create --name temp-container realworld-app:latest'
+                    sh 'docker cp temp-container:/app/app.jar ./realworld-app.jar'
+                    sh 'docker rm temp-container'
+                    archiveArtifacts artifacts: 'realworld-app.jar', fingerprint: true
+                }
             }
         }
     }
