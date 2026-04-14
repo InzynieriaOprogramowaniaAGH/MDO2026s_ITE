@@ -1,0 +1,71 @@
+// Pipeline uruchamiany recznie: w konfiguracji joba Jenkins nie wlaczaj
+// "Build Triggers" typu Poll SCM / GitHub hook — wtedy start tylko przyciskiem "Build Now".
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        COMPOSE_DIR = 'ITE/GCL3/YK424367/Sprawozdanie1'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build image') {
+            steps {
+                dir("${env.COMPOSE_DIR}") {
+                    sh 'docker compose build readme-aura-build'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir("${env.COMPOSE_DIR}") {
+                    sh 'docker compose build readme-aura-test && docker compose run --rm readme-aura-test'
+                }
+            }
+        }
+
+        stage('Smoke (npx CLI)') {
+            steps {
+                dir("${env.COMPOSE_DIR}") {
+                    writeFile file: 'jenkins-smoke-inner.sh', text: '''#!/bin/sh
+set -e
+cd /readme-aura
+npm pack
+TGZ=$(ls -1 *.tgz | head -1)
+test -n "$TGZ"
+mkdir -p /tmp/ra-smoke && cd /tmp/ra-smoke
+npm init -y
+npm install "/readme-aura/$TGZ"
+npx readme-aura init --template PurpleGlow
+npx readme-aura build
+'''
+                    sh '''
+                        docker compose run --rm --no-deps \
+                          -v "$PWD/jenkins-smoke-inner.sh:/tmp/jenkins-smoke-inner.sh:ro" \
+                          --entrypoint /bin/sh readme-aura-build /tmp/jenkins-smoke-inner.sh
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            dir("${env.COMPOSE_DIR}") {
+                sh 'rm -f jenkins-smoke-inner.sh || true'
+            }
+        }
+    }
+}
