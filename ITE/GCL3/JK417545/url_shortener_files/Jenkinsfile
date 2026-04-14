@@ -1,0 +1,75 @@
+pipeline {
+    agent any
+
+    environment {
+        FILES_DIR = "ITE/GCL3/JK417545/url_shortener_files"
+        BUILD_IMAGE = "url-shortener-builder"
+        DEPLOY_IMAGE = "url-shortener-deploy"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'JK417545', 
+                    url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+
+        stage('Build Builder') {
+            steps {
+                dir("${FILES_DIR}") {
+                    sh "docker build -t ${BUILD_IMAGE} -f Dockerfile.build ."
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                dir("${FILES_DIR}") {
+                    sh "docker-compose -f docker-compose.test.yml up --exit-code-from app-test"
+                }
+            }
+            post {
+                always {
+                    dir("${FILES_DIR}") {
+                        sh "docker-compose -f docker-compose.test.yml down"
+                    }
+                }
+            }
+        }
+
+        stage('Build Runtime Image') {
+            steps {
+                dir("${FILES_DIR}") {
+                    sh "docker build -t ${DEPLOY_IMAGE} -f Dockerfile.runtime ."
+                }
+            }
+        }
+
+        stage('Deploy & Smoke Test') {
+            steps {
+                dir("${FILES_DIR}") {
+                    sh "docker-compose -f docker-compose.deploy.yml up -d"
+                    sh "sleep 10"
+                    sh "curl -v http://localhost:3000/url/tinyUrl || exit 1"
+                }
+            }
+            post {
+                always {
+                    dir("${FILES_DIR}") {
+                        sh "docker-compose -f docker-compose.deploy.yml down"
+                    }
+                }
+            }
+        }
+
+        stage('Publish Artifact') {
+            steps {
+                dir("${FILES_DIR}") {
+                    sh "npm pack"
+                    archiveArtifacts artifacts: '*.tgz', fingerprint: true
+                }
+            }
+        }
+    }
+}

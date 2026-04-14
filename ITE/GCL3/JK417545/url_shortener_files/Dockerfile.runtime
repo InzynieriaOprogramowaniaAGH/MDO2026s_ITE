@@ -1,0 +1,6 @@
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=url-shortener-builder /app/package*.json ./
+RUN npm install --only=production
+COPY --from=url-shortener-builder /app/dist ./dist
+CMD ["node", "dist/main"]
