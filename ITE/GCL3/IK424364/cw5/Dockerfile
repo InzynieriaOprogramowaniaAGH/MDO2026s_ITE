@@ -1,0 +1,14 @@
+FROM eclipse-temurin:25-noble
+
+WORKDIR app/
+
+RUN apt-get update && apt-get install -y git
+
+RUN git clone https://github.com/alexey-lapin/realworld-backend-spring.git
+
+WORKDIR /app/realworld-backend-spring
+
+RUN ./gradlew dependencies --no-daemon
+
+RUN ./gradlew assemble --no-daemon
+

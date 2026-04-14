@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Start'
+                git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git', branch: 'IK424364'
+                echo 'Repozytorium zostało sklonowane'
+            }
+        }
+        stage('Build') {
+            steps {
+                 dir('ITE/GCL3/IK424364/cw3/') {
+                    sh 'docker build --no-cache -f Dockerfile.build -t realworld-base .'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                dir('ITE/GCL3/IK424364/cw3/') {
+                    echo 'Start testów'
+                    sh 'docker build --no-cache -f Dockerfile.test -t realworld-test .'
+                    sh 'docker run --rm spring-test'
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'TODO'
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                echo 'TODO'
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Sukces'
+        }
+        failure {
+            echo 'Błąd'
+        }
+    }
+}
