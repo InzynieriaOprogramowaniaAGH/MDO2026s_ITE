@@ -1,0 +1,17 @@
+# Krok 1: Odnosimy się do Twojego obrazu budującego
+FROM marked-build:latest AS builder
+
+# Krok 2: Pobieramy bardzo lekką wersję Node.js (Alpine)
+FROM node:20-alpine
+WORKDIR /app
+
+# Krok 3: Kopiujemy TYLKO niezbędne pliki produkcyjne z "buildera"
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/bin ./bin
+
+# Krok 4: Instalujemy tylko lekkie zależności (bez narzędzi testowych)
+RUN npm install --omit=dev
+
+# Krok 5: SMOKE TEST - sprawdzamy, czy aplikacja odpowiada
+CMD ["node", "bin/marked.js", "--version"]

@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Pobieranie kodu ze wspólnego repozytorium...'
+                git branch: 'SK419875', url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+        
+        stage('Build Builder') {
+            steps {
+                dir('ITE/GCL3/SK419875/markedjs-projekt') {
+                    sh 'docker build -t marked-build:latest -f Dockerfile .'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('ITE/GCL3/SK419875/markedjs-projekt') {
+                    sh 'docker build -t marked-test:latest -f Dockerfile.test .'
+                    sh 'docker run --rm marked-test:latest'
+                }
+            }
+        }
+
+        stage('Deploy (Smoke Test)') {
+            steps {
+                dir('ITE/GCL3/SK419875/markedjs-projekt') {
+                    echo 'Budowanie lekkiego kontenera produkcyjnego...'
+                    sh 'docker build -t marked-deploy:latest -f Dockerfile.deploy .'
+                    echo 'Uruchamianie Smoke Testu...'
+                    sh 'docker run --rm marked-deploy:latest'
+                }
+            }
+        }
+
+        stage('Publish Artifact') {
+            steps {
+                dir('ITE/GCL3/SK419875/markedjs-projekt') {
+                    echo 'Wydobywanie plików z kontenera...'
+                    sh 'docker create --name extract-container marked-deploy:latest'
+                    sh 'docker cp extract-container:/app ./marked-production'
+                    sh 'docker rm extract-container'
+                    
+                    echo 'Pakowanie do formatu .tar.gz...'
+                    sh 'tar -czvf marked-artifact-build-${BUILD_NUMBER}.tar.gz ./marked-production'
+                    
+                    echo 'Publikowanie artefaktu w Jenkinsie...'
+                    archiveArtifacts artifacts: '*.tar.gz', fingerprint: true
+                }
+            }
+        }
+    }
+}

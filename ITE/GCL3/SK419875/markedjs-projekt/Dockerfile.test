@@ -1,0 +1,3 @@
+FROM marked-build:latest
+
+CMD ["npm", "test"]
