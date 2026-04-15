@@ -61,7 +61,7 @@ EOF
                     // Validate deployment
                     echo 'Validating deployment...'
 
-                    docker run --rm --network host alpine/curl sh -c '
+                    sh '''docker run --rm --network host alpine/curl sh -c '
 RESPONSE=$(curl -s http://localhost:3000)
 echo "Validation response: $RESPONSE"
 if echo "$RESPONSE" | grep -q "This site works correctly"; then
@@ -71,7 +71,7 @@ else
     echo "Deploy validation FAILED"
     exit 1
 fi
-'
+' '''
                 }
             }
         }
