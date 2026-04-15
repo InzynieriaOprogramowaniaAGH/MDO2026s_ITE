@@ -87,6 +87,7 @@ docker logs jenkins-blueocean
 ```
 
 Przeprowadzam zalecaną instalację wtyczek i tworzę pierwszego admina (admin/admin)
+
 ![acc creation](image-3.png)
 
 
@@ -194,6 +195,7 @@ pipeline {
 ```
 
 Zadziałał poprawnie, zbudowano obrazy (tak jak wcześniej lokalnie) i włączono testy:
+
 ![sukces_pipeline](image-8.png)
 
 ![alt text](image-9.png)
@@ -267,6 +269,7 @@ pipeline {
 ```
 
 Skonfigurowałem nowy pipeline `pipeline-2-jenkinsfile`:
+
 ![alt text](image-10.png)
 
 Po poprawce (usunięcie MDO2026s_ITE ze ścieżki) pipeline uruchomił się poprawie.
@@ -274,5 +277,15 @@ Po poprawce (usunięcie MDO2026s_ITE ze ścieżki) pipeline uruchomił się popr
 ![alt text](image-11.png)
 
 Wykorzystałem podejście z agentem kontenerowym a nie z DinD. Polega ono na uruchomieniu tymczasowego kontenera z obrazem dockera, do którego montuję socket dockera z hosta. Dzięki temu wszystkie komendy docker build i docker run są wykonywane bezpośrednio przez dockera hosta. Jest to prostsze w konfiguracji niż osobny kontener DinD, ale mniej bezpieczne, ponieważ Jenkins zyskuje pełny dostęp do dockera hosta. W podejściu z DinD Jenkins łączyłby się z osobnym kontenerem udostępniającym własnego demona dockera, dająć lepszą izolację kosztem większej złożoności i gorszej wydajności.
+
+---
+
+### Sekcja "Kompletny pipeline ..."
+
+
+
+
+
+
 
 
