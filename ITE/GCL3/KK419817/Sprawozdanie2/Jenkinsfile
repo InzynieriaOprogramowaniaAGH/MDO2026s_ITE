@@ -55,11 +55,13 @@ EOF
             '''
                     sh 'docker run -d -p 3000:3000 --name container_deploy container_deploy_image'
                     
+                    // Wait for container to be ready
+                    sh 'sleep 5'
+
                     // Validate deployment
                     echo 'Validating deployment...'
 
-                    sh '''
-OUTPUT=$(docker run --rm --network host alpine/curl sh -c '
+                    docker run --rm --network host alpine/curl sh -c '
 RESPONSE=$(curl -s http://localhost:3000)
 echo "Validation response: $RESPONSE"
 if echo "$RESPONSE" | grep -q "This site works correctly"; then
@@ -69,9 +71,7 @@ else
     echo "Deploy validation FAILED"
     exit 1
 fi
-')
-echo "$OUTPUT"
-'''
+'
                 }
             }
         }
