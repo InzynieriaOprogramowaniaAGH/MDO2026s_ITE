@@ -218,6 +218,11 @@ pipeline {
     }
 
     stages {
+         stage('Pre-cleanup') {
+            steps {
+                sh 'docker system prune -af --volumes'
+            }
+        }
         stage('Checkout') {
             steps {
                 git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git',
@@ -245,6 +250,38 @@ pipeline {
         stage('Deploy') {
             steps {
                 dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    // Deploy testing app
+                    sh '''
+                docker build --no-cache -t container_deploy_image - <<EOF
+FROM express-build
+WORKDIR /app
+RUN echo 'const express = require("./"); \
+const app = express(); \
+app.get("/", (req, res) => res.send("This site works correctly")); \
+app.listen(3000, () => console.log("App is listening on port 3000"));' > server.js
+EXPOSE 3000
+CMD ["node", "server.js"]
+EOF
+'''
+                    sh 'docker run -d -p 3000:3000 --name container_deploy container_deploy_image'
+                    
+                    // Wait for container to be ready
+                    sh 'sleep 5'
+
+                    // Validate deployment
+                    echo 'Validating deployment...'
+
+                    sh '''docker run --rm --network host alpine/curl sh -c '
+RESPONSE=$(curl -s http://localhost:3000)
+echo "Validation response: $RESPONSE"
+if echo "$RESPONSE" | grep -q "This site works correctly"; then
+    echo "Deploy validation SUCCESS"
+    exit 0
+else
+    echo "Deploy validation FAILED"
+    exit 1
+fi
+' '''
                 }
             }
         }
@@ -252,12 +289,16 @@ pipeline {
         stage('Publish') {
             steps {
                 dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    echo 'Publishing...'
                 }
             }
         }
     }
 
     post {
+        always {
+            sh 'docker rm -f container_deploy || true'
+        }
         success {
             echo 'Pipeline success'
         }
@@ -280,12 +321,14 @@ Wykorzystałem podejście z agentem kontenerowym a nie z DinD. Polega ono na uru
 
 ---
 
-### Sekcja "Kompletny pipeline ..."
+#### Deploy stage
 
+Naprawiłem początkowy błąd w pipelinie - zamiast `require("express");` w kontenerze walidującym użyłem `require("./");`. Pierwotna wersja nie działała ponieważ express jest już obecny jako całość w tym samym folderze a nie jako pakiet w node_modules (jeśli zainstalowałbym go za pomocą np. `npm install`). 
 
+Walidacja deploymentu udana:
+![alt text](image-12.png)
 
-
-
-
+Jak widać nic się w pipelinie nie cachuje, wszystkie warstwy/obrazy są 'świeże':
+![alt text](image-13.png)
 
 
