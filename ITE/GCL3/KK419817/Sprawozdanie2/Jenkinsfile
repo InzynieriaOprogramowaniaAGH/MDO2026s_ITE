@@ -45,14 +45,14 @@ pipeline {
                 docker build --no-cache -t container_deploy_image - <<EOF
 FROM express-build
 WORKDIR /app
-RUN echo 'const express = require("express"); \\
-const app = express(); \\
-app.get("/", (req, res) => res.send("This site works correctly")); \\
+RUN echo 'const express = require("./"); \
+const app = express(); \
+app.get("/", (req, res) => res.send("This site works correctly")); \
 app.listen(3000, () => console.log("App is listening on port 3000"));' > server.js
 EXPOSE 3000
 CMD ["node", "server.js"]
 EOF
-            '''
+'''
                     sh 'docker run -d -p 3000:3000 --name container_deploy container_deploy_image'
                     
                     // Wait for container to be ready
