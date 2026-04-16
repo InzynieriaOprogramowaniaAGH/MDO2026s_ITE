@@ -20,6 +20,7 @@ Sklonowanie repozytorium przedmiotowego za pomocą HTTPS i personal access token
 1. Utworzono dwa klucze SSH, inne niż RSA, w tym jeden został zabezpieczony hasłem oraz skonfigurowano klucz SSH jako metodę dostepu do githuba a następnie sklonowano repozytorium z wykorzystaniem protokołu SSH.
 
 Klucze SSH:
+
 ![klucz 1](../lab1/Obraz4.png)
 ![klucz 2](../lab1/Obraz5.png)
 
@@ -30,6 +31,7 @@ Zgodnie z instrukcją wykonano następujące kroki:
 1. Przełaczono się na gałąź grupy z gałęzi main.
 2. Utworzono gałąź o nazwie TK420057.
 3. Wewnątrz katalogu grupy utworzono nowy katalog TK420057.
+
 ![gałaź grupy](../lab1/Obraz8.png)
 ![gałaź własna](../lab1/Obraz9.png)
 
@@ -121,6 +123,7 @@ Do realizacji zadań wybrano oprogramowanie flask.
 4. Sklonowanie repozytorium.
 5. Konfiguracja środowiska i uruchomienie builda.
 6. Uruchomienie testów.
+
 ![uruchomienie kontenera](../lab3/11.png)
 ![konfiguracja środowiska](../lab3/12.png)
 ![testy](../lab3/13.png)
@@ -167,9 +170,11 @@ CMD ["pytest"]
 5. Zapisanie plików na woluminie wyjściowym.
 
 Praca na wolumenach bez gita.
+
 ![bez gita](../lab4/Obraz1.png)
 
 Z gitem.
+
 ![z gitem](../lab4/Obraz2.png)
 
 Wykonanie wcześniejszych kroków za pomocą docker build i pliku Dockerfile wykorzustując RUN --mount.
@@ -193,23 +198,29 @@ Stworzenie dwóch kontenerów, uruchomienie na jednym z nich serwera iperf oraz 
 ![iperf client](../lab4/Obraz4.png)
 
 Ponowne wykonanie powyższego zadania ale wykorzystując własną sieć mostkową oraz uzywając rozwiązania nazw. Zdecydowanie lepsze rozwiązanie gdyż zmniejsza ryzyko popełnienia kosztownej czasowo literówki.
+
 ![siec](../lab4/Obraz5.png)
 ![serwer](../lab4/Obraz6.png)
 ![klient](../lab4/Obraz7.png)
 
 Łączenie się spoza kontenera z hosta i spoza hosta.
+
 ![serwer1](../lab4/Obraz8.png)
 ![host](../lab4/Obraz9.png)
 ![powershel](../lab4/Obraz10.png)
+
 Udało się nawiązać połaczenie z hosta natomiast w przypadku połączenia spozahosta pojawił się problem. Maszyna wirtualna miała wybrany default switch jako przełącznik wirtulany w karcie sieciowej co powodowało, że próba połączenia następowała z samą maszyną wirtualną, a nie z kontenerem. Przynajmniej tak mi się wydaję. Dlatego z pomocą AI spróbowałem to obejść tworząc nowy przełącznik wirtualny który w inny spośób ustawiał ip maszyny wirtualnej i dzięki temu kontenera co widać na screenie.
 
 Niemniej wykonane pomiary między kontenerem a hostem wykazują bardzo wysoką przepustowość na poziomie 36.4 Gbits/s. Potwierdza to, że komunikacja odbywa się bez ograniczeń fizycznego łacza sieciowego.
 
 Zestawienie w kontenerze ubuntu usługi SSHD i próba połączenia się z nią.
+
 ![sshd](../lab4/Obraz11.png)
+
 Zaletą SSH jest łatwe debugowanie i obsługa narzędzi legacy, ale wadą jest złamanie zasady efemeryczności kontenerów i obniżenie bezpieczeństwa. W DevOps zaleca się docker exec zamiast SSH, by nie traktować kontenerów jak zwykłych serwerów. (Odpowiedź cześciowo wygenerowana dzięki AI w odpowiedzi na pytanie zawarte w instrukcji).
 
 ## Jenkins
 Przygotowanie do uruchowmienia serwera Jenkins. Instalacja Jenkinsa z pomocnikiem DIND, wykazanie działających kontenerów oraz ekranu logowania.
+
 ![kontenery](../lab4/Obraz12.png)
 ![jenkins](../lab4/Obraz13.png)
