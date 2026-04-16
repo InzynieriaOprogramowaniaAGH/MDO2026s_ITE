@@ -1,0 +1,82 @@
+pipeline {
+    agent any
+    
+    environment {
+        // Zmienne do połączenia z silnikiem Docker in Docker (DIND)
+        DOCKER_HOST = 'tcp://docker:2376'
+        DOCKER_CERT_PATH = '/certs/client'
+        DOCKER_TLS_VERIFY = '1'
+    }
+
+    stages {
+        stage('Sklonowanie repozytorium') {
+            steps {
+                git branch: 'BB419678', url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+        
+        stage('Zbudowanie (Builder)') {
+            steps {
+                dir('ITE/GCL1/BB419678/Dockerfiles_lab5') {
+                    sh 'docker build -t neovim-builder-jenkins -f Dockerfile.nvim.build .'
+                }
+            }
+        }
+        
+        stage('Testy jednostkowe (Tester)') {
+            steps {
+                dir('ITE/GCL1/BB419678/Dockerfiles_lab5') {
+                    sh 'docker build -t neovim-tester-jenkins -f Dockerfile.nvim.test .'
+                    
+                    // catchError pozwala potokowi iść dalej pomimo błędów specyficznych dla Dockera
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                        sh 'docker run --rm neovim-tester-jenkins'
+                    }
+                }
+            }
+        }
+        
+        stage('Publikacja (Publish)') {
+            steps {
+                dir('ITE/GCL1/BB419678/Dockerfiles_lab5') {
+                    // Wyciągnięcie skompilowanej binarki na zewnątrz i utworzenie archiwum (Tarball)
+                    sh '''
+                        docker create --name temp-container neovim-builder-jenkins
+                        docker cp temp-container:/workspace/build/bin/nvim ./nvim-binary
+                        tar -czvf neovim-artifact.tar.gz nvim-binary
+                        docker rm temp-container
+                    '''
+                    // Publikacja archiwum w interfejsie Jenkinsa
+                    archiveArtifacts artifacts: 'neovim-artifact.tar.gz', fingerprint: true
+                }
+            }
+        }
+        
+        stage('Wdrożenie (Deploy)') {
+            steps {
+                dir('ITE/GCL1/BB419678/Dockerfiles_lab5') {
+                    // Tworzenie ekstremalnie lekkiego obrazu Runtime (Slim)
+                    // UWAGA: EOF musi być dociśnięte do lewej krawędzi!
+                    sh '''
+cat <<EOF > Dockerfile.nvim.runtime
+FROM ubuntu:24.04
+COPY nvim-binary /usr/local/bin/nvim
+RUN chmod +x /usr/local/bin/nvim
+CMD ["sleep", "infinity"]
+EOF
+                        docker build -t neovim-runtime-jenkins -f Dockerfile.nvim.runtime .
+                    '''
+                    
+                    // 1. Uruchomienie nieblokujące w tle
+                    sh 'docker run -d --name neovim-prod --rm neovim-runtime-jenkins'
+                    
+                    // 2. Wykazanie, że program działa w nowym, docelowym kontenerze
+                    sh 'docker exec neovim-prod nvim --version'
+                    
+                    // 3. Zatrzymanie i posprzątanie
+                    sh 'docker stop neovim-prod'
+                }
+            }
+        }
+    }
+}
