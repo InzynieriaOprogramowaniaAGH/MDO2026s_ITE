@@ -93,3 +93,76 @@ Proces przebiega według następującej logiki:
    - a) **hiredis-builder**: Kontener z narzędziami `build-essential`.
    - b) **hiredis-tester**: Kontener z `redis-server` i skompilowaną biblioteką.
 3. **Artifact Storage**: System plików Jenkinsa przechowujący paczki `.tar.gz`.
+
+
+### Laboratorium 6
+
+## 1. Weryfikacja Ścieżki Krytycznej
+
+Zaimplementowany potok Pipeline w Jenkinsie realizuje pełną automatyzację procesu dostarczania oprogramowania. Ścieżka krytyczna obejmuje:
+- **Clone**: Pobranie kodu źródłowego z GitHuba.
+- **Build**: Kompilacja biblioteki w kontenerze `builder`.
+- **Test**: Przeprowadzenie testu integracyjnego między dwoma kontenerami (C1 i C2).
+- **Publish**: Przygotowanie wersjonowanego artefaktu i jego archiwizacja.
+
+---
+
+## 2. Implementacja i Konfiguracja Potoku
+
+Proces został zdefiniowany jako "Pipeline as Code". Poniżej przedstawiono konfigurację oraz strukturę skryptu.
+
+**Kod źródłowy Pipeline (Jenkinsfile)**
+Zaimplementowany skrypt wykorzystuje mechanizm `docker exec` oraz `docker cp`, aby umożliwić przesyłanie kodu przykładowego do kontenera budującego bez konieczności instalowania w nim Gita.
+![pipeline_1.png](lab5/screenshots/pipeline_1.png)
+![pipeline_2.png](lab5/screenshots/pipeline_2.png)
+
+---
+
+## 2,5. Implementacja Obiektu typu Pipeline
+
+Głównym zadaniem było stworzenie potoku CI/CD, który realizuje pełny test integracyjny biblioteki przy użyciu dwóch kontenerów: serwera bazy danych (C1) oraz aplikacji testowej (C2).
+
+**3.1. Kod aplikacji testowej (sample.c)**
+Zgodnie ze schematem, przygotowano plik `sample.c`, który pełni rolę "konsumenta" biblioteki. Kod łączy się z serwerem o nazwie `redis-server`, wysyła komendę `PING` i oczekuje odpowiedzi `PONG`.
+
+```c
+#include <stdio.h>
+#include <hiredis/hiredis.h>
+
+int main() {
+    redisContext *c = redisConnect("redis-server", 6379);
+    if (c == NULL || c->err) {
+        printf("Błąd połączenia: %s\n", c ? c->errstr : "Błąd alokacji");
+        return 1;
+    }
+    redisReply *reply = redisCommand(c, "PING");
+    printf("Wynik testu: %s\n", reply->str); 
+    freeReplyObject(reply);
+    redisFree(c);
+    return 0;
+}
+
+## 3. Realizacja Testu Integracyjnego
+
+Zgodnie z wytycznymi, przeprowadzono test weryfikujący poprawność działania biblioteki w interakcji z zewnętrzną usługą.
+
+**Przebieg testu:**
+1. **Kontener C1 (Redis Server)**: Uruchomiony w tle w dedykowanej sieci `hiredis-network`.
+2. **Kontener C2 (Integration Client)**: Kontener bazujący na obrazie budującym, do którego "wstrzyknięto" plik `sample.c`.
+3. **Kompilacja i Linkowanie**: Wewnątrz C2 wykonano `make install`, aby zarejestrować bibliotekę w systemie, a następnie skompilowano kod przykładowy z flagą `-lhiredis`.
+4. **Weryfikacja**: Program połączył się z C1 i wykonał komendę `PING`.
+
+**Dowód pomyślnej komunikacji (Logi):**
+W logach konsoli odnotowano odpowiedź serwera: **`Wynik testu: PONG`**. Potwierdza to, że biblioteka została poprawnie zbudowana, zainstalowana i jest zdolna do komunikacji sieciowej.
+![pipeline_success.png](lab5/screenshots/pipeline_success.png)
+
+---
+
+## 4. Etap Publish i Archiwizacja Artefaktów
+
+Po pomyślnych testach, Jenkins wyodrębnił plik binarny `libhiredis.so` z kontenera i przygotował paczkę redystrybucyjną.
+
+**Tworzenie Artefaktu**
+Biblioteka została spakowana do formatu `.deb` przy użyciu narzędzia `tar`.
+```bash
+tar -czvf hiredis-package.deb libhiredis.so
