@@ -1,0 +1,11 @@
+FROM ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates libpsl5 zlib1g libssl3 && rm -rf /var/lib/apt/lists/*
+
+COPY curl-bin /usr/local/bin/curl
+COPY curl-lib/ /usr/local/lib/
+
+RUN ldconfig && chmod +x /usr/local/bin/curl
+CMD ["curl", "--version"]
