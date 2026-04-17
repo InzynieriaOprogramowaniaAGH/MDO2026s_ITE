@@ -15,8 +15,12 @@ pipeline {
         }
         stage('test') {
             steps {
-                dir('ITE/GCL1/MB423178/Sprawozdanie2') {
+                // Tutaj poprawka - wchodzimy do Sprawozdanie1 po plik testowy
+                dir('ITE/GCL1/MB423178/Sprawozdanie1') {
                     sh 'docker build -t petclinic-test:latest -f Dockerfile.petClinic.test .'
+                }
+                // Ale kopiowanie wynikow robimy w Sprawozdanie2
+                dir('ITE/GCL1/MB423178/Sprawozdanie2') {
                     sh 'docker run --name pt-${BUILD_NUMBER} petclinic-test:latest || true'
                     sh 'docker cp pt-${BUILD_NUMBER}:/app/target ./target'
                     sh 'docker rm pt-${BUILD_NUMBER}'
