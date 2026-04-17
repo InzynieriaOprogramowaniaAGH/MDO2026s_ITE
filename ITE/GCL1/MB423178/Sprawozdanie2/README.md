@@ -1,5 +1,7 @@
-# Sprawozdanie 2 (Laboratorium 5)
+# Sprawozdanie 2 
 ---
+
+# Lab 5
 
 ## Etap 0: Konfiguracja środowiska
 Aby ułatwić pracę z kontenerami, dodałem swojego użytkownika do grupy `docker`, co eliminuje konieczność używania przedrostka `sudo` przed każdą komendą.
@@ -45,3 +47,40 @@ Skonfigurowałem projekt typu "Pipeline as Code". Skrypt automatycznie pobiera r
 Zgodnie z poleceniem, uruchomiłem potok po raz drugi. Logi jednoznacznie wskazują, że Docker poprawnie wykorzystał pamięć podręczną (`CACHED`), błyskawicznie kończąc zadanie.
 ![Logi z wykorzystaniem cache - cz. 1](screeny/docker_lab5_12.png)
 ![Logi z wykorzystaniem cache - cz. 2](screeny/docker_lab5_13.png)
+
+# Lab 6
+
+**Temat: Implementacja potoku CI/CD z weryfikacją sieciową i podpisem cyfrowym**
+
+![odpalenie jen](screeny/lab6_1.png)
+
+![odpalenie jenkinsa](screeny/lab6_2.png)
+
+## 1. Konfiguracja zadania w Jenkins
+Zadanie typu Pipeline zostało skonfigurowane w trybie "Pipeline script from SCM". Poniżej znajdują się zrzuty ekranu z ustawień projektu, wskazujące na repozytorium GitHub oraz ścieżkę do skryptu sterującego.
+
+* **Definicja SCM i URL Repozytorium:**
+![Definicja SCM](screeny/lab6_conf_def.png)
+!https://branchapp.com/(screeny/lab6_conf_git.png)
+
+* **Ścieżka do pliku Jenkinsfile:**
+![Sciezka Jenkinsfile](screeny/lab6_conf_path.png)
+
+## 2. Przebieg potoku (Pipeline View)
+Po uruchomieniu zadania, Jenkins poprawnie wykonał wszystkie zdefiniowane etapy. Czas trwania pełnego procesu wyniósł ok. 1 min 38 sek.
+![Status Pipeline](screeny/lab6_status.png)
+![Szczegóły Buildu](screeny/lab6_build_details.png)
+
+## 3. Testy automatyczne (JUnit)
+Weryfikacja jednostkowa zakończyła się sukcesem. Jenkins przetworzył raporty, wskazując 55 zaliczonych testów.
+![Wyniki Testów](screeny/lab6_tests.png)
+
+## 4. Weryfikacja sieciowa (Smoke Test)
+W etapie `smoke test` sprawdzono dostępność aplikacji wewnątrz Docker Network przy użyciu kontenera `curl`. Potwierdzono kod HTTP 200 oraz obecność tytułu strony PetClinic.
+![Logi Smoke Test](screeny/lab6_smoke.png)
+
+## 5. Publikacja i Artefakty
+Wygenerowano zabezpieczoną paczkę aplikacji wraz z podpisem cyfrowym i metadanymi. Wszystkie pliki zostały zarchiwizowane jako artefakty zadania.
+![Lista Artefaktów](screeny/lab6_artifacts.png)
+
+---
