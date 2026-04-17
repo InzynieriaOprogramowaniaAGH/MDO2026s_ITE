@@ -1,0 +1,82 @@
+pipeline {
+    agent {
+        docker { 
+            image 'ubuntu:22.04' 
+            args '-u root' 
+        }
+    }
+
+    stages {
+        stage('1. Setup') {
+            steps {
+                sh 'apt-get update && apt-get install -y build-essential zlib1g-dev gzip'
+            }
+        }
+
+        stage('2. Build (Kompilacja)') {
+            steps {
+                sh '''
+                    echo "Kompilacja pliku pobranego z Gita..."
+                    gcc -o wrapper.bin src/wrapper.c -lz
+                '''
+            }
+        }
+        stage('3. Pakowanie (Niezależne)') {
+            steps {
+                sh '''
+                    echo "Test integralności zlib w CI/CD" > ${ORIGINAL}
+                    md5sum ${ORIGINAL} | awk "{print $1}" > original.md5
+                    
+                    gzip -c ${ORIGINAL} > ${COMPRESSED}
+                '''
+            }
+        }
+
+        stage('4. Test MD5 (C1)') {
+            steps {
+                sh '''
+                    ./wrapper.bin ${COMPRESSED} > ${RESULT}
+                    
+                    ORIG_MD5=$(cat original.md5)
+                    CURR_MD5=$(md5sum ${RESULT} | awk "{print $1}")
+                    
+                    echo "MD5 przed: $ORIG_MD5"
+                    echo "MD5 po:    $CURR_MD5"
+                    
+                    if [ "$ORIG_MD5" == "$CURR_MD5" ]; then
+                        echo "Weryfikacja powiodłą się"
+                    else
+                        echo "BŁĄD: Dane uległy uszkodzeniu!"
+                        exit 1
+                    fi
+                '''
+            }
+        }
+
+        stage('5. Pakowanie .DEB') {
+            steps {
+                sh '''
+                    mkdir -p pkg/DEBIAN pkg/usr/bin
+                    cp wrapper.bin pkg/usr/bin/zlib-tool
+                    
+                    cat <<EOF > pkg/DEBIAN/control
+Package: zlib-wrapper-tool
+Version: 1.0.0
+Architecture: amd64
+Maintainer: Jenkins
+Description: Narzedzie do dekompresji GZIP oparte na zlib
+EOF
+                    dpkg-deb --build pkg zlib-tool.deb
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'zlib-tool.deb', fingerprint: true
+        }
+    }
+        
+    }
+}

@@ -1,0 +1,1 @@
+testowy plik tekstowy do przetestowania e2e biblioteki zlib na devopsach 17.04.2026
