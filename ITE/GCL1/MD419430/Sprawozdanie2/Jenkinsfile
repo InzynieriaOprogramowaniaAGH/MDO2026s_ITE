@@ -1,0 +1,83 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_IMAGE = "nest-app-${BUILD_NUMBER}"
+        NETWORK_NAME = "test-net-${BUILD_NUMBER}"
+        CONTAINER_NAME = "nest-service-${BUILD_NUMBER}"
+        PORT = "3000"
+    }
+
+    stages {
+        stage('Clone & Prepare') {
+            steps {
+                dir('ITE/GCL1/MD419430/Sprawozdanie1/work/typescript-starter') {
+                    sh 'echo "Pliki gotowe w podkatalogu."'
+                }
+            }
+        }
+
+        stage('Krok 1: Build & Test') {
+            steps {
+                dir('ITE/GCL1/MD419430/Sprawozdanie1/work/typescript-starter') {
+                    echo "Budowa 'czystego' srodowiska"
+                    sh "docker build -t ${APP_IMAGE} -f Dockerfile.ci ."
+                    
+                    echo "Testy Wewnetrzne w C1"
+                    sh "docker run --rm ${APP_IMAGE} npm run test"
+                }
+            }
+        }
+
+        stage('Krok 2: Uruchomienie Uslugi') {
+            steps {
+                sh "docker network create ${NETWORK_NAME}"
+                
+                sh "docker run -d --name ${CONTAINER_NAME} --network ${NETWORK_NAME} ${APP_IMAGE}"
+                
+                sleep 5
+            }
+        }
+
+        stage('Krok 3: Test Integracyjny') {
+            steps {
+                script {
+                    try {
+                        echo "Weryfikacja dostepnosci uslugi..."
+                        sh "docker run --rm --network ${NETWORK_NAME} curlimages/curl -s -f http://${CONTAINER_NAME}:${PORT}/"
+                        
+                        echo "Usluga zweryfikowana pomyslnie."
+                    } catch (err) {
+                        echo "Blad: Usluga nie odpowiada pod adresem http://${CONTAINER_NAME}:${PORT}/"
+                        error "Health check failed."
+                    }
+                }
+            }
+        }
+
+        stage('Sprzatanie po testach') {
+            steps {
+                sh "docker stop ${CONTAINER_NAME} && docker rm ${CONTAINER_NAME}"
+                sh "docker network rm ${NETWORK_NAME}"
+            }
+        }
+
+        stage('Krok 4: Publikacja (Publish)') {
+            steps {
+                dir('ITE/GCL1/MD419430/Sprawozdanie1/work/typescript-starter') {
+                    echo "Publikacja"
+                    sh "docker run --rm ${APP_IMAGE} npm publish --dry-run"
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            sh "docker stop ${CONTAINER_NAME} || true"
+            sh "docker rm ${CONTAINER_NAME} || true"
+            sh "docker network rm ${NETWORK_NAME} || true"
+            sh "docker rmi ${APP_IMAGE} || true"
+        }
+    }
+}
