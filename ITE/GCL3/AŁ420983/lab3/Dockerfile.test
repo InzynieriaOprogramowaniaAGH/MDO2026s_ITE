@@ -2,4 +2,4 @@ FROM flask-builder:latest
 
 WORKDIR /app
 
-CMD ["pytest"]
+CMD ["python", "-m", "pytest"]
