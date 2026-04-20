@@ -83,7 +83,6 @@ pipeline {
                         """
                         } finally {
                             echo 'Sprzątanie kontenerów...'
-                            sh "docker stop c_deploy || true"
                             sh "docker network rm ${NETWORK_NAME} || true"
                         }
                     }
