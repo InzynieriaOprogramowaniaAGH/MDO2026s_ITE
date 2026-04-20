@@ -79,7 +79,12 @@ fi
         stage('Publish') {
             steps {
                 dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
-                    echo 'Publishing...'
+                    echo 'Publishing Docker image as artifact...'
+                    
+                    sh 'docker save container_deploy_image -o express-app-image.tar'
+                    archiveArtifacts artifacts: 'express-app-image.tar', fingerprint: true
+                    
+                    echo 'Docker image published and archived successfully'
                 }
             }
         }
