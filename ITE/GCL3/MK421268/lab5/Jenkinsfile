@@ -57,7 +57,7 @@ pipeline {
                             
                             # Test HTTP
                             if [ "\$HTTP_STATUS" -ne 200 ]; then
-                                echo "[FAILED] Kod błędu: \$HTTP_STATUS" >> test_report.txt; exit 1
+                                echo "[FAILED] Kod bledu: \$HTTP_STATUS" >> test_report.txt; exit 1
                             fi
                             
                             # Test Statusu
@@ -65,11 +65,11 @@ pipeline {
                                 echo "[FAILED] Status aplikacji krytyczny" >> test_report.txt; exit 1
                             fi
                             
-                            # Test Tożsamości i Wersji
+                            # Test Tozsamosci i Wersji
                             APP_NAME=\$(jq -r .serviceDetails.name response.json)
                             APP_VER=\$(jq -r .serviceDetails.version response.json)
                             if [ "\$APP_NAME" != "express-pipeline-dind" ] || [ "\$APP_VER" != "${env.BUILD_ID}" ]; then
-                                echo "[FAILED] Zła tożsamość lub wersja buildu (Oczekiwano: ${env.BUILD_ID}, Wykryto: \$APP_VER)" >> test_report.txt; exit 1
+                                echo "[FAILED] Zla tozsamosc lub wersja buildu (Oczekiwano: ${env.BUILD_ID}, Wykryto: \$APP_VER)" >> test_report.txt; exit 1
                             fi
                             
                             # Test Metryk
@@ -82,7 +82,7 @@ pipeline {
                         '
                         """
                         } finally {
-                            echo 'Sprzątanie kontenerów...'
+                            echo 'Sprzatanie kontenerow...'
                             sh "docker stop c_deploy || true"
                             sh "docker network rm ${NETWORK_NAME} || true"
                         }
