@@ -332,3 +332,24 @@ Jak widać nic się w pipelinie nie cachuje, wszystkie warstwy/obrazy są 'świe
 ![alt text](image-13.png)
 
 
+#### Publish stage
+
+Utworzyłem publish stage
+
+```
+    stage('Publish') {
+        steps {
+            dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                echo 'Publishing Docker image as artifact...'
+                
+                sh 'docker save container_deploy_image -o express-app-image.tar'
+                sh 'chmod 644 express-app-image.tar'
+                archiveArtifacts artifacts: 'express-app-image.tar', fingerprint: true
+                
+                echo 'Docker image published and archived successfully'
+            }
+        }
+    }
+```
+
+Naprawiłem błąd "ERROR: java.nio.file.AccessDeniedException:" w publish stage dodając uprawnienia dla wsyzstkich uzytkowników `sh 'chmod 644 express-app-image.tar'`

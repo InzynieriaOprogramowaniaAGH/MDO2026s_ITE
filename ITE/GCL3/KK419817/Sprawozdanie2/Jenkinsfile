@@ -82,7 +82,7 @@ fi
                     echo 'Publishing Docker image as artifact...'
                     
                     sh 'docker save container_deploy_image -o express-app-image.tar'
-                     sh 'chmod 644 express-app-image.tar'
+                    sh 'chmod 644 express-app-image.tar'
                     archiveArtifacts artifacts: 'express-app-image.tar', fingerprint: true
                     
                     echo 'Docker image published and archived successfully'
