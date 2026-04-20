@@ -1,3 +1,14 @@
+FROM node:22
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 https://github.com/fastify/fastify.git ./fastify-repo
+
+RUN cd ./fastify-repo && npm install
+
+RUN npm install ./fastify-repo
+
 RUN echo "const fastify = require('fastify')({ logger: true }); \
           \
           fastify.get('/', async (request, reply) => { \
@@ -14,3 +25,5 @@ RUN echo "const fastify = require('fastify')({ logger: true }); \
             } \
           }; \
           start();" > app.js
+
+CMD ["node", "app.js"]
