@@ -8,8 +8,3 @@ RUN apk update && apk add git
 RUN git clone -b master https://github.com/777lahcim/express.git .
 
 RUN npm install
-
-#port 3000
-EXPOSE 3000
-# uruchomienie pliku z /advanced
-CMD ["node", "examples/hello-world/index.js"]
