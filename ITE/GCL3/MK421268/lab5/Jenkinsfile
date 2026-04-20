@@ -42,7 +42,7 @@ pipeline {
                             express-build-image:latest
                             """
 
-                            sleep 5 // czekanie na serwer
+                            sleep 20 // czekanie na serwer
 
                             //zaawansowane testy
                             echo 'Uruchamianie c_curl i weryfikacja /advanced...'
@@ -83,6 +83,8 @@ pipeline {
                         """
                         } finally {
                             echo 'Sprzątanie kontenerów...'
+                            sh "docker logs c_deploy || true" // To wypisze błędy Node.js do konsoli Jenkinsa
+                            sh "docker stop c_deploy || true"
                             sh "docker network rm ${NETWORK_NAME} || true"
                         }
                     }
