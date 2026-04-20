@@ -1,12 +1,17 @@
 pipeline {
     agent any
 
+    environment {
+        // dynamiczna siec dla dockera
+        NETWORK_NAME = "pipeline-net-${env.BUILD_ID}"
+    }
+
     stages {
         stage('1. Build') {
             steps {
                 dir('ITE/GCL3/MK421268/lab5') {
                     echo 'Budowanie obrazu bazowego z kodem...'
-                    sh 'docker build -t express-build-image:latest -f Dockerfile.build .'
+                    sh 'docker build --no-cache -t express-build-image:latest -f dockerfile.build .'
                 }
             }
         }
@@ -14,10 +19,97 @@ pipeline {
         stage('2. Test') {
             steps {
                 dir('ITE/GCL3/MK421268/lab5') {
-                    echo 'Budowanie i uruchamianie kontenera testowego...'
-                    sh 'docker build -t express-test-image:latest -f Dockerfile.test .'
+                    echo 'Budowanie i uruchamianie kontenera testowego (npm test)...'
+                    sh 'docker build -t express-test-image:latest -f dockerfile.test .'
                     sh 'docker run --rm express-test-image:latest'
                 }
+            }
+        }
+
+        stage('3. Validation (c_deploy & c_curl)') {
+            steps {
+                dir('ITE/GCL3/MK421268/lab5') {
+                    script {
+                        try {
+                            echo 'Tworzenie sieci i uruchamianie c_deploy...'
+                            sh "docker network create ${NETWORK_NAME}"
+
+                            // uruchomienie obrazu z dockerfile.build
+                            sh """
+                            docker run -d --rm --name c_deploy \
+                            -e APP_VERSION="${env.BUILD_ID}" \
+                            --network ${NETWORK_NAME} \
+                            express-build-image:latest
+                            """
+
+                            sleep 5 // czekanie na serwer
+
+                            //zaawansowane testy
+                            echo 'Uruchamianie c_curl i weryfikacja /advanced...'
+                            sh """
+                        docker run --rm --name c_curl --network ${NETWORK_NAME} \
+                        -v \$(pwd):/workspace -w /workspace \
+                        alpine:latest sh -c '
+                            apk add --no-cache curl jq > /dev/null
+                            echo "--- RAPORT WALIDACJI ---" > test_report.txt
+                            
+                            HTTP_STATUS=\$(curl -s -o response.json -w "%{http_code}" http://c_deploy:3000/advanced)
+                            
+                            # Test HTTP
+                            if [ "\$HTTP_STATUS" -ne 200 ]; then
+                                echo "[FAILED] Kod błędu: \$HTTP_STATUS" >> test_report.txt; exit 1
+                            fi
+                            
+                            # Test Statusu
+                            if [ "\$(jq -r .status response.json)" != "pass" ]; then
+                                echo "[FAILED] Status aplikacji krytyczny" >> test_report.txt; exit 1
+                            fi
+                            
+                            # Test Tożsamości i Wersji
+                            APP_NAME=\$(jq -r .serviceDetails.name response.json)
+                            APP_VER=\$(jq -r .serviceDetails.version response.json)
+                            if [ "\$APP_NAME" != "express-pipeline-dind" ] || [ "\$APP_VER" != "${env.BUILD_ID}" ]; then
+                                echo "[FAILED] Zła tożsamość lub wersja buildu (Oczekiwano: ${env.BUILD_ID}, Wykryto: \$APP_VER)" >> test_report.txt; exit 1
+                            fi
+                            
+                            # Test Metryk
+                            if [ "\$(jq -r .metrics.memoryRssBytes response.json)" -le 0 ]; then
+                                echo "[FAILED] Brak poprawnych metryk" >> test_report.txt; exit 1
+                            fi
+                            
+                            echo "[SUCCESS] Walidacja pomyslna. RC=0" >> test_report.txt
+                            exit 0
+                        '
+                        """
+                        } finally {
+                            echo 'Sprzątanie kontenerów...'
+                            sh "docker stop c_deploy || true"
+                            sh "docker network rm ${NETWORK_NAME} || true"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('4. Publish') {
+            steps {
+                dir('ITE/GCL3/MK421268/lab5') {
+                   echo 'Pakowanie artefaktu (npm pack)...'
+                   
+                    // archiwizacja obrazu buildowego
+                    sh "docker run --rm -v \$(pwd):/out -w /app express-build-image:latest sh -c 'npm pack && mv *.tgz /out/'"
+                    
+                    echo 'Obraz gotowy do publikacji. Artefakt .tgz wygenerowany.'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            dir('ITE/GCL3/MK421268/lab5') {
+                // zapis raportu jako artefakt
+                archiveArtifacts artifacts: 'test_report.txt', allowEmptyArchive: true
             }
         }
     }

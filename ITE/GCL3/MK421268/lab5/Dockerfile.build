@@ -2,9 +2,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-RUN apk update
-RUN apk add git
+RUN apk update && apk add git
 
-RUN git clone https://github.com/expressjs/express.git .
+
+RUN git clone -b 4.x https://github.com/777lahcim/express.git .
 
 RUN npm install
+
+#port 3000
+EXPOSE 3000
+# uruchomienie pliku z /advanced
+CMD ["node", "examples/pipeline-test/index.js"]
