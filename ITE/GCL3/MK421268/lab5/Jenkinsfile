@@ -109,7 +109,7 @@ pipeline {
         always {
             dir('ITE/GCL3/MK421268/lab5') {
                 // zapis raportu jako artefakt
-                archiveArtifacts artifacts: 'test_report.txt', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'test_report.txt, *.tgz', allowEmptyArchive: true
             }
         }
     }
