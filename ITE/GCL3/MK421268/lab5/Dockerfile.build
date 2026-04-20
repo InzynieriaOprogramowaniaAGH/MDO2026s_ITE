@@ -5,7 +5,7 @@ WORKDIR /app
 RUN apk update && apk add git
 
 
-RUN git clone -b 4.x https://github.com/777lahcim/express.git .
+RUN git clone -b master https://github.com/777lahcim/express.git .
 
 RUN npm install
 
