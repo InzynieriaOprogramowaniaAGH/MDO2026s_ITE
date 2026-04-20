@@ -51,7 +51,7 @@ pipeline {
                 dir("${FILES_DIR}") {
                     sh "docker-compose -f docker-compose.deploy.yml up -d"
                     sh "sleep 10"
-                    sh "curl -v http://localhost:3000/url/tinyUrl || exit 1"
+                    sh "curl -v http://docker:3000/url/tinyUrl || exit 1"
                 }
             }
             post {
