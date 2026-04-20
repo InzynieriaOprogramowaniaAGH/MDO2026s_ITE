@@ -11,7 +11,7 @@ pipeline {
             steps {
                 dir('ITE/GCL3/MK421268/lab5') {
                     echo 'Budowanie obrazu bazowego z kodem...'
-                    sh 'docker build --no-cache -t express-build-image:latest -f dockerfile.build .'
+                    sh 'docker build --no-cache -t express-build-image:latest -f Dockerfile.build .'
                 }
             }
         }
@@ -20,7 +20,7 @@ pipeline {
             steps {
                 dir('ITE/GCL3/MK421268/lab5') {
                     echo 'Budowanie i uruchamianie kontenera testowego (npm test)...'
-                    sh 'docker build -t express-test-image:latest -f dockerfile.test .'
+                    sh 'docker build -t express-test-image:latest -f Dockerfile.test .'
                     sh 'docker run --rm express-test-image:latest'
                 }
             }
@@ -34,7 +34,7 @@ pipeline {
                             echo 'Tworzenie sieci i uruchamianie c_deploy...'
                             sh "docker network create ${NETWORK_NAME}"
 
-                            // uruchomienie obrazu z dockerfile.build
+                            // uruchomienie obrazu z Dockerfile.build
                             sh """
                             docker run -d --rm --name c_deploy \
                             -e APP_VERSION="${env.BUILD_ID}" \
