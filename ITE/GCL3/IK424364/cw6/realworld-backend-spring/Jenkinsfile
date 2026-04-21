@@ -21,9 +21,11 @@ pipeline {
                     def workspacePath = pwd()
 
                     echo "Czekanie na start aplikacji..."
-                    waitUntil {
-                        def status = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags || echo 0", returnStdout: true).trim()
-                        return status == '200'
+                    timeout(time: 8, unit: 'SECONDS') {
+                        waitUntil {
+                            def status = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags || echo 0", returnStdout: true).trim()
+                            return status == '200'
+                        }
                     }
 
                     def t1 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags", returnStdout: true).trim()
