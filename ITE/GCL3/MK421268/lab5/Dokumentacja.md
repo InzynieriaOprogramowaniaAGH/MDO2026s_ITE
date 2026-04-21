@@ -31,29 +31,35 @@ stateDiagram-v2
         Build_Test_Image --> Run_npm_test : docker run --rm
     }
 
-    Stage_Test --> Stage_Validation_Deploy
+    Stage_Test --> Stage_Validation
 
-    state Stage_Validation_Deploy {
+    state Stage_Validation {
         [*] --> Create_Docker_Network
-        Create_Docker_Network --> Start_c_deploy : (Uruchomienie aplikacji)
-        Start_c_deploy --> Start_c_curl : (Uruchomienie testera)
+        Create_Docker_Network --> Start_c_deploy : (Uruchomienie aplikacji: c_deploy)
+        Wait --> Start_c_curl : (Uruchomienie testera: c_curl)
         
         state Start_c_curl {
             [*] --> Fetch_JSON : GET /advanced
-            Fetch_JSON --> Validate_Status : Check HTTP 200 & status:pass
+            Fetch_JSON --> Validate_Conditions : Check HTTP 200, status, app, ver, metrics
+            Validate_Conditions --> Write_Report : Zapisz status do test_report.txt (RC=0 lub 1)
         }
         
         Start_c_curl --> Cleanup : docker stop & network rm
     }
 
-    Stage_Validation_Deploy --> Stage_Publish
+    Stage_Validation --> Stage_Publish
 
     state Stage_Publish {
-        [*] --> Artifact_Packaging : npm pack
-        Artifact_Packaging --> Docker_Hub_Push : docker push
+        [*] --> Artifact_Packaging : Uruchom kontener i wykonaj 'npm pack'
+        Artifact_Packaging --> Extract_TGZ : Przenieś *.tgz do /out/
     }
 
     Stage_Publish --> Post_Processing
+    
+    state Post_Processing {
+        [*] --> Archive_Artifacts : Zapisz test_report.txt oraz *.tgz
+    }
+    
     Post_Processing --> [*]
 ```
 
@@ -63,31 +69,28 @@ graph TB
     subgraph Jenkins_Host [Serwer Jenkins]
         subgraph Docker_Engine [Docker Engine]
             
-            subgraph Isolated_Network [Docker Network: pipeline-net-ID]
-                C_DEPLOY[<b>c_deploy</b><br/>Port: 3000<br/>Image: express-build-image]
+            subgraph Isolated_Network [Dynamic Docker Network: pipeline-net-ID]
+                C_DEPLOY[<b>c_deploy</b><br/>Port: 3000<br/>Image: node:ver_express]
                 C_CURL[<b>c_curl</b><br/>Tool: curl + jq<br/>Image: alpine]
             end
 
             C_CURL -- "HTTP GET /advanced" --> C_DEPLOY
+            C_CURL -- "Walidacja odpowiedzi (RC=$?)" --> C_CURL
             
-            VOL[(Workspace Volume)]
-            C_CURL -- "Write test_report.txt" --> VOL
+            VOL[(Workspace Volume<br/>Mapowanie z hostem)]
+            C_CURL -- "Zapis test_report.txt" --> VOL
+            C_DEPLOY -- "Zapis *.tgz (npm pack)" --> VOL
         end
     end
 
-    subgraph External_Registry [Docker Hub]
-        REG[Repository: express-app]
-    end
-
-    Docker_Engine -- "docker push" --> REG
-    
-    subgraph Artifact_Storage [Jenkins Artifacts]
-        TGZ[package.tgz]
+    subgraph Artifact_Storage [Jenkins archiveArtifacts]
+        TGZ[*.tgz]
         REP[test_report.txt]
     end
 
-    VOL -- "archiveArtifacts" --> Artifact_Storage
+    VOL -- "Archiwizacja po zakończeniu" --> Artifact_Storage
 
-    style C_DEPLOY fill:#f9f,stroke:#333,stroke-width:2px
-    style C_CURL fill:#ccf,stroke:#333,stroke-width:2px
-    style Isolated_Network stroke-dasharray: 5 5
+    style C_DEPLOY fill:#e1f5fe,stroke:#03a9f4,stroke-width:2px
+    style C_CURL fill:#f1f8e9,stroke:#8bc34a,stroke-width:2px
+    style Isolated_Network stroke-dasharray: 5 5,stroke:#ab47bc
+    style VOL fill:#fff3e0,stroke:#ff9800
