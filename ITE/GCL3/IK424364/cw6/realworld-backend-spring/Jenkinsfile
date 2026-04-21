@@ -7,7 +7,9 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh "docker build -t realworld-app:latest ./ITE/GCL3/IK424364/cw6/realworld-backend-spring/Dockerfile"
+                dir('ITE/GCL3/IK424364/cw6/realworld-backend-spring') {
+                    sh 'docker build -t realworld-app:latest .'
+                }
             }
         }
         stage('API Tests') {
