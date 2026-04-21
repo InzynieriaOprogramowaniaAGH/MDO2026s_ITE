@@ -84,57 +84,59 @@ pipeline {
 
 ## Class06
 
-- Aplikacja została wybrana. Wybrano repozyturium https://github.com/Genocs/qrcode. Jest to .NET biblioteczny, możliwy do zbudowania za pomocą polecenia `dotnet build` oraz posiadający szereg testów do przeprowadzania ćwiczenia.
+1. Wybór aplikacji 
 
-- Licencja potwierdza możliwość swobodnego obrotu kodem. Kod korzysta z licencji MIT.
+- Wybrano repozyturium https://github.com/Genocs/qrcode. Jest to .NET biblioteczny, możliwy do zbudowania za pomocą polecenia `dotnet build` oraz posiadający szereg testów do przeprowadzania ćwiczenia. Licencja potwierdza możliwość swobodnego obrotu kodem - kod korzysta z licencji MIT. Wybrany program buduje się oraz przechodzą dołączone do niego testy.
 
-- Wybrany program buduje się oraz przechodzą dołączone do niego testy.
+![Zdjęcie 7](img/s7.png)
 
-- Zdecydowano, czy jest potrzebny fork własnej kopii repozytorium. Potrzebne jest napisanie pliku, który posłuży do przetestowania działania biblioteki. Dokonano własnego forka: https://github.com/maksluczak/qrcode#
+- Fork jest uzasadniony - pozwala na dodanie Dockerfiles, Jenkinsfile i testów integracyjnych bez zaśmiecania oryginalnego projektu. Własny fork: https://github.com/maksluczak/qrcode#.
 
-- Stworzono diagram UML zawierający planowany pomysł na proces CI/CD
+- Stworzono diagram UML zawierający planowany pomysł na proces CI/CD.
 
-- Wybrano kontener bazowy lub stworzono odpowiedni kontener wstepny (runtime dependencies). Zdecydowano, że będzie to mcr.microsoft.com/dotnet/sdk:8.0 odpowiadający wymaganiom aplikacji.
+2. Procesy budowania kontenera, testy
 
-- Build został wykonany wewnątrz kontenera. Stworzono Dockerfile `Dockerfile.qrcode.bld`, a następnie uruchomiono go w wyizolowanym środowisku za pomocą 
+- Wybrano kontener bazowy lub stworzono odpowiedni kontener wstepny. Zdecydowano, że będzie to mcr.microsoft.com/dotnet/sdk:8.0, ponieważ zawiera pełne środowisko kompilacji, co czyni go kompletnym narzędziem buildowym.
+
+- Stworzono Dockerfile `Dockerfile.qrcode.bld`.
 
 ```dockerfile
 FROM mcr.microsoft.com/dotnet/sdk:8.0
 
 RUN apt-get update && apt-get install -y git
-WORKDIR /App
 
-RUN git clone https://github.com/maksluczak/qrcode.git
-
-WORKDIR /App/qrcode
+WORKDIR /app
+COPY . .
 
 RUN dotnet restore
-RUN dotnet build
+RUN dotnet build -c Release
 ```
 
-a następnie uruchomiono go w wyizolowanym środowisku za pomocą 
+- Następnie uruchomiono go w wyizolowanym środowisku.
 
 ```bash
 sudo docker build -t qrcodebld -f ./Dockerfile.qrcode.bld .
 ```
 
-- Testy zostały wykonane wewnątrz kontenera (kolejnego). Kontener testowy jest oparty o kontener build
+- Testy zostały wykonane wewnątrz kontenera. Kontener testowy jest oparty o kontener build.
 
 ```dockerfile
 FROM qrcodebld:latest
 
-WORKDIR /App/qrcode
+WORKDIR /app
 
-RUN dotnet test
+RUN dotnet test -c Release
 ```
+
+- Uruchomienie kontenera do testów.
 
 ```bash
 sudo docker build -t qrcodetests -f ./Dockerfile.qrcode.tests .
 ```
 
-- Logi z procesu są odkładane jako numerowany artefakt, niekoniecznie jawnie
+3. Wyciągnięcie biblioteki
 
-- Zdefiniowano kontener typu 'deploy' pełniący rolę kontenera, w którym zostanie uruchomiona aplikacja (niekoniecznie docelowo - może być tylko integracyjnie)
+- Stworzono kontener tymczasowy, aby wyciągnąć z niego zbudowaną bibliotekę do repozytorium projektowego.
 
 ```bash
 sudo docker create --name temp_conteiner qrcodebld
@@ -144,17 +146,15 @@ sudo docker rm temp_conteiner
 
 - Uzasadniono czy kontener buildowy nadaje się do tej roli/opisano proces stworzenia nowego, specjalnie do tego przeznaczenia
 
-- Wersjonowany kontener 'deploy' ze zbudowaną aplikacją jest wdrażany na instancję Dockera
+4. Deploy
 
-- Następuje weryfikacja, że aplikacja pracuje poprawnie (smoke test) poprzez uruchomienie kontenera 'deploy'
+- W przypadku projektu nie ma klasycznego kontenera Deploy, ponieważ budowana jest biblioteka (.dll). Aby wykonać deploy, konieczne jest użycie zaimportowanej biblioteki w testowtm projekcie (stworzenie QR Code dla losowej strony internetowej). Kod został zbudowany poleceniem `dotnet build`, uruchomiona, sprawdzona została poprawność wykonania (stworzył się plik `qrcode.bmp`).
 
-- Zdefiniowano, jaki element ma być publikowany jako artefakt
+- Jako artefakt publikowany ma być paczka `.nupkg` (NuGet) oraz obraz `qrcode.bmp` jako dowód działania. Pozwala na łatwe zarządzanie zależnościami i wersjonowanie.
 
-- Uzasadniono wybór: kontener z programem, plik binarny, flatpak, archiwum tar.gz, pakiet RPM/DEB
+- Dostępność artefaktu: publikacja do Rejestru online, artefakt załączony jako rezultat builda w Jenkinsie. Artefakty są dostępne bezpośrednio w panelu Jenkinsa dzięki komendzie `archiveArtifacts`.
 
-- Opisano proces wersjonowania artefaktu (można użyć semantic versioning)
-
-- Dostępność artefaktu: publikacja do Rejestru online, artefakt załączony jako rezultat builda w Jenkinsie
+- Ostateczny `Jenkinsfile` projektu:
 
 ```bash
 pipeline {
@@ -249,9 +249,3 @@ try {
     }
 }
 ```
-
-- Przedstawiono sposób na zidentyfikowanie pochodzenia artefaktu
-
-- Pliki Dockerfile i Jenkinsfile dostępne w sprawozdaniu w kopiowalnej postaci oraz obok sprawozdania, jako osobne pliki
-
-- Zweryfikowano potencjalną rozbieżność między zaplanowanym UML a otrzymanym efektem
