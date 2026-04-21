@@ -66,32 +66,32 @@ stateDiagram-v2
 ## 3. Diagram wdrożeniowy (Validation & Deploy Stage)
 ```mermaid
 graph TD
-    subgraph Jenkins_Pipeline [Proces CI/CD na serwerze Jenkins]
+    subgraph Jenkins_Pipeline ["Proces CI/CD na serwerze Jenkins"]
         
-        subgraph Stage_Validation [Etap Walidacji]
-            subgraph Isolated_Network [Izolowana sieć: pipeline-net]
-                C_CURL[<b>c_curl</b><br/>(Narzędzie testujące)]
-                C_DEPLOY[<b>c_deploy</b><br/>(Aplikacja Node.js port 3000)]
+        subgraph Stage_Validation ["Etap Walidacji"]
+            subgraph Isolated_Network ["Izolowana sieć: pipeline-net"]
+                C_CURL["<b>c_curl</b><br/>(Narzędzie testujące)"]
+                C_DEPLOY["<b>c_deploy</b><br/>(Aplikacja Node.js port 3000)"]
             end
             
             C_CURL -- "1. Pobiera dane (HTTP GET /advanced)" --> C_DEPLOY
             C_DEPLOY -- "2. Zwraca dane JSON" --> C_CURL
             
-            C_CURL -- "3. Wykonuje testy (jq)" --> CHECK_RESULT{Czy walidacja<br/>zakończona sukcesem?}
+            C_CURL -- "3. Wykonuje testy (jq)" --> CHECK_RESULT{"Czy walidacja<br/>zakończona sukcesem?"}
         end
 
-        subgraph Stage_Publish [Etap Publikacji]
-            C_PACKER[<b>Kontener pakujący</b><br/>(Obraz bazowy)]
+        subgraph Stage_Publish ["Etap Publikacji"]
+            C_PACKER["<b>Kontener pakujący</b><br/>(Obraz bazowy)"]
         end
         
         %% Logika przejścia
         CHECK_RESULT -- "TAK (Exit Code: 0)" --> C_PACKER
-        CHECK_RESULT -. "NIE (Exit Code: 1)" .-> PIPELINE_FAIL((Przerwanie<br/>Pipeline'u))
+        CHECK_RESULT -. "NIE (Exit Code: 1)" .-> PIPELINE_FAIL(("Przerwanie<br/>Pipeline'u"))
 
-        subgraph Workspace [Przestrzeń robocza na hoście]
-            VOL[(Wolumen zmapowany do kontenerów)]
-            REP[test_report.txt]
-            TGZ[*.tgz]
+        subgraph Workspace ["Przestrzeń robocza na hoście"]
+            VOL[("Wolumen zmapowany do kontenerów")]
+            REP["test_report.txt"]
+            TGZ["*.tgz"]
         end
 
         %% Zapis wyników
@@ -101,8 +101,8 @@ graph TD
         REP -.-> VOL
         TGZ -.-> VOL
 
-        subgraph Post_Processing [Akcja końcowa]
-            ARCHIVE[Magazyn Artefaktów Jenkins<br/>(archiveArtifacts)]
+        subgraph Post_Processing ["Akcja końcowa"]
+            ARCHIVE["Magazyn Artefaktów Jenkins<br/>(archiveArtifacts)"]
         end
 
         %% Archiwizacja
