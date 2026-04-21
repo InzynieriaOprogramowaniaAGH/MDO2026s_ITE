@@ -2,10 +2,7 @@ FROM eclipse-temurin:25-noble AS builder
 
 WORKDIR app/
 
-# Pliki gradle
-COPY gradlew .
-COPY gradle gradle
-COPY build.gradle.kts settings.gradle.kts ./
+COPY . .
 
 RUN ./gradlew dependencies --no-daemon
 
