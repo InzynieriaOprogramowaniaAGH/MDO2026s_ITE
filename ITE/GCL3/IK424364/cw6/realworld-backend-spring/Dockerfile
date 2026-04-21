@@ -15,7 +15,6 @@ RUN ./gradlew assemble --no-daemon
 
 # Runner
 FROM eclipse-temurin:25-jre-noble AS runner
-cd      
 WORKDIR app/
 
 COPY --from=builder /app/build/libs/*.jsr app.jar
