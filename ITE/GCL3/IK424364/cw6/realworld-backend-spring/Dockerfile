@@ -5,7 +5,7 @@ WORKDIR app/
 # Pliki gradle
 COPY gradlew .
 COPY gradle gradle
-COPY build.gradle.ktl settings.gradle.ktl ./
+COPY build.gradle.kts settings.gradle.kts ./
 
 RUN ./gradlew dependencies --no-daemon
 
