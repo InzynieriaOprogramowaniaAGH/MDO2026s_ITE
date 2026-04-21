@@ -36,7 +36,7 @@ stateDiagram-v2
     state Stage_Validation {
         [*] --> Create_Docker_Network
         Create_Docker_Network --> Start_c_deploy : (Uruchomienie aplikacji: c_deploy)
-        Wait --> Start_c_curl : (Uruchomienie testera: c_curl)
+        Start_c_deploy --> Start_c_curl : (Uruchomienie testera: c_curl)
         
         state Start_c_curl {
             [*] --> Fetch_JSON : GET /advanced
@@ -65,32 +65,54 @@ stateDiagram-v2
 
 ## 3. Diagram wdrożeniowy (Validation & Deploy Stage)
 ```mermaid
-graph TB
-    subgraph Jenkins_Host [Serwer Jenkins]
-        subgraph Docker_Engine [Docker Engine]
-            
-            subgraph Isolated_Network [Dynamic Docker Network: pipeline-net-ID]
-                C_DEPLOY[<b>c_deploy</b><br/>Port: 3000<br/>Image: node:ver_express]
-                C_CURL[<b>c_curl</b><br/>Tool: curl + jq<br/>Image: alpine]
+graph TD
+    subgraph Jenkins_Pipeline [Proces CI/CD na serwerze Jenkins]
+        
+        subgraph Stage_Validation [Etap Walidacji]
+            subgraph Isolated_Network [Izolowana sieć: pipeline-net]
+                C_CURL[<b>c_curl</b><br/>(Narzędzie testujące)]
+                C_DEPLOY[<b>c_deploy</b><br/>(Aplikacja Node.js port 3000)]
             end
-
-            C_CURL -- "HTTP GET /advanced" --> C_DEPLOY
-            C_CURL -- "Walidacja odpowiedzi (RC=$?)" --> C_CURL
             
-            VOL[(Workspace Volume<br/>Mapowanie z hostem)]
-            C_CURL -- "Zapis test_report.txt" --> VOL
-            C_DEPLOY -- "Zapis *.tgz (npm pack)" --> VOL
+            C_CURL -- "1. Pobiera dane (HTTP GET /advanced)" --> C_DEPLOY
+            C_DEPLOY -- "2. Zwraca dane JSON" --> C_CURL
+            
+            C_CURL -- "3. Wykonuje testy (jq)" --> CHECK_RESULT{Czy walidacja<br/>zakończona sukcesem?}
         end
+
+        subgraph Stage_Publish [Etap Publikacji]
+            C_PACKER[<b>Kontener pakujący</b><br/>(Obraz bazowy)]
+        end
+        
+        %% Logika przejścia
+        CHECK_RESULT -- "TAK (Exit Code: 0)" --> C_PACKER
+        CHECK_RESULT -. "NIE (Exit Code: 1)" .-> PIPELINE_FAIL((Przerwanie<br/>Pipeline'u))
+
+        subgraph Workspace [Przestrzeń robocza na hoście]
+            VOL[(Wolumen zmapowany do kontenerów)]
+            REP[test_report.txt]
+            TGZ[*.tgz]
+        end
+
+        %% Zapis wyników
+        C_CURL -- "4a. Zapisuje raport" --> REP
+        C_PACKER -- "4b. Generuje paczkę (npm pack)" --> TGZ
+        
+        REP -.-> VOL
+        TGZ -.-> VOL
+
+        subgraph Post_Processing [Akcja końcowa]
+            ARCHIVE[Magazyn Artefaktów Jenkins<br/>(archiveArtifacts)]
+        end
+
+        %% Archiwizacja
+        VOL -- "5. Pobranie plików po zakończeniu zadań" --> ARCHIVE
     end
 
-    subgraph Artifact_Storage [Jenkins archiveArtifacts]
-        TGZ[*.tgz]
-        REP[test_report.txt]
-    end
-
-    VOL -- "Archiwizacja po zakończeniu" --> Artifact_Storage
-
+    %% Definicje stylów wizualnych
     style C_DEPLOY fill:#e1f5fe,stroke:#03a9f4,stroke-width:2px
     style C_CURL fill:#f1f8e9,stroke:#8bc34a,stroke-width:2px
-    style Isolated_Network stroke-dasharray: 5 5,stroke:#ab47bc
-    style VOL fill:#fff3e0,stroke:#ff9800
+    style C_PACKER fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    style Isolated_Network stroke-dasharray: 5 5,stroke:#ab47bc,fill:none
+    style VOL fill:#eceff1,stroke:#607d8b
+    style CHECK_RESULT fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px
