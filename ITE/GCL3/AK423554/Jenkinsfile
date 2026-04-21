@@ -2,13 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout Source') {
-            steps {
-                git branch: 'AK423554', 
-                    url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
-            }
-        }
-
         stage('Build') {
             steps {
                 script {
@@ -17,7 +10,7 @@ pipeline {
                 }
             }
         }
-stage('Test') {
+        stage('Test') {
             steps {
                 script {
                     echo "Testowanie"
@@ -34,47 +27,47 @@ stage('Test') {
         }
         
 
-stage('Deploy') {
-    steps {
-        script {
-            sh 'docker rm -f c-deploy || true'
-            sh 'docker run -d --name c-deploy --network jenkins-net fastify-builder:latest'
+        stage('Deploy') {
+            steps {
+                script {
+                    sh 'docker rm -f c-deploy || true'
+                    sh 'docker run -d --name c-deploy --network jenkins-net fastify-builder:latest'
             
-            sleep 2
-            echo "Logi kontenera:"
-            sh 'docker logs c-deploy'
-        }
-    }
-}
-
-stage('Verify') {
-    steps {
-        script {
-           
-            sh 'docker run --rm --network jenkins-net curlimages/curl curl -s -f http://c-deploy:3000/'
-        }
-    }
-}
-    
-stage('Publish to NPM') {
-    steps {
-        withCredentials([string(credentialsId: 'npm-token-id-f2a', variable: 'NPM_TOKEN')]) {
-            script {
-                sh '''
-                    docker run --rm \
-                        -e NPM_TOKEN=${NPM_TOKEN} \
-                        fastify-builder:latest bash -c '
-                        
-                        npm pkg set name="zajecia6ak123"
-                        npm version patch --no-git-tag-version
-                        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-                        npm publish --access public --ignore-scripts
-                    '
-                '''
+                    sleep 2
+                    echo "Logi kontenera:"
+                    sh 'docker logs c-deploy'
+                }
             }
         }
+
+        stage('Verify') {
+            steps {
+                script {
+           
+                    sh 'docker run --rm --network jenkins-net curlimages/curl curl -s -f http://c-deploy:3000/'
+                }
+            }
     }
-}
+    
+        stage('Publish to NPM') {
+            steps {
+             withCredentials([string(credentialsId: 'npm-token-id-f2a', variable: 'NPM_TOKEN')]) {
+                    script {
+                        sh '''
+                            docker run --rm \
+                                -e NPM_TOKEN=${NPM_TOKEN} \
+                                fastify-builder:latest bash -c '
+                        
+                                npm pkg set name="zajecia6ak123"
+                                npm version patch --no-git-tag-version
+                                echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+                                npm publish --access public --ignore-scripts
+                            '
+                        '''
+                    }
+                }
+            }
+        }
 }
     post {
         always {
