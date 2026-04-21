@@ -44,7 +44,7 @@ pipeline {
                         sh """
                         docker run --rm ${DOCKER_IMAGE} sh -c "
                             sed -i '/\"name\":/c\\  \"name\": \"@freizen77/express-mdo-test\",' package.json &&
-                            npm version patch --no-git-tag-version &&
+                            npm version minor --no-git-tag-version &&
                             echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc &&
                             npm publish --access public
                         "
