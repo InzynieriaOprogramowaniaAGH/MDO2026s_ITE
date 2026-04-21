@@ -11,6 +11,7 @@ zapoznano z instukcja uruchomiono blueo
 ![logi](image-12.png)
 
 proste projekty uruchamiaja sie
++dodac te projekty
 ![uname](image-6.png)
 ![hour](image-7.png)
 ![ubuntu](image-8.png)
@@ -27,4 +28,12 @@ dodano deploya i poprawiono builda i testa
 ![curl z konsoli](image-13.png)
 +opisac/wkleic pipeline
 ![wyplute artefakty](image-14.png)
-![output](image-15.png)
++wiecej dokleic, i tak to bedzie w jenkinsie
+![output+multirepo](image-15.png)
++dodac workspace?
+
++tutaj opisac o debugu i credentials
+![dokcerhub](image-16.png)
+![artefakty](image-17.png)
+![dockerhub image](image-18.png)
++postawienie wszystkiego od nowa bo jenkins mi sie zepsul?
