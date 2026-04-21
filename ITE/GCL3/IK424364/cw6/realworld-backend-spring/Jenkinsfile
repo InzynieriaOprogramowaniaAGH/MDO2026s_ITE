@@ -16,11 +16,11 @@ pipeline {
             steps {
                 script {
                     sh "docker network create ${NETWORK_NAME}"
-                    sh "docker run -d --name app-container --network ${NETWORK_NAME} realworld-app:latest"
+                    
+                    sh "docker run -d --name app-container --network ${NETWORK_NAME} -e SERVER_ADDRESS=0.0.0.0 -e SERVER_PORT=8080 realworld-app:latest"
 
-                    def workspacePath = pwd()
-
-                    echo "Czekanie na start aplikacji..."
+                    echo "Czekanie na start aplikacji (do 90 sekund)..."
+                    
                     timeout(time: 8, unit: 'SECONDS') {
                         waitUntil {
                             def status = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags || echo 0", returnStdout: true).trim()
@@ -28,12 +28,14 @@ pipeline {
                         }
                     }
 
+                    echo "Aplikacja wystartowała, uruchamiam testy..."
+                    
                     def t1 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags", returnStdout: true).trim()
                     def t2 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/articles", returnStdout: true).trim()
 
                     def t3 = sh(script: """
                         docker run --rm --network ${NETWORK_NAME} \
-                        -v ${workspacePath}/test-data:/data \
+                        -v ${pwd()}/test-data:/data \
                         curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' \
                         -X POST http://app-container:8080/api/users \
                         -H 'Content-Type: application/json' \
@@ -48,13 +50,14 @@ pipeline {
                 }
             }
             post {
+                failure {
+                    echo "!!! TESTY NIE PRZESZŁY, LOGI KONTENERA !!!"
+                    sh 'docker logs app-container'
+                }
                 always {
                     sh 'docker stop app-container || true'
                     sh 'docker rm app-container || true'
                     sh "docker network rm ${NETWORK_NAME} || true"
-                }
-                failure {
-                    sh 'docker logs app-container'
                 }
             }
         }
