@@ -15,9 +15,19 @@ pipeline {
                 sh '''
                     docker rm -f mojprojekt-test-container || true
                     docker rm -f mojprojekt-deploy-container || true
+		    docker system prune -af || true
                 '''
             }
         }
+
+	stage('Prepare sources') {
+	    steps {
+		sh '''
+		    rm -rf MZ422009/Sprawozdanie1/express
+		    git clone https://github.com/expressjs/express.git MZ422009/Sprawozdanie1/express
+		'''
+	    }
+	}
 
         stage('Build BLDR') {
             steps {
