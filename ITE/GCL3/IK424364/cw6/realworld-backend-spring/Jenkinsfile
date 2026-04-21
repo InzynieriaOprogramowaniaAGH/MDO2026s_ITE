@@ -7,6 +7,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
+                sh "ls -R"
                 sh "docker build -t realworld-app:latest ./MDO2026s_ITE/ITE/GCL3/IK424364/cw6/realworld-backend-spring/Dockerfile"
             }
         }
