@@ -1,0 +1,3 @@
+[submodule "ITE/GCL3/MŻ422030/minimalpy-jenkins/app"]
+	path = ITE/GCL3/MŻ422030/minimalpy-jenkins/app
+	url = https://github.com/blankdots/minimalpy.git
