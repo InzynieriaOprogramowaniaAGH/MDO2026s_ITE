@@ -23,7 +23,7 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Unit Tests') {
             steps {
                 dir("${FILES_DIR}") {
                     sh "docker-compose -f docker-compose.test.yml up --exit-code-from app-test"
@@ -32,7 +32,7 @@ pipeline {
             post {
                 always {
                     dir("${FILES_DIR}") {
-                        sh "docker-compose -f docker-compose.test.yml down"
+                        sh "docker-compose -f docker-compose.test.yml down -v"
                     }
                 }
             }
@@ -50,14 +50,15 @@ pipeline {
             steps {
                 dir("${FILES_DIR}") {
                     sh "docker-compose -f docker-compose.deploy.yml up -d"
-                    sh "sleep 10"
-                    sh "curl -v http://docker:3000/url/tinyUrl || exit 1"
+                    sh "sleep 15"
+                    sh "chmod +x smoke_test.sh"
+                    sh "./smoke_test.sh list.url"
                 }
             }
             post {
                 always {
                     dir("${FILES_DIR}") {
-                        sh "docker-compose -f docker-compose.deploy.yml down"
+                        sh "docker-compose -f docker-compose.deploy.yml down -v"
                     }
                 }
             }
@@ -66,10 +67,20 @@ pipeline {
         stage('Publish Artifact') {
             steps {
                 dir("${FILES_DIR}") {
-                    sh "npm pack"
+                    sh "chmod +x publish.sh"
+                    sh "./publish.sh ${BUILD_IMAGE}"
                     archiveArtifacts artifacts: '*.tgz', fingerprint: true
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline Success!"
+        }
+        failure {
+            echo "Pipeline Failure. Check logs."
         }
     }
 }
