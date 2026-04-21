@@ -64,8 +64,14 @@ springBoot {
 }
 
 tasks {
+    // Отключаем создание обычного jar, чтобы не было конфликтов имен
+    jar {
+        enabled = false
+    }
+
     named<BootJar>("bootJar") {
-        archiveFileName.set("${rootProject.name}-${archiveVersion.get()}.${archiveExtension.get()}")
+        // Принудительно задаем имя app.jar, чтобы Docker всегда знал, что искать
+        archiveFileName.set("app.jar")
     }
 
     named<BootBuildImage>("bootBuildImage") {
@@ -96,7 +102,6 @@ tasks {
     named("nativeCompile") {
         finalizedBy(writeArtifactFile)
     }
-
 }
 
 fun platform(): String {
