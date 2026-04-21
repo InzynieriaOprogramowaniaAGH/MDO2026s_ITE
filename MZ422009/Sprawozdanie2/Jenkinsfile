@@ -22,7 +22,7 @@ pipeline {
         stage('Build BLDR') {
             steps {
                 sh '''
-                    docker build --no-cache -t mojprojekt-bldr:${BUILD_NUMBER} -f Sprawozdanie1/Dockerfile.bld Sprawozdanie1
+                    docker build --no-cache -t mojprojekt-bldr:${BUILD_NUMBER} -f MZ422009/Sprawozdanie1/Dockerfile.bld Sprawozdanie1
                 '''
             }
         }
@@ -30,7 +30,7 @@ pipeline {
         stage('Build TEST') {
             steps {
                 sh '''
-                    docker build --no-cache -t mojprojekt-test:${BUILD_NUMBER} -f Sprawozdanie1/Dockerfile.test Sprawozdanie1
+                    docker build --no-cache -t mojprojekt-test:${BUILD_NUMBER} -f MZ422009/Sprawozdanie1/Dockerfile.test Sprawozdanie1
                 '''
             }
         }
@@ -47,7 +47,7 @@ pipeline {
         stage('Build Deploy Image') {
             steps {
                 sh '''
-                    docker build --no-cache -t zucho/express-app:${BUILD_NUMBER} -t zucho/express-app:latest -f Sprawozdanie2/Dockerfile Sprawozdanie2
+                    docker build --no-cache -t zucho/express-app:${BUILD_NUMBER} -t zucho/express-app:latest -f MZ422009/Sprawozdanie2/Dockerfile Sprawozdanie2
                 '''
             }
         }
