@@ -82,10 +82,13 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker run --rm -v \$(pwd):/app -w /app node:20-alpine sh -c "
-                        npm install @freizen77/express-mdo-test &&
-                        npm shrinkwrap
-                    "
+                    docker run --rm \
+                        -u \$(id -u):\$(id -g) \
+                        -v \$(pwd):/app -w /app \
+                        node:20-alpine sh -c "
+                            npm install @freizen77/express-mdo-test &&
+                            npm shrinkwrap
+                        "
                     """
                     archiveArtifacts artifacts: 'npm-shrinkwrap.json', fingerprint: true
                 }
@@ -95,6 +98,7 @@ pipeline {
 
     post {
         always {
+            sh 'docker run --rm -v $(pwd):/app -w /app alpine chown -R 1000:1000 .'
             echo 'Zakończono wykonywanie Pipeline. Sprzątanie przestrzeni roboczej...'
             cleanWs()
         }
