@@ -4,27 +4,20 @@ pipeline {
     environment {
         DOCKER_IMAGE = "express-base"
         TEST_IMAGE = "express-test"
+        PROJECT_DIR = "ITE/GCL3/ŁM420071/Sprawozdanie1"
     }
 
     stages {
-        stage('Cleanup') {
+        stage('Prepare') {
             steps {
-                deleteDir()
-            }
-        }
-
-        stage('Clone Repository') {
-            steps {
-                cleanWs()
-                git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE', 
-                    branch: 'ŁM420071'
+                echo "Rozpoczynam proces CI/CD dla projektu w: ${PROJECT_DIR}"
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE} --no-cache -f ITE/GCL3/ŁM420071/Sprawozdanie1/Dockerfile.build ."
+                    sh "docker build -t ${DOCKER_IMAGE} --no-cache -f ${PROJECT_DIR}/Dockerfile.build ."
                 }
             }
         }
@@ -32,7 +25,7 @@ pipeline {
         stage('Build & Run Tests') {
             steps {
                 script {
-                    sh "docker build -t ${TEST_IMAGE} -f ITE/GCL3/ŁM420071/Sprawozdanie1/Dockerfile.test ."
+                    sh "docker build -t ${TEST_IMAGE} -f ${PROJECT_DIR}/Dockerfile.test ."
                     sh "docker run --rm ${TEST_IMAGE}"
                 }
             }
@@ -50,7 +43,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'npm-token-id', variable: 'NPM_TOKEN')]) {
                         sh """
                         docker run --rm ${DOCKER_IMAGE} sh -c "
-                            sed -i '/\\\"name\\\":/c\\  \\\"name\\\": \\\"@freizen77/express-mdo-test\\\",' package.json &&
+                            sed -i '/\\\"name\\\":/c\\  \\\"name\\\": \\\"@freizen77/express-mdo-test\\\ Dino\\\",' package.json &&
                             npm version patch --no-git-tag-version &&
                             echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc &&
                             npm publish --access public
@@ -75,9 +68,8 @@ pipeline {
                             node server.js
                         "
                         """
-                        sleep 7 // Dałem 7 sekund dla pewności, że npm install skończy
+                        sleep 7 
                         sh "docker run --rm --network test-net curlimages/curl:latest curl -s --retry 5 --retry-connrefused http://express-app:3000 | grep OK"
-                        echo "Walidacja zakończona sukcesem!"
                     } finally {
                         sh "docker rm -f express-app || true"
                         sh "docker network rm test-net || true"
@@ -103,13 +95,14 @@ pipeline {
 
     post {
         always {
-            echo 'Zakończono wykonywanie Pipeline.'
+            echo 'Zakończono wykonywanie Pipeline. Sprzątanie przestrzeni roboczej...'
+            cleanWs()
         }
         success {
-            echo 'Sukces! Projekt opublikowany, przetestowany i zarchiwizowany.'
+            echo 'Sukces! Projekt opublikowany i przetestowany.'
         }
         failure {
-            echo 'Błąd! Sprawdź logi powyżej.'
+            echo 'Błąd! Sprawdź logi w celu znalezienia przyczyny.'
         }
     }
 }
