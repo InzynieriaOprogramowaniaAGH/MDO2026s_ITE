@@ -35,6 +35,7 @@ pipeline {
                     sh 'docker create --name extract-container app-build'
                     sh 'docker cp extract-container:/app/node_modules ./node_modules'
                     sh 'docker cp extract-container:/app/dist ./dist'
+                    sh 'docker cp extract-container:/app/package.json ./package.json'
                     sh 'docker rm extract-container'
 
                     sh 'docker build -t app-deploy -f ITE/GCL1/PB422021/Sprawozdanie2/Dockerfile.deploy .'
