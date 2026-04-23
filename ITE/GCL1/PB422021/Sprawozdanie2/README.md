@@ -325,4 +325,4 @@ Aby znależć przyczynę dopisałam do mojego Jenkinsfile komendy echo, które p
 
 Na tej podstawie widać, że aplikacja działa. Problem pojawia się przy curl.
 
-W etapie Smoke Test wprowadziłam zmianę w sposobie weryfikacji dostępności aplikacji. Zamiast próbować połączyć się z adresem localhost, zastosowałam mechanizm dynamicznego pobierania adresu IP kontenera. Początkowo test wykorzystywał polecenie curl skierowane na localhost:3000. Powodowało to błąd połączenia, ponieważ w środowisku Jenkinsa (Docker-in-Docker), localhost odnosi się do maszyny agenta Jenkinsa, a nie do wnętrza nowo uruchomionego kontenera z aplikacją. Mimo że logi potwierdzały poprawny start serwera NestJS, testy kończyły się niepowodzeniem przez izolację sieciową kontenerów.
+Najpierw w etapie Smoke Test wprowadziłam zmianę w sposobie weryfikacji dostępności aplikacji. Zamiast próbować połączyć się z adresem localhost, zastosowałam mechanizm dynamicznego pobierania adresu IP kontenera. Jednak nie zadziałało to poprawnie i wyskoczył timeout. Spróbowałam uruchomić kontener w trybie --network host.

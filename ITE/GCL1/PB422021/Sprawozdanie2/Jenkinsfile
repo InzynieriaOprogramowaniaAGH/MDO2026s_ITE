@@ -46,7 +46,7 @@ pipeline {
         stage('Smoke Test') {
             steps {
                 script {
-                    sh "docker run -d --name smoke-test-container -p ${APP_PORT}:${APP_PORT} app-deploy"
+                    sh "docker run -d --name smoke-test-container -p --network host app-deploy"
                     
                     echo 'Oczekiwanie na uruchomienie aplikacji...'
                     sleep 15
@@ -58,7 +58,7 @@ pipeline {
 
                     try {
                         echo 'Weryfikacja przez curl...'
-                        sh "curl -f http://${containerIp}:${APP_PORT} || exit 1"
+                        sh "curl -f http://localhost:${APP_PORT} || exit 1"
                         echo 'SUKCES: Aplikacja odpowiada poprawnie'
                     } catch (Exception e) {
                         sh "docker logs smoke-test-container"
