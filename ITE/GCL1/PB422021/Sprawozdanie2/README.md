@@ -325,4 +325,12 @@ Aby znależć przyczynę dopisałam do mojego Jenkinsfile komendy echo, które p
 
 Na tej podstawie widać, że aplikacja działa. Problem pojawia się przy curl.
 
-Najpierw w etapie Smoke Test wprowadziłam zmianę w sposobie weryfikacji dostępności aplikacji. Zamiast próbować połączyć się z adresem localhost, zastosowałam mechanizm dynamicznego pobierania adresu IP kontenera. Jednak nie zadziałało to poprawnie i wyskoczył timeout. Spróbowałam uruchomić kontener w trybie --network host.
+Najpierw w etapie Smoke Test wprowadziłam zmianę w sposobie weryfikacji dostępności aplikacji. Zamiast próbować połączyć się z adresem localhost, zastosowałam mechanizm dynamicznego pobierania adresu IP kontenera. Jednak nie zadziałało to poprawnie i wyskoczył timeout. Spróbowałam uruchomić kontener w trybie --network host. To również nie zadziałało.
+
+Okazało się, że w Dockerfile.deploy z racji, że korzystam z obrazu node:20-slim musiałam doinstalować narzędzie curl. Po tej modyfikacji pipelina wykonał się poprawnie. 
+
+![Błąd wyświetlania](lab6_ss/lab6ss7.png)
+
+Następnie pobrałam istniejący artefakt.
+
+![Błąd wyświetlania](lab6_ss/lab6ss8.png)
