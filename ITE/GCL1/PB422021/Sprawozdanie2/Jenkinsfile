@@ -53,9 +53,12 @@ pipeline {
                     
                     sh "docker logs smoke-test-container"
 
+                    def containerIp = sh(script: "docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' smoke-test-container", returnStdout: true).trim()
+                    echo "Wykryte IP kontenera: ${containerIp}"
+
                     try {
                         echo 'Weryfikacja przez curl...'
-                        sh "curl -f http://localhost:${APP_PORT} || exit 1"
+                        sh "curl -f http://${containerIp}:${APP_PORT} || exit 1"
                         echo 'SUKCES: Aplikacja odpowiada poprawnie'
                     } catch (Exception e) {
                         sh "docker logs smoke-test-container"
