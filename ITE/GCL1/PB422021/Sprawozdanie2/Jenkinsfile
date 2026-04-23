@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_CERT_PATH = '/certs/client/client'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'PB422021', 
+                    url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+
+        stage('Build Builder Image') {
+            steps {
+                script {
+                    sh 'docker build -f ITE/GCL1/PB422021/Sprawozdanie1/Dockerfile.build -t app-build ITE/GCL1/PB422021/Sprawozdanie1'
+                }
+            }
+        }
+
+        stage('Build Tester Image') {
+            steps {
+                sh 'docker build -f ITE/GCL1/PB422021/Sprawozdanie1/Dockerfile.test -t tester ITE/GCL1/PB422021/Sprawozdanie1'
+                echo 'Testy dla buildy nr ${env.BUILD_NUMBER}zakończone sukcesem'
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                sh 'docker image prune -f'
+            }
+        }
+    }
+}

@@ -149,3 +149,34 @@ Grafika interfejsu blue ocean przedstawia poprawny przebieg wszystkich zdefiniow
 Uruchomiłam pipeline ponownie i widać, że czas budowania był krótszy. Wynika to z tego, że przy pierwszym uruchomieniu Docker musiał pobrać obraz Node.js, zainstalować pakiety i zbudować wszystko od zera.
 
 ![Błąd wyświetlania](lab5_ss/lab5ss22.png)
+
+
+
+
+### Wymagania wstępne środowiska 
+
+#### Zanim proces CI ruszy, środowisko musi spełniać określone warunki:
+
+     - System operacyjny: Ubuntu Server 
+
+     - Silnik konteneryzacji: Docker Engine w wersji 20.x lub nowszej
+
+     - Jenkins Blue Ocean uruchomiony jako kontener (jenkins-blueocean)
+
+     - Kontener pomocniczy docker:dind (jenkins-docker) działający w trybie --previledged
+
+     - Dedykowana sieć Dockera umożliwiająca komunikację między Jenkinsem a silnikiem DinD po nazwie hosta
+
+     - Współdzielony wolumin z certyfikatami TLS (jenkins-docker-certs) zapewniający bezpieczne połączenie 
+
+     - Repozytorium Git na platformie GitHub z poprawnie skonfigurowanym dostępem.
+
+
+### Diagramy UML
+
+#### Diagram aktywności, pokazujący kolejne etapy:
+
+![Błąd wyświetlania](lab6_ss/lab6_ss1.png)
+
+
+W kolejnym eapie przeniosłam mojego dotychczasowego pipelina do Jenkinsfila.
