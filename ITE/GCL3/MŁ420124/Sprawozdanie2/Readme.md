@@ -167,73 +167,59 @@ pipeline {
             }
         }
         
-        stage('Build') {
+        stage('Build Image') {
             steps {
-                sh 'sudo docker build -t qrcodebld -f Dockerfile.qrcode.bld .'
+                sh 'docker build -t qrcodebld -f Dockerfile.qrcode.bld .'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'sudo docker build -t qrcodetests -f Dockerfile.qrcode.tests .'
-                sh 'sudo docker run --rm qrcodetests'
+                sh 'docker build -t qrcodetests -f Dockerfile.qrcode.tests .'
+                sh 'docker run --rm qrcodetests'
             }
         }
 
         stage('Verify') {
             steps {
                 script {
-                    sh 'sudo docker create --name temp_container qrcodebld'
-                    sh 'sudo docker cp temp_container:/app/src/Genocs.QRCodeLibrary/bin/Release/net8.0/Genocs.QRCodeLibrary.dll ./Genocs.QRCodeLibrary.dll'
-                    sh 'sudo docker rm temp_container'
-
-                    sh 'dotnet new console -n TestProj --force'
+                    sh '''
+                    docker run --rm -v $(pwd):/app -w /app qrcodebld bash -c "
+                    dotnet new console -n TestProj --force
+                    dotnet add TestProj/TestProj.csproj reference src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj
                     
-                    writeFile file: 'TestProj/TestProj.csproj', text: """
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Genocs.QRCodeLibrary">
-      <HintPath>../Genocs.QRCodeLibrary.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-</Project>
-"""
-                    writeFile file: 'TestProj/Program.cs', text: """
+                    cat <<EOF > TestProj/Program.cs
 using System;
 using System.IO;
 using Genocs.QRCodeGenerator.Encoder;
 
 try {
     var generator = new QRCodeGenerator();
-    var data = generator.CreateQrCode("https://example.com", QRCodeGenerator.ECCLevel.Q);
+    var data = generator.CreateQrCode(\\"https://jenkins.io\\", QRCodeGenerator.ECCLevel.Q);
     var qr = new BitmapByteQRCode(data);
     byte[] bmpBytes = qr.GetGraphic(5);
-    File.WriteAllBytes("qrcode.bmp", bmpBytes);
-    Console.WriteLine("Success! Test Passed.");
+    File.WriteAllBytes(\\"qrcode.bmp\\", bmpBytes);
+    Console.WriteLine(\\"Success! Test Passed.\\");
 } catch (Exception ex) {
-    Console.WriteLine("Test Failed: " + ex.Message);
+    Console.WriteLine(\\"Test Failed: \\" + ex.Message);
     Environment.Exit(1);
 }
-"""
-                    dir('TestProj') {
-                        sh 'dotnet run'
-                    }
+EOF
+                    dotnet run --project TestProj/TestProj.csproj
+                    "
+                    '''
                 }
             }
         }
 
         stage('NuGet Packaging') {
             steps {
-                sh 'sudo docker run --name pack_job qrcodebld dotnet pack src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj -c Release -o /app/pkg'
-                sh 'mkdir -p ./final_artifacts'
-                sh 'sudo docker cp pack_job:/app/pkg/. ./final_artifacts/'
-                sh 'sudo docker rm pack_job'
+                sh '''
+                docker run --rm -v $(pwd):/app -w /app qrcodebld bash -c "
+                dotnet build src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj -c Release
+                dotnet pack src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj -c Release -o /app/final_artifacts
+                "
+                '''
             }
         }
     }
