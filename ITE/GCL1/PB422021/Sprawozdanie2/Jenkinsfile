@@ -3,6 +3,7 @@ pipeline {
     
     environment {
         DOCKER_CERT_PATH = '/certs/client/client'
+        APP_PORT = '3000'
     }
 
     stages {
@@ -13,7 +14,7 @@ pipeline {
             }
         }
 
-        stage('Build Builder Image') {
+        stage('Build') {
             steps {
                 script {
                     sh 'docker build -f ITE/GCL1/PB422021/Sprawozdanie1/Dockerfile.build -t app-build ITE/GCL1/PB422021/Sprawozdanie1'
@@ -21,10 +22,58 @@ pipeline {
             }
         }
 
-        stage('Build Tester Image') {
+        stage('Test') {
             steps {
                 sh 'docker build -f ITE/GCL1/PB422021/Sprawozdanie1/Dockerfile.test -t tester ITE/GCL1/PB422021/Sprawozdanie1'
-                echo 'Testy dla buildy nr ${env.BUILD_NUMBER}zakończone sukcesem'
+                echo "Testy dla buildy nr ${env.BUILD_NUMBER} zakończone sukcesem"
+            }
+        }
+
+        stage('Prepare Deploy') {
+            steps {
+                script {
+                    sh 'docker create --name extract-container app-build'
+                    sh 'docker cp extract-container:/app/node_modules ./node_modules'
+                    sh 'docker cp extract-container:/app/dist ./dist'
+                    sh 'docker rm extract-container'
+
+                    sh 'docker build -t app-deploy -f ITE/GCL1/PB422021/Sprawozdanie1/Dockerfile.deploy .'
+                }
+            }
+        }
+
+        stage('Smoke Test') {
+            steps {
+                script {
+                    sh "docker run -d --name smoke-test-container -p ${APP_PORT}:${APP_PORT} app-deploy"
+                    
+                    sleep 5
+                    
+                    try {
+                        echo 'Weryfikacja przez curl...'
+                        sh "curl -f http://localhost:${APP_PORT} || exit 1"
+                        echo 'SUKCES: Aplikacja odpowiada poprawnie'
+                    } catch (Exception e) {
+                        error('BŁĄD: Aplikacja nie odpowiada poprawnie')
+                    } finally {
+                        sh 'docker stop smoke-test-container'
+                        sh 'docker rm smoke-test-container'
+                    }
+                }
+            }
+        }
+
+        stage('Publish Artifact') {
+            steps {
+                script {
+                    def artifactName = "nestjs-app-v${env.BUILD_NUMBER}.tar.gz"
+                    
+                    echo "Pakowanie zatwierdzonych plików do paczki: ${artifactName}"
+                    sh "tar -czf ${artifactName} dist node_modules package.json"
+                    
+                    echo 'Publikacja artefaktu w systemie Jenkins...'
+                    archiveArtifacts artifacts: artifactName, fingerprint: true
+                }
             }
         }
 
