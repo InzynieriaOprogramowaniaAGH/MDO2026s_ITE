@@ -37,7 +37,7 @@ pipeline {
                     sh 'docker cp extract-container:/app/dist ./dist'
                     sh 'docker rm extract-container'
 
-                    sh 'docker build -t app-deploy -f ITE/GCL1/PB422021/Sprawozdanie1/Dockerfile.deploy .'
+                    sh 'docker build -t app-deploy -f ITE/GCL1/PB422021/Sprawozdanie2/Dockerfile.deploy .'
                 }
             }
         }

@@ -309,3 +309,8 @@ W moim Jenkinsfile kluczowym krokiem było zapewnienie hermetyczności wdrożeni
 Następnie zrealizowałam Smoke Test, uruchamiłam kontener i użyłam narzędzia curl, aby sprawdzić, czy aplikacja nasłuchuje na porcie 3000. Aby zapobiec blokowaniu portów w przypadku awarii, test ten objęłam blokiem try-catch-finally, który gwarantuje poprawne usunięcie kontenera po sprawdzeniu. 
 
 Po udanej weryfikacji, skompilowany kod oraz zależności spakowałam do paczki .tar.gz, zawierającej skompilowany kod (dist), zależności (node_modules) oraz metadane (package.json) i opublikowałam w Jenkinsie jako finalny artefakt wdrożeniowy, a cały proces zakończyłam etapem automatycznego czyszczenia nieużywanych obrazów na serwerze.
+
+
+Po pierwszym uruchomieniu pipeline wyrzucił błąd na etapie Prepare Deploy.
+
+![Błąd wyświetlania](lab6_ss/lab6ss4.png)
