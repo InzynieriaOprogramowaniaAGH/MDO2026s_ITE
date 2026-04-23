@@ -314,3 +314,9 @@ Po udanej weryfikacji, skompilowany kod oraz zależności spakowałam do paczki 
 Po pierwszym uruchomieniu pipeline wyrzucił błąd na etapie Prepare Deploy.
 
 ![Błąd wyświetlania](lab6_ss/lab6ss4.png)
+
+To co musiałam zrobić to poprawić ścieżki do plików, gdyż przez przypadek wpisane były błędnie. Po tej poprawie etap Prepare Deploy przeszedł poprawnie jednak pipeline wywalił si,ę na smoke test.
+
+![Błąd wyświetlania](lab6_ss/lab6ss5.png)
+
+Aby znależć przyczynę dopisałam do mojego Jenkinsfile komendy echo, które pomogą przy debugowaniu.
