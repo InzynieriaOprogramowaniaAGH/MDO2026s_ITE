@@ -2,28 +2,29 @@ pipeline {
     agent any
 
     environment {
-        
         IMAGE_NAME = 'moj-express-bldr' 
         CONTAINER_NAME = 'express-prod-app'
         PORT = '3000'
+        
+        PROJECT_DIR = 'ITE/GCL1/SB422052/Sprawozdanie1'
     }
 
     stages {
         stage('1. Przygotowanie SCM i Czyszczenie') {
             steps {
-                
                 cleanWs()
-                
                 checkout scm
             }
         }
 
         stage('2. Build') {
             steps {
-                script {
-                    
-                    echo "Budowanie obrazu kontenera na podstawie Dockerfile..."
-                    sh "docker build -t ${IMAGE_NAME} ."
+                
+                dir("${PROJECT_DIR}") {
+                    script {
+                        echo "Budowanie obrazu kontenera na podstawie Dockerfile..."
+                        sh "docker build -t ${IMAGE_NAME} ."
+                    }
                 }
             }
         }
@@ -31,8 +32,7 @@ pipeline {
         stage('3. Test') {
             steps {
                 script {
-                    
-                    echo "Uruchamianie testów jednostkowych (npm test) w kontenerze..."
+                    echo "Uruchamianie testów jednostkowych w kontenerze..."
                     sh "docker run --rm ${IMAGE_NAME} npm test"
                 }
             }
@@ -40,14 +40,15 @@ pipeline {
 
         stage('4. Publish') {
             steps {
-                script {
-                    
-                    echo "Pakowanie kodu produkcyjnego do artefaktu..."
-                    sh "tar --exclude='./.git' --exclude='./node_modules' -czvf app-release.tar.gz ."
-                    
-                    
-                    echo "Publikowanie w Jenkinsie..."
-                    archiveArtifacts artifacts: 'app-release.tar.gz', fingerprint: true
+                
+                dir("${PROJECT_DIR}") {
+                    script {
+                        echo "Pakowanie kodu produkcyjnego do artefaktu..."
+                        sh "tar --exclude='./.git' --exclude='./node_modules' -czvf app-release.tar.gz ."
+                        
+                        echo "Publikowanie w Jenkinsie..."
+                        archiveArtifacts artifacts: 'app-release.tar.gz', fingerprint: true
+                    }
                 }
             }
         }
@@ -57,7 +58,6 @@ pipeline {
                 script {
                     
                     sh "docker rm -f ${CONTAINER_NAME} || true"
-                    
                     
                     echo "Uruchamianie nowej wersji aplikacji na porcie ${PORT}..."
                     sh "docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${IMAGE_NAME}"
@@ -72,7 +72,6 @@ pipeline {
 
     post {
         always {
-            
             cleanWs()
         }
         success {
