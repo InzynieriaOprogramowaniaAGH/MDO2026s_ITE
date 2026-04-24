@@ -1,61 +1,82 @@
 pipeline {
     agent any
+
+    environment {
+        
+        IMAGE_NAME = 'moj-express-bldr' 
+        CONTAINER_NAME = 'express-prod-app'
+        PORT = '3000'
+    }
+
     stages {
-        stage('Build: Budowanie obrazu') {
+        stage('1. Przygotowanie SCM i Czyszczenie') {
             steps {
-                dir('ITE/GCL1/SB422052/Sprawozdanie1') {
-                    sh 'docker build -t moj-express-lab5 .'
+                
+                cleanWs()
+                
+                checkout scm
+            }
+        }
+
+        stage('2. Build') {
+            steps {
+                script {
+                    
+                    echo "Budowanie obrazu kontenera na podstawie Dockerfile..."
+                    sh "docker build -t ${IMAGE_NAME} ."
                 }
             }
         }
-        stage('Test: Uruchomienie testów') {
+
+        stage('3. Test') {
             steps {
-                dir('ITE/GCL1/SB422052/Sprawozdanie1') {
-                    sh '''
-                    cat <<EOF > Dockerfile.test
-                    FROM node:18-alpine
-                    WORKDIR /app
-                    COPY . .
-                    RUN npm install
-                    CMD ["npm", "test"]
-                    EOF
+                script {
                     
-                    docker build -t tester-lab5 -f Dockerfile.test .
-                    docker run --rm tester-lab5
-                    '''
+                    echo "Uruchamianie testów jednostkowych (npm test) w kontenerze..."
+                    sh "docker run --rm ${IMAGE_NAME} npm test"
                 }
             }
         }
-        stage('Publish: Archiwizacja artefaktu') {
+
+        stage('4. Publish') {
             steps {
-                dir('ITE/GCL1/SB422052/Sprawozdanie1') {
+                script {
                     
-                    sh 'tar --exclude=app-release.tar.gz -czvf app-release.tar.gz .'
+                    echo "Pakowanie kodu produkcyjnego do artefaktu..."
+                    sh "tar --exclude='./.git' --exclude='./node_modules' -czvf app-release.tar.gz ."
                     
+                    
+                    echo "Publikowanie w Jenkinsie..."
                     archiveArtifacts artifacts: 'app-release.tar.gz', fingerprint: true
                 }
             }
         }
-        stage('Deploy: Uruchomienie (nieblokujące)') {
+
+        stage('5. Deploy') {
             steps {
-                dir('ITE/GCL1/SB422052/Sprawozdanie1') {
-                    sh '''
-                    # Odpalamy kontener produkcyjny w tle (-d)
-                    docker run -d --name express-prod-app moj-express-lab5
+                script {
                     
-                    # Dajemy mu 3 sekundy na start
-                    sleep 3
+                    sh "docker rm -f ${CONTAINER_NAME} || true"
                     
-                    # Dowód działania: wyciągamy logi z uruchomionego kontenera
-                    echo "--- LOGI Z DZIAŁAJĄCEJ APLIKACJI ---"
-                    docker logs express-prod-app
-                    echo "-----------------------------------"
                     
-                    # Sprzątamy po sobie 
-                    docker rm -f express-prod-app
-                    '''
+                    echo "Uruchamianie nowej wersji aplikacji na porcie ${PORT}..."
+                    sh "docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${IMAGE_NAME}"
+                    
+                    echo "Smoke Test - sprawdzanie czy kontener działa bez modyfikacji..."
+                    sleep 5
+                    sh "docker logs ${CONTAINER_NAME}"
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            
+            cleanWs()
+        }
+        success {
+            echo "Definition of Done: Sukces! Artefakt .tar.gz jest gotowy, a kontener działa."
         }
     }
 }
