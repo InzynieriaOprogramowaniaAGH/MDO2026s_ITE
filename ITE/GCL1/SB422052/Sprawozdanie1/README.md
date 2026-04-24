@@ -179,20 +179,23 @@ Zgodnie z powyższym diagramem, zrealizowano potok CI/CD. Poniżej logi potwierd
 
 Krok 1: Budowa i Testowanie
 Zbudowano obraz aplikacji na bazie node:18-alpine oraz przeprowadzono testy jednostkowe.
-> ![logi z etapu build](screeny/3.3.png)
-> ![logi z etapu test](screeny/4.4.png) 
 
+> ![logi z etapu clone](screeny/4.4.png) 
+> ![logi z etapu build](screeny/build.png)
 Krok 2: Publikacja Artefaktu (Publish)
 Po pomyślnym przejściu testów, kod został spakowany do archiwum .tar.gz i zarchiwizowany w Jenkinsie.
-> ![logi z etapu publish](screeny/5.5.png)
+> ![logi z etapu publish](screeny/publish.png)
 
 Krok 3: Wdrożenie i Weryfikacja (Deploy & Smoke Test)
 Uruchomiono kontener produkcyjny, pobrano logi w celu weryfikacji startu serwera, a następnie usunięto środowisko tymczasowe.
-> ![ogólny status pipelinu](screeny/6.6.png)
+
 > ![logi z deploya i smoke testu](screeny/7.7.png)
+> ![ogólny status pipelinu](screeny/6.6.png)
+
+
 5. Odpowiedzi na pytania i wnioski
 Format artefaktu: Wybrano archiwum .tar.gz. 
 
-node vs node-slim: Obraz node posiada pełne środowisko kompilacji. Obraz node-slim jest go pozbawiony, co czyni go lżejszym i bezpieczniejszym na produkcji (mniejsza powierzchnia ataku).
+node vs node-slim: Obraz node posiada pełne środowisko kompilacji. Obraz node-slim jest go pozbawiony, co czyni go lżejszym i bezpieczniejszym na produkcji (mniejsza powierzchnia ataku)  .
 
 Kontener Deploy: Zastosowano osobny kontener runtime, ponieważ kontener budujący zawiera zbędne zależności deweloperskie i pliki tymczasowe, które nie powinny znajdować się w środowisku docelowym.
