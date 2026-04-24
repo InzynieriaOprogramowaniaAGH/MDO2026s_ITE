@@ -84,3 +84,17 @@ Wygenerowano zabezpieczoną paczkę aplikacji wraz z podpisem cyfrowym i metadan
 ![Lista Artefaktów](screeny/lab6_artifacts.png)
 
 ---
+
+# Lab 7
+**Temat: Optymalizacja potoku CI/CD oraz przygotowanie infrastruktury Ansible**
+
+## 1. Aktualizacja potoku (Jenkinsfile)
+W pierwszej części laboratorium zoptymalizowano istniejący potok budujący aplikację Spring PetClinic. Zgodnie z założeniami zaktualizowanej listy kontrolnej, wprowadzono zmiany gwarantujące, że proces zawsze operuje na najnowszym kodzie i nie używa starych plików.
+
+* **Czyszczenie obszaru roboczego (Clean Workspace):**
+  Przed etapem pobrania kodu z repozytorium (SCM) dodano krok wykorzystujący dyrektywę `deleteDir()`. Skutecznie usuwa ona pozostałości po poprzednich buildach.
+  ![Czyszczenie obszaru roboczego](screeny/lab7_1.png)
+
+* **Budowanie bez pamięci podręcznej (No-Cache):**
+  Zaktualizowano komendy budujące obrazy Dockera o flagę `--no-cache`. Gwarantuje to spełnienie kryterium "Definition of Done", wymuszając budowę kontenera całkowicie od zera.
+  ![Omijanie cache przy budowaniu](screeny/lab7_2.png)
