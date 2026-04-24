@@ -2,13 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                echo 'Pobieranie kodu ze wspólnego repozytorium...'
-                git branch: 'SK419875', url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
-            }
-        }
-        
         stage('Build Builder') {
             steps {
                 dir('ITE/GCL3/SK419875/markedjs-projekt') {
@@ -40,7 +33,7 @@ pipeline {
         stage('Publish Artifact') {
             steps {
                 dir('ITE/GCL3/SK419875/markedjs-projekt') {
-                    echo 'Wydobywanie plików z kontenera...'
+                    echo 'Wydobywanie plik�w z kontenera...'
                     sh 'docker create --name extract-container marked-deploy:latest'
                     sh 'docker cp extract-container:/app ./marked-production'
                     sh 'docker rm extract-container'
