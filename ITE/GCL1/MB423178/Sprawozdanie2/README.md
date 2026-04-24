@@ -98,3 +98,26 @@ W pierwszej części laboratorium zoptymalizowano istniejący potok budujący ap
 * **Budowanie bez pamięci podręcznej (No-Cache):**
   Zaktualizowano komendy budujące obrazy Dockera o flagę `--no-cache`. Gwarantuje to spełnienie kryterium "Definition of Done", wymuszając budowę kontenera całkowicie od zera.
   ![Omijanie cache przy budowaniu](screeny/lab7_2.png)
+
+  ## 2. Przygotowanie infrastruktury pod Ansible
+W drugiej części laboratorium przygotowano środowisko do automatyzacji, stawiając nową, lekką maszynę wirtualną (`ansible-target`) oraz konfigurując bezpieczne połączenie sieciowe.
+
+* **Weryfikacja adresu IP nowej maszyny:**
+  Po instalacji systemu Ubuntu Server (wersja zminimalizowana) zweryfikowano przydzielony z przełącznika adres IP.
+  ![Adres IP maszyny docelowej](screeny/lab7_3.png)
+
+* **Generowanie kluczy SSH:**
+  Na głównej maszynie sterującej wygenerowano parę kluczy RSA (4096 bitów) do autoryzacji.
+  ![Generowanie kluczy RSA](screeny/lab7_4.png)
+
+* **Przesłanie klucza na serwer docelowy:**
+  Klucz publiczny został autoryzowany i skopiowany na nową maszynę za pomocą polecenia `ssh-copy-id`.
+  ![Kopiowanie klucza SSH](screeny/lab7_5.png)
+
+* **Weryfikacja logowania bez hasła:**
+  Potwierdzono poprawność konfiguracji poprzez bezproblemowe logowanie na użytkownika `ansible` bez konieczności podawania hasła.
+  ![Logowanie SSH bez hasła](screeny/lab7_6.png)
+
+* **Instalacja narzędzia Ansible:**
+  Na maszynie głównej (sterującej) zainstalowano oprogramowanie Ansible. Zostało to zweryfikowane poleceniem sprawdzającym wersję.
+  ![Wersja Ansible](screeny/lab7_7.png)
