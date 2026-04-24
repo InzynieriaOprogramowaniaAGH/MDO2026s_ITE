@@ -1,19 +1,12 @@
 pipeline {
     agent {
-        docker { 
-            image 'ubuntu:22.04' 
+        dockerfile { 
             args '-u root' 
         }
     }
 
     stages {
-        stage('1. Setup') {
-            steps {
-                sh 'apt-get update && apt-get install -y build-essential zlib1g-dev gzip'
-            }
-        }
-
-        stage('2. Build (Kompilacja)') {
+        stage('Build (Kompilacja)') {
             steps {
                 sh '''
                     echo "Kompilacja pliku pobranego z Gita..."
@@ -21,7 +14,7 @@ pipeline {
                 '''
             }
         }
-        stage('3. Pakowanie (Niezależne)') {
+        stage('Pakowanie (Niezależne)') {
             steps {
                 sh '''
                     echo "Test integralności zlib w CI/CD" > test.txt
@@ -32,7 +25,7 @@ pipeline {
             }
         }
 
-        stage('4. Test MD5 (C1)') {
+        stage('Test MD5 (C1)') {
             steps {
                 sh '''
                     ./wrapper.bin test.txt.gz > wynik.txt
@@ -53,7 +46,7 @@ pipeline {
             }
         }
 
-        stage('5. Pakowanie .DEB') {
+        stage('Pakowanie .DEB') {
             steps {
                 sh '''
                     mkdir -p pkg/DEBIAN pkg/usr/bin
