@@ -37,8 +37,8 @@ pipeline {
                 sh '''
                     ./wrapper.bin test.txt.gz > wynik.txt
                     
-                    ORIG_MD5=$(cat original.md5)
-                    CURR_MD5=$(md5sum wynik.txt | awk "{print $1}")
+                    ORIG_MD5=$(md5sum test.txt | cut -d' ' -f1)
+                    CURR_MD5=$(md5sum wynik.txt | cut -d' ' -f1)
                     
                     echo "MD5 przed: $ORIG_MD5"
                     echo "MD5 po:    $CURR_MD5"
