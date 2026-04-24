@@ -12,7 +12,7 @@ pipeline {
             steps {
                 script {
                     // Wchodzimy do folderu lab06, żeby kropka na końcu oznaczała "ten folder"
-                    dir('lab06') {
+                    dir('Lab06') {
                         sh 'docker build -t xzbld -f Dockerfile.xz.bld .'
                         sh 'docker build -t xz-deploy -f Dockerfile.xz.deploy .'
                         
@@ -27,7 +27,7 @@ pipeline {
         
         stage('Artefakty') {
             steps {
-                dir('lab06') {
+                dir('Lab06') {
                     sh 'docker create --name temp xzbld'
                     sh 'docker cp temp:/wyjscie/xz_zbudowane ./binaria'
                     sh 'docker rm temp'
