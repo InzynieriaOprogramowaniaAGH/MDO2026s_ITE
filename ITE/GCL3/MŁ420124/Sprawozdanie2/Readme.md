@@ -163,11 +163,12 @@ pipeline {
     stages {
         stage('Clone') {
             steps {
+                cleanWs()
                 checkout scm
             }
         }
         
-        stage('Build Image') {
+        stage('Build') {
             steps {
                 sh 'docker build -t qrcodebld -f Dockerfile.qrcode.bld .'
             }
@@ -180,7 +181,7 @@ pipeline {
             }
         }
 
-        stage('Verify') {
+        stage('Deploy') {
             steps {
                 script {
                     sh '''
@@ -212,7 +213,7 @@ EOF
             }
         }
 
-        stage('NuGet Packaging') {
+        stage('Publish') {
             steps {
                 sh '''
                 docker run --rm -v $(pwd):/app -w /app qrcodebld bash -c "
