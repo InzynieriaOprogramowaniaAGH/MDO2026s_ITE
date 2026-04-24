@@ -40,11 +40,12 @@ pipeline {
 
         stage('4. Publish') {
             steps {
-                
+                // Wchodzimy do folderu, żeby spakować tylko Twoją apkę
                 dir("${PROJECT_DIR}") {
                     script {
                         echo "Pakowanie kodu produkcyjnego do artefaktu..."
-                        sh "tar --exclude='./.git' --exclude='./node_modules' -czvf app-release.tar.gz ."
+                        // Zignorowanie pakowania archiwum do samego siebie
+                        sh "tar --exclude='./.git' --exclude='./node_modules' --exclude='./app-release.tar.gz' -czvf app-release.tar.gz ."
                         
                         echo "Publikowanie w Jenkinsie..."
                         archiveArtifacts artifacts: 'app-release.tar.gz', fingerprint: true
