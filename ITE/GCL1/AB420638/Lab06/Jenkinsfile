@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+    stages {
+        stage('Pobranie środowiska i kodu') {
+            steps {
+                cleanWs()
+                // 1. To pobiera Twoje pliki (Jenkinsfile, Dockerfile) z Twojego repozytorium (Lab06)
+                checkout scm 
+                
+                // 2. A to dorzuca obok nich świeżutki kod źródłowy xz!
+                sh 'git clone https://github.com/tukaani-project/xz.git kod_xz'
+            }
+        }
+        
+        stage('Build (Kompilacja)') {
+            steps {
+                // Teraz, gdy Jenkins odpala Dockera, w folderze leży już pobrany folder 'kod_xz'
+                sh 'docker build -t xzbld -f Dockerfile.xz.bld .'
+            }
+        }
+
+        stage('Deploy & CD Test') {
+            steps {
+                sh 'docker build -t xz-deploy -f Dockerfile.xz.deploy .'
+                
+                sh 'echo "Testowy tekst" > .my_input && gzip -c .my_input > input.gz'
+                sh 'cat input.gz | docker run -i --rm xz-deploy > out.xz'
+                sh 'test -s out.xz'
+            }
+        }
+
+        stage('Publikacja Artefaktu') {
+            steps {
+                sh 'docker create --name temp xzbld'
+                sh 'docker cp temp:/wyjscie/xz_zbudowane ./binaria'
+                sh 'docker rm temp'
+                
+                sh 'tar -czvf gotowy_program.tar.gz ./binaria'
+                archiveArtifacts artifacts: 'gotowy_program.tar.gz'
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
