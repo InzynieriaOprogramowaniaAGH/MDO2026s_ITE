@@ -18,8 +18,8 @@ Konfiguracja Docker Compose z podmontowaniem gniazda `/var/run/docker.sock`.
 
 **Inicjalizacja i hasło administratora**  
 Odczytanie hasła startowego z logów kontenera w celu odblokowania panelu.  
-![jenkins_haslo.png](lab5/screenshots/jenkins_haslo.png)  
-![tu_wprowadzam_haslo.png](lab5/screenshots/tu_wprowadzam_haslo.png)
+![jenkins_haslo.png](lab5/screenshots/jenkins_hasło.png)  
+![tu_wprowadzam_haslo.png](lab5/screenshots/tu_wprowadzam_hasło.png)
 
 **Konfiguracja użytkownika i URL**  
 Proces tworzenia konta administratora oraz finalne zatwierdzenie adresu instancji.  
@@ -145,9 +145,6 @@ graph BT
     C2 -- "Łączność TCP" --> C1
     J -- "Zapisuje .deb" --> ArtifactStore[Build History]
 ```
----
-
----
 
 ---
 
@@ -290,8 +287,10 @@ W celu umożliwienia pełnej automatyzacji, wygenerowano parę kluczy SSH typu *
 
 **Generowanie kluczy i wysłanie klucza publicznego do maszyny docelowej:**
 
+![ssh_generating_key.png](lab5/screenshots/generating ssh_key.png)
+
 **Weryfikacja logowania SSH bez podawania hasła:**
-![ssh_passwordless_login.png](lab5/screenshots/generating_ssh_keys.png)
+
 ![ssh_passwordless_login.png](lab5/screenshots/ssh_verification.png)
 
 ---
