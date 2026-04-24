@@ -17,9 +17,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Kompilacja pliku pobranego z Gita..."
-                    pwd
-                    ls -la
-                    gcc -o wrapper.bin src/wrapper.c -lz
+                    gcc -o wrapper.bin ITE/GCL1/OD423299/Sprawozdanie2/jenkins-zlib-test/src/wrapper.c -lz
                 '''
             }
         }
