@@ -1,0 +1,9 @@
+FROM neovim-builder-jenkins:latest
+
+RUN useradd -m tester && \
+    chown -R tester:tester /workspace
+
+USER tester
+WORKDIR /workspace
+
+CMD ["make", "unittest"]

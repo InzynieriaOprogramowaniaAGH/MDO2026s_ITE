@@ -1,0 +1,21 @@
+FROM ubuntu:24.04
+
+# Optymalizacja: polskie serwery lustrzane
+RUN sed -i 's/archive.ubuntu.com/pl.archive.ubuntu.com/g' /etc/apt/sources.list.d/ubuntu.sources && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates ninja-build gettext cmake unzip curl git build-essential \
+    file dpkg-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
+RUN git clone https://github.com/neovim/neovim.git .
+
+# Budowanie Neovima z flagą optymalizacji
+RUN make -j$(nproc) \
+CMAKE_BUILD_TYPE=RelWithDebInfo \
+CCMAKE_EXTRA_FLAGS="-DCPACK_DEBIAN_PACKAGE_DEPENDS='libvterm0 (>= 0.3), libc6 (>= 2.38), libgcc-s1 (>= 3.4)'"
+
+# Generowanie paczki .deb (paczka z zależnościami)
+RUN cd build && cpack -G DEB
