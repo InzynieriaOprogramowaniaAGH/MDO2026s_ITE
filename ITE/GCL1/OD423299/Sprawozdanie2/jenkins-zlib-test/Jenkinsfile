@@ -1,6 +1,7 @@
 pipeline {
     agent {
         dockerfile { 
+            dir 'ITE/GCL1/OD423299/Sprawozdanie2/jenkins-zlib-test'
             args '-u root' 
         }
     }
