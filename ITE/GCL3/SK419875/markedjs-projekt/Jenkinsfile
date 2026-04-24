@@ -33,7 +33,7 @@ pipeline {
         stage('Publish Artifact') {
             steps {
                 dir('ITE/GCL3/SK419875/markedjs-projekt') {
-                    echo 'Wydobywanie plików z kontenera...'
+                    echo 'Wydobywanie plikow z kontenera...'
                     sh 'docker create --name extract-container marked-deploy:latest'
                     sh 'docker cp extract-container:/app ./marked-production'
                     sh 'docker rm extract-container'
