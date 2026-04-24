@@ -47,4 +47,11 @@ pipeline {
             }
         }
     }
+
+    post {
+        always {
+            echo 'Czyszczenie srodowiska (Workspace) po zakonczeniu rurociagu...'
+            deleteDir() // Usuwa pliki z katalogu roboczego Jenkinsa
+        }
+    }
 }
