@@ -8,11 +8,17 @@ pipeline {
             }
         }
         
-        stage('Build & Deploy') {
+       stage('Build & Deploy') {
             steps {
                 script {
-                    // Wchodzimy do folderu lab06, żeby kropka na końcu oznaczała "ten folder"
-                    dir('Lab06') {
+                    dir('Lab06') { // Pamiętaj o wielkości liter!
+                        echo "UWAGA! Sprawdzam, gdzie jestem i co tu leży:"
+                        sh 'pwd'
+                        sh 'ls -la'
+                        
+                        // Reszta po staremu:
+                        sh 'docker build -t xzbld -f Dockerfile.xz.bld .'
+                        // ...
                         sh 'docker build -t xzbld -f Dockerfile.xz.bld .'
                         sh 'docker build -t xz-deploy -f Dockerfile.xz.deploy .'
                         
