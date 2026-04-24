@@ -1,10 +1,12 @@
-FROM ubuntu:24.04
 
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+FROM node:18-slim
 
-COPY . /repozytorium
+WORKDIR /app
 
+COPY . .
 
-WORKDIR /repozytorium
+RUN if [ -f "package.json" ]; then npm install; fi
+
+EXPOSE 3000
 
 CMD ["bash"]
