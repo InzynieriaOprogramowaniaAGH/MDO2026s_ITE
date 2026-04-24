@@ -30,7 +30,7 @@ pipeline {
             steps {
                 dir('ITE/GCL1/SB422052/Sprawozdanie1') {
                     
-                    sh 'tar -czvf app-release.tar.gz .'
+                    sh 'tar --exclude=app-release.tar.gz -czvf app-release.tar.gz .'
                     
                     archiveArtifacts artifacts: 'app-release.tar.gz', fingerprint: true
                 }

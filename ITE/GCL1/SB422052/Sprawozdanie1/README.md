@@ -113,3 +113,86 @@ Następnie z logów woluminu pobrano początkowe hasło administratora (`initial
 Pomoc AI 
 Zapytanie:
 "Przeredaguj tak aby było jednolite oraz usuń błędy ortograficzne itp." 
+
+
+######################################################################################3
+
+# Sprawozdanie: Laboratorium 5 i 6 - Pipeline CI/CD (Jenkins)
+
+## 1. Wybrana Aplikacja i Repozytorium
+Do wdrożenia wybrano prostą aplikację backendową napisaną w środowisku **Node.js** z wykorzystaniem frameworka **Express**. 
+* **Licencja:** Kod ma charakter dydaktyczny, co pozwala na swobodny obrót nim na potrzeby zadania (licencja otwarta).
+* **Repozytorium:** Zdecydowano się pracować na osobistej gałęzi (`SB422052`) wewnątrz istniejącego repozytorium przedmiotowego (`MDO2026s_ITE`), zamiast tworzyć pełnego forka.
+
+## 2. Zadania Wstępne (Weryfikacja Środowiska)
+W ramach rozgrzewki przygotowano projekty typu *Freestyle*, weryfikujące poprawność konfiguracji Jenkinsa:
+1. `Zadanie_1_Uname` - Pomyślne wywołanie powłoki systemowej.
+2. `Zadanie_2_Godzina` - Poprawne zachowanie przy błędzie (celowe przerwanie `exit 1` przy nieparzystej godzinie).
+3. `Zadanie_3_Docker` - Pomyślne pobranie obrazu Ubuntu.
+
+> **Dowód realizacji zadań wstępnych:**
+> ![Widok projektów wstępnych](screeny/1.1.png)
+> ![Logi błędu - zadanie z godziną](screeny/2.2.png)
+
+## 3. Diagram Aktywności (Proces CI/CD)
+Poniższy diagram UML obrazuje zaplanowany przepływ pracy w Jenkinsie:
+
+```mermaid
+graph TD
+    classDef success fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000;
+    classDef fail fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#000;
+    classDef info fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#000;
+    classDef action fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#000;
+
+    A([Start: Ręczny Trigger / Webhook Git]):::info --> B{Walidacja wstępna <br> }
+
+    B -- Błąd  --> ERR1[Błąd: exit 1 <br> Przerwanie Pipeline]:::fail
+    B -- Sukces --> C[Checkout SCM <br> Pobranie gałęzi SB422052]:::action
+
+    subgraph Krok_1 [Etap 1: Build & Test środowisko DIND]
+        C --> D[Budowa obrazu kontenera <br> node:18-alpine]
+        D --> E[Uruchomienie środowiska testowego]
+        E --> F{Wykonanie: npm test}
+    end
+
+    F -- Błąd testów --> ERR2[Sprzątanie środowiska i FAILURE]:::fail
+    F -- Sukces testów --> G[Testy zaliczone]:::success
+
+    subgraph Krok_2 [Etap 2: Publish]
+        G --> H[Generowanie paczki <br> app-release.tar.gz]:::action
+        H --> I[(Archiwizacja Jenkins <br> archiveArtifacts)]
+    end
+
+    subgraph Krok_3 [Etap 3: Deploy & Weryfikacja]
+        I --> J[Wdrożenie na serwer <br> docker run -d express-prod-app]:::action
+        J --> K[Wykonanie Smoke Testu <br> docker logs]
+        K --> L{Czy serwer wstał?}
+    end
+
+    L -- Nie --> ERR3[Logowanie błędu i usunięcie kontenera]:::fail
+    L -- Tak --> M[Czyszczenie środowiska <br> docker rm -f]:::action
+    M --> N([Koniec: Status SUCCESS]):::success
+```
+
+4. Realizacja etapów Pipeline (Ścieżka Krytyczna)
+Zgodnie z powyższym diagramem, zrealizowano potok CI/CD. Poniżej logi potwierdzające wykonanie kroków:
+
+Krok 1: Budowa i Testowanie
+Zbudowano obraz aplikacji na bazie node:18-alpine oraz przeprowadzono testy jednostkowe.
+> ![logi z etapu build](screeny/3.3.png)
+> ![logi z etapu test](screeny/4.4.png) 
+
+Krok 2: Publikacja Artefaktu (Publish)
+Po pomyślnym przejściu testów, kod został spakowany do archiwum .tar.gz i zarchiwizowany w Jenkinsie.
+> ![logi z etapu publish](screeny/5.5.png)
+
+Krok 3: Wdrożenie i Weryfikacja (Deploy & Smoke Test)
+Uruchomiono kontener produkcyjny, pobrano logi w celu weryfikacji startu serwera, a następnie usunięto środowisko tymczasowe.
+> ![ogólny status pipelinu](screeny/6.6.png)
+> ![logi z deploya i smoke testu](screeny/7.7.png)
+5. Odpowiedzi na pytania i wnioski
+Format artefaktu: Wybrano archiwum .tar.gz. 
+
+node vs node-slim: Obraz node posiada pełne środowisko kompilacji. Obraz node-slim jest go pozbawiony, co czyni go lżejszym i bezpieczniejszym na produkcji (mniejsza powierzchnia ataku).
+
+Kontener Deploy: Zastosowano osobny kontener runtime, ponieważ kontener budujący zawiera zbędne zależności deweloperskie i pliki tymczasowe, które nie powinny znajdować się w środowisku docelowym.
