@@ -1,11 +1,14 @@
-FROM fedora
+FROM fedora:latest
+RUN dnf -y install gcc make autoconf automake libtool gettext-devel tar && dnf clean all
 
-RUN dnf -y install git make gcc automake autoconf libtool gettext-devel po4a
+WORKDIR /workspace
 
-RUN git clone https://github.com/tukaani-project/xz.git
 
-WORKDIR /xz
+COPY xz /workspace/xz
 
-RUN ./autogen.sh
-RUN ./configure
-RUN make
+
+WORKDIR /workspace/xz
+RUN ./autogen.sh && \
+    ./configure --prefix=/usr/local && \
+    make -j$(nproc) && \
+    make install DESTDIR=/wyjscie/xz_zbudowane
