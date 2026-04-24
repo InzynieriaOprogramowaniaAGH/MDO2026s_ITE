@@ -287,7 +287,7 @@ W celu umożliwienia pełnej automatyzacji, wygenerowano parę kluczy SSH typu *
 
 **Generowanie kluczy i wysłanie klucza publicznego do maszyny docelowej:**
 
-![ssh_generating_key.png](lab5/screenshots/generating ssh_key.png)
+![ssh_generating_key.png](lab5/screenshots/generating_ssh_keys.png)
 
 **Weryfikacja logowania SSH bez podawania hasła:**
 
@@ -315,9 +315,6 @@ Wykorzystanie obrazów typu **slim** na etapie wdrożenia jest kluczową dobrą 
 
 ## 7. Podsumowanie i "Definition of Done"
 
-Proces CI/CD dla biblioteki hiredis oraz przygotowanie pod automatyzację Ansible uznaje się za ukończone (Done), ponieważ:
+Proces CI/CD dla biblioteki hiredis oraz jego przygotowanie do automatyzacji z użyciem Ansible można uznać za zakończony, ponieważ spełnia wszystkie kluczowe założenia nowoczesnego podejścia do wytwarzania oprogramowania. Przede wszystkim cała konfiguracja potoku build–test–publish została zapisana w repozytorium w postaci pliku Jenkinsfile, co umożliwia pełne wersjonowanie oraz śledzenie zmian w procesie. Dzięki wykorzystaniu technologii Docker każde uruchomienie pipeline’u odbywa się w czystym, odizolowanym środowisku, co zapewnia powtarzalność i eliminuje wpływ czynników zewnętrznych.
 
-1. **Infrastruktura jako Kod (SCM)**: Cała definicja potoku build-test-publish żyje w repozytorium jako plik `Jenkinsfile`, co pozwala na śledzenie zmian i wersjonowanie procesu.
-2. **Powtarzalność i Izolacja**: Każde uruchomienie potoku zapewnia czyste i odizolowane środowisko pracy dzięki technologii Docker.
-3. **Weryfikacja Integracyjna**: Sukces komunikacji między kontenerami C1 i C2 gwarantuje, że oprogramowanie jest w pełni sprawne funkcjonalnie.
-4. **Gotowość Wdrożeniowa**: Zestawiono łączność bezhasłową z węzłem docelowym, co stanowi fundament do automatycznego rozsyłania przygotowanych artefaktów za pomocą Ansible.
+Dodatkowo poprawność działania została potwierdzona poprzez test integracyjny – skuteczna komunikacja między kontenerami C1 i C2 dowodzi, że aplikacja działa prawidłowo w warunkach zbliżonych do rzeczywistych. Całość uzupełnia konfiguracja bezhasłowego dostępu do węzła docelowego, która stanowi podstawę do dalszej automatyzacji wdrożeń przy użyciu Ansible.
