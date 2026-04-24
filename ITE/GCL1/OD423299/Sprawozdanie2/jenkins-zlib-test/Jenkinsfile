@@ -43,7 +43,7 @@ pipeline {
                     echo "MD5 przed: $ORIG_MD5"
                     echo "MD5 po:    $CURR_MD5"
                     
-                    if [ "$ORIG_MD5" == "$CURR_MD5" ]; then
+                    if [ "$ORIG_MD5" = "$CURR_MD5" ]; then
                         echo "Weryfikacja powiodłą się"
                     else
                         echo "BŁĄD: Dane uległy uszkodzeniu!"
