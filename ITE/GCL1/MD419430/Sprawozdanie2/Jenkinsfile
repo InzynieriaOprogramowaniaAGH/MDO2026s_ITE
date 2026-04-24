@@ -52,6 +52,8 @@ pipeline {
 
         stage('Wdrozenie (srodowisko testowe)') {
             steps {
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
                 sh "docker network create ${NETWORK_NAME} || true"
 
                 sh """
@@ -73,7 +75,7 @@ pipeline {
                         sh "docker run --rm --network ${NETWORK_NAME} curlimages/curl -s -f http://${CONTAINER_NAME}:${PORT}/"
                         echo "Usługa działa poprawnie"
                     } catch (err) {
-                        error "Błąd: test dostępności usługi nie powiódł się"
+                        error "Blad: test dostepności uslugi nie powiodl sie"
                     }
                 }
             }
