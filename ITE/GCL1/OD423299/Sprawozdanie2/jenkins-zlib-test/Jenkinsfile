@@ -17,6 +17,8 @@ pipeline {
             steps {
                 sh '''
                     echo "Kompilacja pliku pobranego z Gita..."
+                    pwd
+                    ls -la
                     gcc -o wrapper.bin src/wrapper.c -lz
                 '''
             }
