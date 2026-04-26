@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Diagramy UML CI/CD</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad: true });</script>
+<style>
+body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px; }
+.container { display:grid; grid-template-columns:1fr; gap:40px; }
+.card { background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);} 
+h2 { margin-top:0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="card">
+<h2>Diagram aktywności (CI/CD)</h2>
+<div class="mermaid">
+flowchart TD
+    A([Start]) --> B[Cleanup workspace]
+    B --> C[Clone repo]
+    C --> D[Build Docker BLDR]
+    D --> E[Test Docker TEST]
+    E --> F{Czy testy OK?}
+    F -- Nie --> X[Stop]
+    F -- Tak --> G[Package deb]
+    G --> H[Build runtime image]
+    H --> I[Deploy run container]
+    I --> J[Smoke test]
+    J --> K{Czy działa?}
+    K -- Nie --> X
+    K -- Tak --> L[Publish artefaktów]
+    L --> M([End])
+</div>
+</div>
+
+<div class="card">
+<h2>Diagram wdrożeniowy</h2>
+<div class="mermaid">
+graph TD
+    Jenkins[Jenkins CICD]
+    Docker[Docker DIND]
+    Builder[Builder Image]
+    Tester[Tester Image]
+    Runtime[Runtime Image]
+    Artifacts[Artefakty deb logi]
+
+    Jenkins --> Docker
+    Docker --> Builder
+    Docker --> Tester
+    Docker --> Runtime
+    Runtime --> Artifacts
+</div>
+</div>
+
+</div>
+</body>
+</html>
