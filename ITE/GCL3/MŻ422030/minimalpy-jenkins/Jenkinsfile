@@ -1,0 +1,88 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_VERSION = '0.6.0'
+        IMAGE_TAG = "${APP_VERSION}-${BUILD_NUMBER}"
+        APP_DIR = 'ITE/GCL3/MŻ422030/minimalpy-jenkins'
+    }
+
+    stages {
+
+        stage('Clean') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Clone') {
+            steps {
+                git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git', branch: 'MŻ422030'
+                sh 'git submodule update --init --recursive'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh "docker build -t minimalpy_build:${IMAGE_TAG} -t minimalpy_build:latest -f ${APP_DIR}/Dockerfile.build ${APP_DIR}/app 2>&1 | tee build.log"
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh "docker build -t minimalpy_test:${IMAGE_TAG} -f ${APP_DIR}/Dockerfile.test ${APP_DIR}/app 2>&1 | tee test.log"
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'docker rm -f minimalpy_app || true'
+                sh "docker build -t minimalpy_deploy:${IMAGE_TAG} -f ${APP_DIR}/Dockerfile.deploy ${APP_DIR}/app 2>&1 | tee deploy.log"
+                sh "docker run -d --name minimalpy_app -p 5430:5430 minimalpy_deploy:${IMAGE_TAG}"
+                sh 'sleep 3'
+            }
+        }
+
+        stage('Smoke test') {
+            steps {
+                sh 'docker run --rm --network host curlimages/curl:latest -s -o /dev/null -w "%{http_code}" http://localhost:5430 | grep -qx 404'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh "docker run --rm -v \$PWD/${APP_DIR}/app:/app -w /app python:3.13-slim bash -c 'pip install build wheel setuptools && python -m build && python -m compileall . 2>&1' | tee artifacts.log"
+                sh "find ${APP_DIR}/app/dist -type f -exec sha256sum {} \\; > ${APP_DIR}/app/checksums.txt"
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                    sh "docker tag minimalpy_deploy:${IMAGE_TAG} \$DOCKER_USER/minimalpy:${IMAGE_TAG}"
+                    sh "docker tag minimalpy_deploy:${IMAGE_TAG} \$DOCKER_USER/minimalpy:latest"
+                    sh "docker push \$DOCKER_USER/minimalpy:${IMAGE_TAG}"
+                    sh "docker push \$DOCKER_USER/minimalpy:latest"
+                    sh 'docker logout'
+                }
+                archiveArtifacts artifacts: "${APP_DIR}/app/dist/**", fingerprint: true
+                archiveArtifacts artifacts: "${APP_DIR}/app/checksums.txt", fingerprint: true
+                archiveArtifacts artifacts: '*.log', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker rm -f minimalpy_app || true'
+            sh "docker rmi minimalpy_build:${IMAGE_TAG} minimalpy_build:latest minimalpy_test:${IMAGE_TAG} minimalpy_deploy:${IMAGE_TAG} || true"
+        }
+        success {
+            echo "Sukces. Obraz: minimalpy:${IMAGE_TAG}"
+        }
+        failure {
+            echo "Błąd. Sprawdź logi."
+        }
+    }
+}
