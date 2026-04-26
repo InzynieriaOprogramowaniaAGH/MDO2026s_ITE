@@ -92,9 +92,9 @@ EOF
                         
                         # Sprawdzamy czy zmiana tekstu się powiodła
                         if grep -q "ZMODYFIKOWANY" ./test_file_out.txt; then
-                            echo "SMOKE TEST ZAKOŃCZONY SUKCESEM! Neovim poprawnie zedytował plik."
+                            echo "Neovim poprawnie zedytował plik."
                         else
-                            echo "BŁĄD: Plik nie został poprawnie przetworzony!"
+                            echo "Plik nie został poprawnie przetworzony!"
                             exit 1
                         fi
                     '''
