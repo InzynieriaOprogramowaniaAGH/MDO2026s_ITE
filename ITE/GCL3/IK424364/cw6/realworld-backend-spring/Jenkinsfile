@@ -17,14 +17,10 @@ pipeline {
                 // Оборачиваем всё в dir, чтобы Jenkins знал, где лежат файлы
                 dir('ITE/GCL3/IK424364/cw6/realworld-backend-spring') {
                     script {
-                        echo "--- ДИАГНОСТИКА ПУТЕЙ ---"
-                        sh 'pwd' // Покажет текущую рабочую директорию
-                        sh 'find . -name "register.json"' // Найдет файл, если он существует где-то рядом
-                        
                         sh "docker network create ${NETWORK_NAME}"
                         sh "docker run -d --name app-container --network ${NETWORK_NAME} -e SERVER_ADDRESS=0.0.0.0 -e SERVER_PORT=8080 realworld-app:latest"
 
-                        echo "Ждем старт приложения..."
+                        echo "Czekanie na start aplikacji"
                         timeout(time: 60, unit: 'SECONDS') {
                             waitUntil {
                                 def status = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags || echo 0", returnStdout: true).trim()
@@ -32,33 +28,29 @@ pipeline {
                             }
                         }
 
-                        echo "Аппликация готова, тестируем..."
-                        
-                        // Теперь readFile найдет файл, так как мы в нужной директории
-                        def registerJson = readFile('test-data/register.json')
+                        def t1 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/tags", returnStdout: true).trim()
 
+                        def t2 = sh(script: "docker run --rm --network ${NETWORK_NAME} curlimages/curl -s -o /dev/null -w '%{http_code}' http://app-container:8080/api/articles", returnStdout: true).trim()
+        
                         def t3 = sh(script: """
                             docker run --rm --network ${NETWORK_NAME} \
-                            curlimages/curl:8.19.0 -s -o /dev/null -w '%{http_code}' \
+                            -v ${workspacePath}/test-data:/data \
+                            curlimages/curl -s -o /dev/null -w '%{http_code}' \
                             -X POST http://app-container:8080/api/users \
                             -H 'Content-Type: application/json' \
-                            -d @- << 'EOF'
-                            ${registerJson}
-                            EOF
+                            -d @/data/register.json
                         """, returnStdout: true).trim()
-
-                        if (t3 == '200' || t3 == '422') {
-                            echo "Тесты API пройдены"
+        
+                        if (t1 == '200' && t2 == '200' && (t3 == '200' || t3 == '422')) {
+                            echo "Testy przeszli"
                         } else {
-                            error "Ошибка в API тестах. Код ответа: ${t3}"
+                            error "Błąd w testach: Tags=${t1}, Articles=${t2}, Register=${t3}"
                         }
-                    }
-                }
+                            }
+                        }
             }
             post {
                 always {
-                    // Важно: cleanup тоже должен знать, где искать или просто удалять всё
-                    // Здесь dir не обязателен, так как docker команды работают глобально
                     sh 'docker stop app-container || true'
                     sh 'docker rm app-container || true'
                     sh "docker network rm ${NETWORK_NAME} || true"
