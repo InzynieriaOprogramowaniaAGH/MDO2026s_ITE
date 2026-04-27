@@ -71,6 +71,14 @@ pipeline {
                     }
                 }
             }
+            post {
+                failure {
+                    echo "--- BŁĄD: Deployment nie powiódł się. Diagnostyka: ---"
+                    sh 'docker logs realworld-prod'
+                    sh 'docker ps -a --filter name=realworld-prod'
+                    echo "-----------------------------------------------------"
+                }
+            }
         }
         stage('Publish') {
             steps {
