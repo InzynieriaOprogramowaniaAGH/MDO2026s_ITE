@@ -2,23 +2,18 @@ pipeline {
     agent any
 
     environment {
-        FILES_DIR = "ITE/GCL3/JK417545/url_shortener_files"
+        // FILES_DIR = "ITE/GCL3/JK417545/url_shortener_files"
+        FILES_DIR = "."
         BUILD_IMAGE = "url-shortener-builder"
         DEPLOY_IMAGE = "url-shortener-deploy"
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'JK417545', 
-                    url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
-            }
-        }
 
         stage('Build Builder') {
             steps {
                 dir("${FILES_DIR}") {
-                    sh "docker build -t ${BUILD_IMAGE} -f Dockerfile.build ."
+                    sh "docker build --no-cache -t ${BUILD_IMAGE} -f Dockerfile.build ."
                 }
             }
         }
@@ -41,7 +36,7 @@ pipeline {
         stage('Build Runtime Image') {
             steps {
                 dir("${FILES_DIR}") {
-                    sh "docker build -t ${DEPLOY_IMAGE} -f Dockerfile.runtime ."
+                    sh "docker build --no-cache -t ${DEPLOY_IMAGE} -f Dockerfile.runtime ."
                 }
             }
         }
@@ -67,8 +62,10 @@ pipeline {
         stage('Publish Artifact') {
             steps {
                 dir("${FILES_DIR}") {
-                    sh "chmod +x publish.sh"
-                    sh "./publish.sh ${BUILD_IMAGE}"
+                    withCredentials([string(credentialsId: 'NPM_TOKEN', variable: 'NPM_TOKEN')]) {
+                        sh "chmod +x publish.sh"
+                        sh "./publish.sh ${BUILD_IMAGE}"
+                    }
                     archiveArtifacts artifacts: '*.tgz', fingerprint: true
                 }
             }
