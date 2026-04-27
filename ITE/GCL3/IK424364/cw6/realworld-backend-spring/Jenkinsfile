@@ -33,7 +33,7 @@ pipeline {
                         
                         def jsonPayload = '{"user": {"username": "testuser", "email": "test@test.com", "password": "password123"}}'
                         def t3 = sh(script: """
-                            docker run --rm --network ${NETWORK_NAME} curlimages/curl -s -o /dev/null -w '%{http_code}' \
+                            docker run --rm --network ${NETWORK_NAME} curlimages/curl -o /dev/null -w '%{http_code}' \
                             -X POST http://app-container:8080/api/users \
                             -H 'Content-Type: application/json' \
                             -d '${jsonPayload}'
