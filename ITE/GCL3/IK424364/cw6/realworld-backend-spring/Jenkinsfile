@@ -70,7 +70,7 @@ pipeline {
                         echo "Czekanie na start aplikacji..."
                         timeout(time: 60, unit: 'SECONDS') {
                             waitUntil {
-                                return sh(script: "docker exec realworld-prod curl -s -o /dev/null http://localhost:8080/api/tags", returnStatus: true) == 0
+                                return sh(script: "curl -s -o /dev/null http://localhost:8081/api/tags", returnStatus: true) == 0
                             }
                         }
                         echo "Deployment udany."
