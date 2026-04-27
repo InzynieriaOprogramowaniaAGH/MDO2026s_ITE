@@ -58,34 +58,27 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    def deployFailed = false
-            
-                    try {
-                        echo "Deploying to production environment..."
-                        sh 'docker stop realworld-prod || true'
-                        sh 'docker rm realworld-prod || true'
-                        
-                        sh 'docker run -d --name realworld-prod -p 8081:8080 -e SERVER_ADDRESS=0.0.0.0 -e SERVER_PORT=8080 realworld-app:latest'
-                        
-                        echo "Czekanie na start aplikacji..."
-                        timeout(time: 60, unit: 'SECONDS') {
-                            waitUntil {
-                                def status = sh(script: "curl -v -w '%{http_code}' http://localhost:8081/api/tags || echo '0'", returnStdout: true).trim()
-                                return status == '200'
-                            }
+                    def DEPLOY_NETWORK = "prod-${NETWORK_NAME}"
+                    
+                    sh "docker network create ${DEPLOY_NETWORK} || true"
+                    
+                    sh 'docker stop realworld-prod || true'
+                    sh 'docker rm realworld-prod || true'
+                    
+                    sh "docker run -d --name realworld-prod --network ${DEPLOY_NETWORK} -p 8081:8080 -e SERVER_ADDRESS=0.0.0.0 -e SERVER_PORT=8080 realworld-app:latest"
+                    
+                    echo "Czekanie na start aplikacji..."
+                    timeout(time: 60, unit: 'SECONDS') {
+                        waitUntil {
+                            def status = sh(script: """
+                                docker run --rm --network ${DEPLOY_NETWORK} curlimages/curl:8.19.0 \
+                                -s -o /dev/null -w '%{http_code}' http://realworld-prod:8080/api/tags || echo 0
+                            """, returnStdout: true).trim()
+                            
+                            return status == '200'
                         }
-                        echo "Deployment udany."
-                        
-                    } catch (Exception e) {
-                        deployFailed = true
-                        throw e
-                    } finally {
-                        if (deployFailed) {
-                            echo "--- BŁĄD: Deployment nie powiódł się. Diagnostyka: ---"
-                            sh 'docker logs realworld-prod || true'
-                            sh 'docker ps -a --filter name=realworld-prod'
-                            echo "-----------------------------------------------------"
-                        }
+                    }
+                    echo "Deployment udany."
                     }
                 }
             }
