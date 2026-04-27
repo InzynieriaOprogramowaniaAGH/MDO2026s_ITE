@@ -70,11 +70,7 @@ pipeline {
                         echo "Czekanie na start aplikacji..."
                         timeout(time: 60, unit: 'SECONDS') {
                             waitUntil {
-                                def statusCode = sh(script: "curl -w '%{http_code}' -o /dev/null -s http://localhost:8081/api/tags", returnStdout: true).trim()
-        
-                                echo "Status kod API: ${statusCode}"
-                                
-                                return statusCode == '200'
+                                return sh(script: "curl -s -f http://localhost:8081/api/tags", returnStatus: true) == 0
                             }
                         }
                         echo "Deployment udany."
