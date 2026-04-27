@@ -79,7 +79,6 @@ pipeline {
                         }
                     }
                     echo "Deployment udany."
-                    }
                 }
             }
             post {
