@@ -135,9 +135,22 @@ Rezultat z pipeline:
 
 - Stworzono diagram UML zawierający planowany pomysł na proces CI/CD.
 
+![Zdjęcie UML](img/uml.png)
+
+- Klonowanie repozytorium realizowane jest w ramach pierwszego etapu pliku `Jenkinsfile`
+
+```bash
+stage('Clone') {
+    steps {
+        cleanWs()
+        checkout scm
+    }
+}
+```
+
 2. Procesy budowania kontenera, testy
 
-- Wybrano kontener bazowy lub stworzono odpowiedni kontener wstepny. Zdecydowano, że będzie to mcr.microsoft.com/dotnet/sdk:8.0, ponieważ zawiera pełne środowisko kompilacji, co czyni go kompletnym narzędziem buildowym.
+- Jako kontener bazowy wybrano obraz `mcr.microsoft.com/dotnet/sdk:8.0`, ponieważ zawiera pełne środowisko kompilacji .NET, co czyni go kompletnym narzędziem buildowym.
 
 - Stworzono Dockerfile `Dockerfile.qrcode.bld`.
 
@@ -175,6 +188,23 @@ RUN dotnet test -c Release
 sudo docker build -t qrcodetests -f ./Dockerfile.qrcode.tests .
 ```
 
+- Fragment Jenkinsfile realizujący build oraz testy
+
+```bash
+stage('Build') {
+    steps {
+        sh 'docker build -t qrcodebld -f Dockerfile.qrcode.bld .'
+    }
+}
+
+stage('Test') {
+    steps {
+        sh 'docker build -t qrcodetests -f Dockerfile.qrcode.tests .'
+        sh 'docker run --rm qrcodetests'
+    }
+}
+```
+
 3. Wyciągnięcie biblioteki
 
 - Stworzono kontener tymczasowy, aby wyciągnąć z niego zbudowaną bibliotekę do repozytorium projektowego.
@@ -185,17 +215,64 @@ sudo docker cp temp_conteiner:/app/src/Genocs.QRCodeLibrary/bin/Release/net8.0/G
 sudo docker rm temp_conteiner
 ```
 
-- Uzasadniono czy kontener buildowy nadaje się do tej roli/opisano proces stworzenia nowego, specjalnie do tego przeznaczenia
+- W przypadku projektu nie ma klasycznego kontenera Deploy, ponieważ budowana jest biblioteka (.dll). Aby wykonać deploy, konieczne jest użycie zaimportowanej biblioteki w testowtm projekcie (stworzenie QR Code dla losowej strony internetowej). Kod został zbudowany poleceniem `dotnet build`, uruchomiona, sprawdzona została poprawność wykonania (stworzył się plik `qrcode.bmp`).
+
+```bash
+stage('Deploy') {
+    steps {
+        script {
+            sh '''
+            docker run --rm -v $(pwd):/app -w /app qrcodebld bash -c "
+            dotnet new console -n TestProj --force
+            dotnet add TestProj/TestProj.csproj reference src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj
+                    
+            cat <<EOF > TestProj/Program.cs
+using System;
+using System.IO;
+using Genocs.QRCodeGenerator.Encoder;
+
+try {
+    var generator = new QRCodeGenerator();
+    var data = generator.CreateQrCode(\\"https://jenkins.io\\", QRCodeGenerator.ECCLevel.Q);
+    var qr = new BitmapByteQRCode(data);
+    byte[] bmpBytes = qr.GetGraphic(5);
+    File.WriteAllBytes(\\"qrcode.bmp\\", bmpBytes);
+    Console.WriteLine(\\"Success! Test Passed.\\");
+} catch (Exception ex) {
+    Console.WriteLine(\\"Test Failed: \\" + ex.Message);
+    Environment.Exit(1);
+}
+EOF
+            dotnet run --project TestProj/TestProj.csproj
+            "
+            '''
+        }
+    }
+}
+```
 
 4. Deploy
 
-- W przypadku projektu nie ma klasycznego kontenera Deploy, ponieważ budowana jest biblioteka (.dll). Aby wykonać deploy, konieczne jest użycie zaimportowanej biblioteki w testowtm projekcie (stworzenie QR Code dla losowej strony internetowej). Kod został zbudowany poleceniem `dotnet build`, uruchomiona, sprawdzona została poprawność wykonania (stworzył się plik `qrcode.bmp`).
-
-- Jako artefakt publikowany ma być paczka `.nupkg` (NuGet) oraz obraz `qrcode.bmp` jako dowód działania. Pozwala na łatwe zarządzanie zależnościami i wersjonowanie.
+- Jako artefakt publikowany ma być paczka `.nupkg` (NuGet) oraz obrazek `qrcode.bmp` jako dowód działania. Pozwala na łatwe zarządzanie zależnościami i wersjonowanie.
 
 - Dostępność artefaktu: publikacja do Rejestru online, artefakt załączony jako rezultat builda w Jenkinsie. Artefakty są dostępne bezpośrednio w panelu Jenkinsa dzięki komendzie `archiveArtifacts`.
 
-- Ostateczny `Jenkinsfile` projektu:
+```bash
+stage('Publish') {
+    steps {
+        sh '''
+        docker run --rm -v $(pwd):/app -w /app qrcodebld bash -c "
+        dotnet build src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj -c Release
+        dotnet pack src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj -c Release -o /app/final_artifacts
+        "
+        '''
+    }
+}
+```
+
+- Na samym końcu Jenkinsfile wykonano blok post, który definiuje kroki, które mają zostać wykonane po zakończeniu całego pipelineu lub konkretnego etapu - niezależnie od tego, czy zakończył się sukcesem, czy nie. W przypadku sukcesu dokonywana jest archiwizacja, a w przypadku porażki odpowiedni komunikat.
+
+- Ostateczny `Jenkinsfile` projektu umieszczony na zforkowanym repozytorium na GitHubie
 
 ```bash
 pipeline {
@@ -277,3 +354,15 @@ EOF
     }
 }
 ```
+
+- Weryfikacja uruchomienia w webowej aplikacji Jenkins. Wiadomość o sukcesie i pomyślnej archiwizacji.
+
+![Zdjęcie 8](img/s8.png)
+
+- Pomyślna archiwizacja
+
+![Zdjęcie 9](img/s9.png)
+
+- Porównanie UML do faktycznego pipeline projektu. W diagramie UML `Publish` odbywa się w etapie `post`, co było błędnym założeniem. Zmieniły się nazwy na oddające faktycznie wykonywane zadania.
+
+![Zdjęcie 10](img/s10.png)
