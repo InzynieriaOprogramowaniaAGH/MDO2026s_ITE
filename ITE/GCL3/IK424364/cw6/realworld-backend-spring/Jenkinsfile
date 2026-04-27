@@ -70,7 +70,11 @@ pipeline {
                         echo "Czekanie na start aplikacji..."
                         timeout(time: 60, unit: 'SECONDS') {
                             waitUntil {
-                                return sh(script: "curl -s -f http://localhost:8081/api/tags", returnStatus: true) == 0
+                                def status = sh(
+                                    script: "docker run --rm curlimages/curl:8.19.0 -s -f http://host.docker.internal:8081/api/tags", 
+                                    returnStatus: true
+                                )
+                                return status == 0
                             }
                         }
                         echo "Deployment udany."
