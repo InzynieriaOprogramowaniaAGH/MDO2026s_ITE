@@ -1,0 +1,120 @@
+pipeline {
+    agent any
+
+    stages {
+   
+        stage('Build Image & Wheel') {
+            steps {
+                script {
+                    sh 'docker build -t flask-builder:latest -f ./ITE/GCL3/AŁ420983/lab3/Dockerfile.build ./ITE/GCL3/AŁ420983/lab3'
+                }
+            }
+        }
+        stage('Tests') {
+            steps {
+                script {
+                    sh 'docker build -t flask-tester:latest -f ./ITE/GCL3/AŁ420983/lab3/Dockerfile.test ./ITE/GCL3/AŁ420983/lab3'
+                    sh 'docker run --rm flask-tester:latest || true'
+                }
+            }
+        }
+        stage('Extract Artifact') {
+            steps {
+                script {
+                    sh 'docker create --name temp-container flask-builder:latest'
+                    sh 'docker cp temp-container:/app/dist ./'
+                    sh 'docker rm temp-container'
+                }
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'dist/*.whl', fingerprint: true
+            }
+        }
+
+   
+stage('Deploy') {
+    steps {
+        script {
+            sh 'docker rm -f flask-prod-test || true'
+
+            sh '''
+                docker run -d --name flask-prod-test -p 5000:5000 \
+                -v "$(pwd)/dist:/mnt/dist" \
+                python:3.12-slim bash -c \
+                "
+                pip install /mnt/dist/*.whl
+                
+                cat <<EOF > my_app.py
+from flask import Flask
+import os
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return '<h1>Działa</h1>'
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+EOF
+
+                python3 my_app.py > /var/log/app.log 2>&1
+                "
+            '''
+            echo "Aplikacja zdeployowana. Sprawdzam czy działa..."
+            sleep 5
+            sh 'docker logs flask-prod-test'
+        }
+    }
+}
+stage('Smoke Test') {
+            steps {
+                script {
+                    echo "Weryfikacja: Łączę się przez hosta 'jenkins-docker'..."
+                    sleep 50
+                        sh '''
+                            for i in {1..20}; do
+                                if curl -s -f http://jenkins-docker:5000/; then
+                                    echo "Aplikacja wstała!"
+                                    exit 0
+                                fi
+                                echo "Czekam... (próba $i/20)"
+                                sleep 2
+                            done
+                            
+                            echo "błąd"
+                            exit 1
+                        '''
+                    
+                }
+            }
+        }
+     stage('Publish') {
+    steps {
+        script {
+            // Używamy 'string' zamiast 'usernamePassword'
+            withCredentials([string(credentialsId: 'pypi-token', variable: 'PYPI_TOKEN_VAR')]) {
+                sh '''
+                    docker run --rm -v "$(pwd)/dist:/app/dist" -w /app python:3.12-slim bash -c "
+                        pip install twine
+                        # Używamy __token__ jako użytkownika i zmiennej z tokenem jako hasła
+                        twine upload -u __token__ -p ${PYPI_TOKEN_VAR} dist/olo_devopsowo_lab7-*.whl
+                    "
+                '''
+            }
+        }
+    }
+}
+}
+    post {
+        failure {
+            echo "Nie działa"
+        }
+        success {
+            echo "Działa na porcie 5000"
+        }
+    }
+}
