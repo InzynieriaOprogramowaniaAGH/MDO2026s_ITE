@@ -4,25 +4,52 @@
 
 ### Wstęp
 
+CI/CD (Continuous Integration / Continuous Deployment) to praktyka automatyzacji procesu budowania, testowania i wydawania oprogramowania. Umożliwia automatyzację przepływów pracy związanych z integracją, testowaniem oraz wdrażaniem kodu, co ogranicza nakład pracy manualnej przy jednoczesnej poprawie jakości oprogramowania - pozwalając na szybsze i bardziej spójne wydania.
+
+Jenkins Pipeline to zestaw wtyczek wspierający implementację i integrację potoków ciągłego dostarczania/wdrażania w środowisku Jenkins. Udostępnia rozbudowany zestaw narzędzi do modelowania procesów - od prostych po złożone potoki - za pośrednictwem dedykowanego języka dziedzinowego (DSL).
+
+### Instalacja Jenkins
+
+Instalację Jenkins przeprowadzono zgodnie z kolejnymi krokami dokumentacji. Skorzystano z oficjalnego obrazu `jenkins/jenkins image` z `Docker Huba`. 
+
+Na początku stworzono sieć Jenkins za pomocą komendy. Poleceniem ls zweryfikowano poprawne utworzenie sieci.
 ```bash
 sudo docker network create jenkins
 sudo docker network ls
+```
+
+W celu wykonania polecenia Dockera w węzłach Jenkins, pobrano i uruchomiono obraz Dockera `docker:dind`.
+```bash
 sudo docker run   --name jenkins-docker   --rm   --detach   --privileged   --network jenkins   --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind   --storage-driver overlay2
+```
+
+Na podstawie przygotowanego pliku `Dockerfile.jenkins` zbudowano obraz Jenkins wzbogacony o wtyczkę Blue Ocean. Zbudowany obraz uruchomiono jako kontener o nazwie `jenkins-blueocean`. Kontener został podłączony do sieci `jenkins` i skonfigurowany tak, aby komunikował się z wcześniej uruchomionym kontenerem dind.
+```bash
 sudo docker build -t myjenkins-blueocean:2.541.3-1 .
 sudo docker build -t myjenkins-blueocean:2.541.3-1 -f ./Dockerfile.jenkins .
 sudo docker run   --name jenkins-blueocean   --restart=on-failure   --detach   --network jenkins   --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client   --env DOCKER_TLS_VERIFY=1   --publish 8080:8080   --publish 50000:50000   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   myjenkins-blueocean:2.541.3-1
-sudo docker ps
-sudo docker network inspect jenkins
-
-sudo docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
-2f3df83f0662438eb60f21eede0d2574
 ```
 
+Po uruchomieniu kontenerów zweryfikowano konfigurację sieci. Następnie pobrano wygenerowane hasło administratora, niezbędne do pierwszego logowania w interfejsie webowym Jenkins.
+```bash
+sudo docker network inspect jenkins
+sudo docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+```
 
+Stworzenie pierwszwgo administratora:
+![Zdjęcie 1](img/s1.png)
+
+### Konfiguracja i uruchomienie pierwszych projektów
+
+1. Projekt konsolowy wyświetlający `uname`
 Skrypt `uname-test`
 ```bash
 uname -a
 ```
+Rezultat: 
+![Zdjęcie 2](img/s2.png)
+
+2. Projekt konsolowy wyświetlający, który zwraca błąd, jeżeli godzina jest nieparzysta
 
 Skrypt `hour-test`
 ```bash
@@ -35,6 +62,11 @@ else
   echo "Hour is even"
 fi
 ```
+
+Rezultat:
+![Zdjęcie 3](img/s3.png)
+
+3. Projekt pipeline pobierający obraz kontenera `ubuntu`
 
 Skrypt `docker-pull-test` (pipeline)
 ```bash
@@ -54,6 +86,12 @@ pipeline {
     }
 }
 ```
+
+### Stworzenie obiektu typu pipeline
+
+Dyrektywa `agent` określa, na jakim węźle ma zostać wykonany dany pipeline lub jego etap. Wartość `any` oznacza, że Jenkins może uruchomić pipeline na dowolnym dostępnym agencie lub węźle w środowisku. Blok `stage` definiuje pojedynczy, logicznie wyodrębniony etap potoku. Każdy etap posiada nazwę opisującą wykonywaną czynność i zawiera jeden lub więcej kroków (`steps`).
+
+Poniższy pipeline zawiera dwa etapy: klonowanie repozytorium oraz zbudowanie obrazu Docker znajdującego się w repozytorium, w katalogu personalnym. 
 
 Skrypt `docker-pull-test` (pipeline)
 ```bash
@@ -81,6 +119,9 @@ pipeline {
     }
 }
 ```
+
+Rezultat z pipeline:
+![Zdjęcie 5](img/s5.png)
 
 ## Class06
 
