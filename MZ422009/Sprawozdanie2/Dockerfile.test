@@ -1,0 +1,5 @@
+FROM express-bldr:latest
+
+WORKDIR /app/express
+
+CMD ["npm", "test"]

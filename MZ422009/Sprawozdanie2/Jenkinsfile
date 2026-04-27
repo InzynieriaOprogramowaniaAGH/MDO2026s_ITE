@@ -1,114 +1,63 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_USER = 'zucho'
+        IMAGE_NAME = 'express-deploy'
+        BUILD_IMAGE = 'express-bldr:latest'
+        TEST_IMAGE = 'express-tester:latest'
+        DEPLOY_IMAGE = 'zucho/express-deploy'
+        VERSION = "v${BUILD_NUMBER}"
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Clean') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Clone') {
             steps {
                 checkout scm
-                sh 'pwd'
-                sh 'ls -R'
+                sh 'ls -la'
+                sh 'ls -la MZ422009/Sprawozdanie2'
             }
         }
 
-        stage('Cleanup') {
+        stage('Build') {
             steps {
-                sh '''
-                    docker rm -f mojprojekt-test-container || true
-                    docker rm -f mojprojekt-deploy-container || true
-		    docker system prune -af || true
-                '''
-            }
-        }
-
-	stage('Prepare sources') {
-	    steps {
-		sh '''
-		    rm -rf MZ422009/Sprawozdanie1/express
-		    git clone https://github.com/expressjs/express.git MZ422009/Sprawozdanie1/express
-		'''
-	    }
-	}
-
-        stage('Build BLDR') {
-            steps {
-                sh '''
-                    docker build --no-cache -t mojprojekt-bldr:${BUILD_NUMBER} -f MZ422009/Sprawozdanie1/Dockerfile.bld MZ422009/Sprawozdanie1
-                '''
-            }
-        }
-
-        stage('Build TEST') {
-            steps {
-                sh '''
-                    docker build --no-cache -t mojprojekt-test:${BUILD_NUMBER} -f MZ422009/Sprawozdanie1/Dockerfile.test MZ422009/Sprawozdanie1
-                '''
+                dir('MZ422009/Sprawozdanie2') {
+                    sh 'docker build --no-cache -f Dockerfile.bld -t $BUILD_IMAGE .'
+                }
             }
         }
 
         stage('Test') {
             steps {
-                sh '''
-                    docker rm -f mojprojekt-test-container || true
-                    docker run --name mojprojekt-test-container mojprojekt-test:${BUILD_NUMBER}
-                '''
-            }
-        }
-
-        stage('Build Deploy Image') {
-            steps {
-                sh '''
-                    docker build --no-cache -t zucho/express-app:${BUILD_NUMBER} -t zucho/express-app:latest -f MZ422009/Sprawozdanie2/Dockerfile MZ422009/Sprawozdanie2
-                '''
+                dir('MZ422009/Sprawozdanie2') {
+                    sh 'docker build --no-cache -f Dockerfile.test -t $TEST_IMAGE .'
+                    sh 'docker run --rm $TEST_IMAGE'
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                sh '''
-                    docker rm -f mojprojekt-deploy-container || true
-                    docker run -d --name mojprojekt-deploy-container -p 8080:8080 zucho/express-app:${BUILD_NUMBER}
-                '''
-            }
-        }
-
-        stage('Publish to DockerHub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push zucho/express-app:${BUILD_NUMBER}
-                        docker push zucho/express-app:latest
-                        docker logout
-                    '''
+                dir('MZ422009/Sprawozdanie2') {
+                    sh 'docker build --no-cache -f Dockerfile.deploy -t $DEPLOY_IMAGE:$VERSION -t $DEPLOY_IMAGE:latest .'
+                    sh 'docker run --rm $DEPLOY_IMAGE:$VERSION'
                 }
             }
         }
 
-        stage('Publish Artifacts') {
+        stage('Publish') {
             steps {
-                sh '''
-                    mkdir -p artifacts
-                    echo zucho/express-app:${BUILD_NUMBER} > artifacts/deploy-image.txt
-                    echo zucho/express-app:latest > artifacts/deploy-latest.txt
-                    docker images > artifacts/docker-images.txt
-                '''
-                archiveArtifacts artifacts: 'artifacts/*', fingerprint: true
+                sh 'docker push $DEPLOY_IMAGE:$VERSION'
+                sh 'docker push $DEPLOY_IMAGE:latest'
+                sh 'docker save $DEPLOY_IMAGE:$VERSION | gzip > express-deploy-${BUILD_NUMBER}.tar.gz'
+                archiveArtifacts artifacts: "express-deploy-${BUILD_NUMBER}.tar.gz", fingerprint: true
             }
-        }
-    }
-
-    post {
-        always {
-            sh '''
-                docker ps -a || true
-                docker images || true
-            '''
-        }
-        success {
-            echo 'Pipeline wykonany poprawnie.'
-        }
-        failure {
-            echo 'Pipeline zakonczony bledem.'
         }
     }
 }
