@@ -314,9 +314,6 @@ Dodano plik `Jenkinsfile` do repozytorium oraz usunięto już zbędne w nim gitc
 
 
 
-<img width="1050" height="531" alt="image" src="https://github.com/user-attachments/assets/8364eeeb-b9ad-4000-96a7-39e8d4d49c63" />
-
-<img width="1460" height="979" alt="image" src="https://github.com/user-attachments/assets/480cae49-7b23-4203-9e13-bbb8c67e8904" />
 
 
 `pipeline_scm`
