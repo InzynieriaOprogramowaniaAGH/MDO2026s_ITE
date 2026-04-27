@@ -3,7 +3,7 @@
 #### Wszystkie zadania wykonałam na Ubuntu Server 24.04 LTS w Hyper-V, poprzez połączenie zdalne przez protokół SSH z poziomu Visual Studio Code.
 
 
-# Lab5
+# Lab5/6/7
 
 ### Przygotowanie 
 
@@ -329,8 +329,17 @@ Najpierw w etapie Smoke Test wprowadziłam zmianę w sposobie weryfikacji dostę
 
 Okazało się, że w Dockerfile.deploy z racji, że korzystam z obrazu node:20-slim musiałam doinstalować narzędzie curl. Po tej modyfikacji pipelina wykonał się poprawnie. 
 
+Finalny kod Jenkinsfile: [Jenkinsfile](Jenkinsfile)
+
 ![Błąd wyświetlania](lab6_ss/lab6ss7.png)
 
 Następnie pobrałam istniejący artefakt.
 
 ![Błąd wyświetlania](lab6_ss/lab6ss8.png)
+
+W moim katalogu domowym utworzyłam folder test1, w którym rozpakowałam pobrany artefakt, aby sprawdzić czy działa. 
+
+Wszystko zadziałało poprawnie - potwierdziło to, że artefakt jest w pełni samodzielny oraz nie ma potrzeby niczego instalować.
+
+![Błąd wyświetlania](lab7_ss/lab7ss1.png)
+![Błąd wyświetlania](lab7_ss/lab7ss2.png)
