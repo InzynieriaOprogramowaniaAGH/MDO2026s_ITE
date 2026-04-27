@@ -17,6 +17,10 @@ pipeline {
                 // Оборачиваем всё в dir, чтобы Jenkins знал, где лежат файлы
                 dir('ITE/GCL3/IK424364/cw6/realworld-backend-spring') {
                     script {
+                        echo "--- ДИАГНОСТИКА ПУТЕЙ ---"
+                        sh 'pwd' // Покажет текущую рабочую директорию
+                        sh 'find . -name "register.json"' // Найдет файл, если он существует где-то рядом
+                        
                         sh "docker network create ${NETWORK_NAME}"
                         sh "docker run -d --name app-container --network ${NETWORK_NAME} -e SERVER_ADDRESS=0.0.0.0 -e SERVER_PORT=8080 realworld-app:latest"
 
