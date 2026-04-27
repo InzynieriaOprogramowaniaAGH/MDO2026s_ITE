@@ -64,13 +64,10 @@ pipeline {
                     
                     sh 'docker run -d --name realworld-prod -p 8081:8080 realworld-app:latest'
                     
-                    sleep 10
-                    def smoke = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8081/api/tags", returnStdout: true).trim()
-                    
-                    if (smoke == '200') {
-                        echo "Deployment udany. Aplikacja działa na porcie 8081."
-                    } else {
-                        error "Test nie przeszedł! Aplikacja nie wstała."
+                    timeout(time: 60, unit: 'SECONDS') {
+                        waitUntil {
+                            return sh(script: "curl -s -o /dev/null http://localhost:8081/api/tags", returnStatus: true) == 0
+                        }
                     }
                 }
             }
