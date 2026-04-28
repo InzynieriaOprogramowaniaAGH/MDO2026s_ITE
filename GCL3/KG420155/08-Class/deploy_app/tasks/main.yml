@@ -1,0 +1,36 @@
+---
+- name: Sanity check
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Fedora"
+    fail_msg: "Ten playbook jest przystosowany tylko do Fedory!"
+    quiet: yes
+  ignore_errors: yes # Brak awarii w przypadku faila
+
+- name: Instalacja Dockera (Obejscie bledu DNF5)
+  ansible.builtin.command: dnf install -y docker
+  register: docker_install
+  changed_when: "'Nothing to do.' not in docker_install.stdout"
+
+- name: Uruchomienie Dockera
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Wyslanie artefaktu (.tgz) na maszyne
+  ansible.builtin.copy:
+    src: commander-package-latest.tgz
+    dest: /tmp/app-package.tgz
+
+- name: Uruchomienie kontenera z aplikacja
+  ansible.builtin.command: >
+    docker run --rm -d --name app_test -v /tmp/app-package.tgz:/app.tgz node:20.12.0-slim sleep 3600
+
+- name: Weryfikacja czy dziala
+  ansible.builtin.command: docker ps -f name=app_test
+  register: docker_ps_output
+  failed_when: "'app_test' not in docker_ps_output.stdout"
+
+- name: Oczyszczenie srodowiska
+  ansible.builtin.command: docker stop app_test
