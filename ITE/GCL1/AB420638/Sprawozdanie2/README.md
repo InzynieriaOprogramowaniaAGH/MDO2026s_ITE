@@ -48,7 +48,7 @@ Następnie, dla weryfikacji, zmieniłem przyrównywaną zmienną do obecnego dni
 
 
 ### 1.3 Pierwszy obiekt Pipeline i mechanizm cache'owania
-Kolejnym krokiem było porzucenie przestarzałych zadań Freestyle na rzecz nowoczesnego, deklaratywnego obiektu Pipeline. Wprowadziłem skrypt potoku bezpośrednio w interfejsie graficznym Jenkinsa. Rurociąg klonował moje repozytorium z systemu kontroli wersji i wykonywał podstawowe budowanie próbnego obrazu kontenera. 
+Kolejnym krokiem było przejście z prostych projektów na rzecz nowoczesnego, deklaratywnego obiektu Pipeline. Wprowadziłem skrypt potoku bezpośrednio w interfejsie graficznym Jenkinsa. Zgodnie z kodem widocznym na zrzutach ekranu, rurociąg klonował moje repozytorium i budował wstępny obraz o nazwie moj-xz-builder, wykorzystując do tego plik Dockerfile.xz.bld z poprzednich laboratoriów.
 
 Zgodnie z poleceniem, uruchomiłem stworzony potok dwukrotnie, aby dogłębnie przeanalizować zachowanie środowiska budującego:
 * **Pierwsze uruchomienie:** Przebiegło standardowo – Docker pobrał bazę, zaktualizował repozytoria, zainstalował niezbędne pakiety (`dnf install`) i skompilował kod od zera.
