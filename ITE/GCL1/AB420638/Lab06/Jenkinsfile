@@ -14,15 +14,16 @@ pipeline {
             }
         }
 
-        stage('2. Prepare Input (gzip)') {
+        stage('2. Prepare Input (xz)') {
             steps {
                 dir("${WORK_DIR}") {
                     script {
-                        echo "Tworzenie pliku my_input i kompresja gzip..."
+                        echo "Tworzenie pliku my_input i kompresja xz..."
                         sh '''
                             echo "To jest testowy tekst, ktory Jenkins skompresuje, a Docker zdekompresuje." > my_input.txt
-                            gzip -c my_input.txt > input.gz
-                            echo "Utworzono input.gz"
+                            # Poprawka: używamy xz do kompresji zamiast gzip!
+                            xz -c my_input.txt > input.xz
+                            echo "Utworzono input.xz"
                         '''
                     }
                 }
@@ -40,13 +41,14 @@ pipeline {
             }
         }
 
-        stage('4. Deploy & Test (out ok?)') {
+       stage('4. Deploy & Test (out ok?)') {
             steps {
                 dir("${WORK_DIR}") {
                     script {
-                        echo "Uruchamianie kontenera docelowego, przetwarzanie input.gz i walidacja..."
+                        echo "Uruchamianie kontenera docelowego, przetwarzanie input.xz i walidacja..."
                         sh '''
-                            docker run --rm -v $(pwd):/app -w /app ${IMAGE_NAME}:latest sh -c "cat input.gz | xz -d > out.txt"
+                            # Używamy kontenera z xz do dekompresji (zgodnie z głównym celem zadania)
+                            docker run --rm -v $(pwd):/app -w /app ${IMAGE_NAME}:latest sh -c "cat input.xz | xz -d > out.txt"
                             
                             echo "Walidacja: 'out ok?'"
                             if cmp -s my_input.txt out.txt; then
@@ -66,7 +68,8 @@ pipeline {
                 dir("${WORK_DIR}") {
                     script {
                         echo "Zapisywanie artefaktów w Jenkinsie..."
-                        archiveArtifacts artifacts: 'my_input.txt, input.gz, out.txt', fingerprint: true
+                        # Zmieniono input.gz na input.xz w artefaktach
+                        archiveArtifacts artifacts: 'my_input.txt, input.xz, out.txt', fingerprint: true
                         
                         echo "Tagowanie obrazu..."
                         sh 'docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${BUILD_NUMBER}'
@@ -74,7 +77,6 @@ pipeline {
                 }
             }
         }
-    }
 
     post {
         always {
