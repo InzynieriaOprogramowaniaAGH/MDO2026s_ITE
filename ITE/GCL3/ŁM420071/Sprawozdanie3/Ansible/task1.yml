@@ -1,0 +1,29 @@
+---
+- name: Task 1
+  hosts: all
+  become: yes
+  tasks:
+    - name: "1. Ping"
+      ping:
+    - name: "2. Kopiowanie pliku inwentory.ini"
+      copy:
+        src: ./inventory.ini
+        dest: /home/ansible/inventory.ini
+        owner: ansible
+        group: ansible
+        mode: '0644' 
+      when: "'Endpoints' in group_names"
+    - name: "3. Aktualizacja pakietow"
+      command: dnf update -y
+      when: ansible_distribution == "Fedora"
+      register: update_result
+      changed_when: "'Nothing to do' not in update_result.stdout"
+    - name: "4. Restart uslug sshd i rngd"
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - sshd
+        - rngd
+      ignore_errors: yes
+      when: "'Endpoints' in group_names"

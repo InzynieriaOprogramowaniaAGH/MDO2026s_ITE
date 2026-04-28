@@ -1,0 +1,27 @@
+---
+- name: "Przygotowanie srodowiska i wdrozenie aplikacji"
+  hosts: Endpoints
+  become: yes
+  vars:
+    npm_package: "@freizen77/express-mdo-test"
+    container_name: "express_app"
+  tasks:
+    - name: "Sanity check: Sprawdzenie dostepnosci miejsca"
+      command: df -h /
+      register: disk_space
+      changed_when: false
+    - name: "Instalacja Dockera i zaleznosci Python"
+      command: dnf install -y docker python3-docker
+      register: dnf_out
+      changed_when: "'Nothing to do' not in dnf_out.stdout"
+    - name: "Uruchomienie uslugi Dockera"
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+    - name: "Przygotowanie katalogu dla aplikacji"
+      file:
+        path: /opt/express_app
+        state: directory
+        mode: '0755'
+    - name: ""
