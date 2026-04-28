@@ -49,7 +49,7 @@ Utworzono zadanie typu Freestyle project, w którym wykonano polecenie `uname -a
 Zadanie zakończyło się poprawnie, a w logach konsoli widoczny był wynik polecenia systemowego.
 
 ### Projekt z nieparzystą godziną ###
-Utworzono kolejne zadanie testowe, które miało zwracać błąd, gdy aktualna godzina jest nieparzysta. Wykorzystano prosty skrypt powłoki sprawdzający wartość godziny. Wykorzystano prosty skrypt powłoki sprawdzający wartość godziny.
+Utworzono kolejne zadanie testowe, które miało zwracać błąd, gdy aktualna godzina jest nieparzysta. Wykorzystano prosty skrypt powłoki sprawdzający wartość godziny.
 ```bash
 HOUR=$(date +%H)
 if [ $((10#$HOUR % 2)) -eq 1 ]; then
@@ -89,3 +89,66 @@ W tym etapie wcześniejszy pipeline został rozszerzony o: `klonowanie repozytor
 
 Podczas wykonania wystąpił błąd na etapie klonowania repozytorium, co spowodowało zatrzymanie pipeline. To ma pokazać jak wygląda błąd w jednym z etapów pipeline i jak to się zachowuje. W tym przypadku błąd spowodowała niepoprawna konfiguracja dostępu do repozytorium w Jenkins. 
 
+# Lab 6 #
+Podczas tych laboratorium otrzymalismy indywidualne instrukcje do wykonania. W moim przypadku celem ćwiczenia było przygotowanie obrazu Docker aplikacji oraz jego publikacja w repozytorium Docker Hub. Zostało to ręcznie przygotowane bez wykorzystania narzędzi CI/CD, które będzie zatomatyzowane później.
+Wykonane kroki:
+
+## 6.1. Utworzenie pliku Dockerfile.deploy
+Zdefiniowano plik `Dockerfile.deploy` budujący obraz aplikacji: 
+```
+FROM node:18-slim
+
+RUN apt update && apt install -y git
+
+WORKDIR /app
+
+RUN git clone https://github.com/expressjs/express.git
+
+WORKDIR /app/express
+
+RUN npm install --omit-dev
+
+CMD ["node", "-v"]
+```
+Plik wykorzystuje obraz bazowy node:18-slim, instaluje repozytorium Express oraz zależności aplikacji.
+
+![Dockerfile.deploy](SS-13.png)
+
+## 6.2. Budowa obrazu Docker
+Obraz został zbudowany lokalnie:
+
+![Dockerfile.deploy build](SS-14.png) 
+
+*Ważne:* Wykorzystano parametr `--no-cache`, który zapewnia budowę od zera bez użycia cache.
+
+## 6.3. Uruchomienie kontenera
+
+![Dockerfile.deploy run](SS-15.png)
+
+Otrzymany wynik `v18.20.8` potwierdza poprawne działanie środowiska Node.js w kontenerze.
+
+## 6.4. Autoryzacja w Docker Hub
+Wykonano logowanie do rejestru za pomocą polecenia `sudo docker login`
+
+![DockerHub login](SS-16.png)
+
+Jak widać na zrzucie ekranu powyżej logowanie zakończyło się statusem *Login Succeeded*.
+
+## 6.5. Tagowanie obrazu
+Obraz został oznaczony tagami:
+
+![tagi](SS-17.png)
+
+## 6.6. Publikacja obrazu
+Obraz został wysłany do Docker Hub:
+
+![push do DockerHub](SS-18.png)
+
+Proces zakończył się poprawnie – wszystkie warstwy zostały przesłane.
+
+### Weryfikacja: ###
+W repozytorium Docker Hub dostępny jest obraz: `zucho/express-deploy`, tagi: `v1`, `latest`.
+
+![DockerHub-weryfikacja](SS-19.png)
+
+Potwierdza to poprawną publikację artefaktu.
