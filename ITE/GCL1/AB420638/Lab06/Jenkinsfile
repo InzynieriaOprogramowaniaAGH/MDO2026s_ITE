@@ -21,9 +21,12 @@ pipeline {
                         echo "Tworzenie pliku my_input i kompresja xz..."
                         sh '''
                             echo "To jest testowy tekst, ktory Jenkins skompresuje, a Docker zdekompresuje." > my_input.txt
-                            # Poprawka: używamy xz do kompresji zamiast gzip!
-                            xz -c my_input.txt > input.xz
+                            
+                            # Odpalamy jednorazowy, mały kontener Alpine, żeby skompresować plik
+                            docker run --rm -v $(pwd):/app -w /app alpine:3.19 sh -c "apk add --no-cache xz > /dev/null && xz -c my_input.txt > input.xz"
+                            
                             echo "Utworzono input.xz"
+                            ls -la
                         '''
                     }
                 }
