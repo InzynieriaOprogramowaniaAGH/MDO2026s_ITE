@@ -1,0 +1,9 @@
+galaxy_info:
+  author: Łukasz Maciejny
+  description: Wdrożenie aplikacji Express.js.
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+dependencies: []

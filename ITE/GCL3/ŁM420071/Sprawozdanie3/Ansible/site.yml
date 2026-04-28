@@ -1,0 +1,6 @@
+---
+- name: "Główny Playbook Wdrożeniowy"
+  hosts: Endpoints
+  become: yes
+  roles:
+    - deploy_express

@@ -10,3 +10,5 @@ Dopiszano maszyne z fedora jako ansible target do listy hostow
 ![alt text](ping.png)
 
 ![alt text](playbook1.png)
+
+![alt text](role1.png)
