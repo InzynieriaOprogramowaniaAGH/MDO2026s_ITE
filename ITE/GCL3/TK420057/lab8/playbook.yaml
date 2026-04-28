@@ -1,0 +1,14 @@
+- name: playbook
+  hosts: all
+  tasks:
+    - name: ping wszytkich maszyn
+      ansible.builtin.ping:
+
+    - name: kopiowanie pliku inwentaryzacji
+      ansible.builtin.copy:
+        src: ./inventory.ini
+        dest: /home/ansible/inventory_fedora.ini
+        owner: ansible
+        group: ansible
+        mode: '0644'
+      when: "'Endpoints' in group_names"

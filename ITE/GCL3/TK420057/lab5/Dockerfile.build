@@ -8,3 +8,4 @@ RUN git clone https://github.com/pallets/flask.git .
 
 RUN pip install -e .
 RUN pip install pytest
+RUN pip install "flask[async]"
