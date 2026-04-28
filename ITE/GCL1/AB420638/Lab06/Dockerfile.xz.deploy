@@ -1,7 +1,0 @@
-FROM xzbld:latest AS builder
-FROM ubuntu:22.04
-RUN apt-get update && apt-get install -y libtool && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /wyjscie/xz_zbudowane /usr/local/
-RUN ldconfig
-WORKDIR /workspace
-ENTRYPOINT ["/usr/local/bin/xz"]

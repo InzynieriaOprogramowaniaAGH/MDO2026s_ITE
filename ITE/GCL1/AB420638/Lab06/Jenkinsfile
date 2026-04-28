@@ -1,46 +1,94 @@
 pipeline {
     agent any
+
+    environment {
+        IMAGE_NAME = "xz-processor-app"
+        WORK_DIR = "ITE/GCL1/AB420638/Lab06"
+    }
+
     stages {
-        stage('Przygotowanie') {
+        stage('1. Clean & Checkout') {
             steps {
                 cleanWs()
-                checkout scm // Pobiera Twojego brancha ze wszystkim w lab06
+                checkout scm
             }
         }
-        
-       stage('Build & Deploy') {
+
+        stage('2. Prepare Input (gzip)') {
             steps {
-                script {
-                    dir('Lab06') { // Pamiętaj o wielkości liter!
-                        echo "UWAGA! Sprawdzam, gdzie jestem i co tu leży:"
-                        sh 'pwd'
-                        sh 'ls -la'
-                        
-                        // Reszta po staremu:
-                        sh 'docker build -t xzbld -f Dockerfile.xz.bld .'
-                        // ...
-                        sh 'docker build -t xzbld -f Dockerfile.xz.bld .'
-                        sh 'docker build -t xz-deploy -f Dockerfile.xz.deploy .'
-                        
-                        // Test strumieniowy (schemat z tablicy)
-                        sh 'echo "Dupa" > input.txt && gzip -c input.txt > input.gz'
-                        sh 'cat input.gz | docker run -i --rm xz-deploy > out.xz'
-                        sh 'test -s out.xz'
+                dir("${WORK_DIR}") {
+                    script {
+                        echo "Tworzenie pliku my_input i kompresja gzip..."
+                        sh '''
+                            echo "To jest testowy tekst, ktory Jenkins skompresuje, a Docker zdekompresuje." > my_input.txt
+                            gzip -c my_input.txt > input.gz
+                            echo "Utworzono input.gz"
+                        '''
                     }
                 }
             }
         }
-        
-        stage('Artefakty') {
+
+        stage('3. Build (XZ Image)') {
             steps {
-                dir('Lab06') {
-                    sh 'docker create --name temp xzbld'
-                    sh 'docker cp temp:/wyjscie/xz_zbudowane ./binaria'
-                    sh 'docker rm temp'
-                    sh 'tar -czvf program.tar.gz ./binaria'
-                    archiveArtifacts artifacts: 'program.tar.gz'
+                dir("${WORK_DIR}") {
+                    script {
+                        echo "Budowanie obrazu Dockera (Ubuntu) z narzędziem xz..."
+                        sh 'docker build --no-cache -t ${IMAGE_NAME}:latest .'
+                    }
                 }
             }
+        }
+
+        stage('4. Deploy & Test (out ok?)') {
+            steps {
+                dir("${WORK_DIR}") {
+                    script {
+                        echo "Uruchamianie kontenera docelowego, przetwarzanie input.gz i walidacja..."
+                        sh '''
+                            docker run --rm -v $(pwd):/app -w /app ${IMAGE_NAME}:latest sh -c "cat input.gz | xz -d > out.txt"
+                            
+                            echo "Walidacja: 'out ok?'"
+                            if cmp -s my_input.txt out.txt; then
+                                echo "[SUKCES] Plik out.txt jest identyczny z my_input.txt. Dekompresja w kontenerze przebiegla pomyslnie!"
+                            else
+                                echo "[BŁĄD] Pliki się różnią! Proces zawiódł."
+                                exit 1
+                            fi
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('5. Publish & Archive') {
+            steps {
+                dir("${WORK_DIR}") {
+                    script {
+                        echo "Zapisywanie artefaktów w Jenkinsie..."
+                        archiveArtifacts artifacts: 'my_input.txt, input.gz, out.txt', fingerprint: true
+                        
+                        echo "Tagowanie obrazu..."
+                        sh 'docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${BUILD_NUMBER}'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                echo "Sprzątanie obrazów na hoście (DinD)..."
+                sh "docker rmi ${IMAGE_NAME}:latest || true"
+                sh "docker rmi ${IMAGE_NAME}:${BUILD_NUMBER} || true"
+            }
+        }
+        success {
+            echo "Pipeline zakończony pełnym sukcesem!"
+        }
+        failure {
+            echo "Pipeline zakończony błędem. Sprawdź logi."
         }
     }
 }
