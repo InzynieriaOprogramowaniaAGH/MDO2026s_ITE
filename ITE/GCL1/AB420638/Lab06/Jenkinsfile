@@ -68,7 +68,6 @@ pipeline {
                 dir("${WORK_DIR}") {
                     script {
                         echo "Zapisywanie artefaktów w Jenkinsie..."
-                        # Zmieniono input.gz na input.xz w artefaktach
                         archiveArtifacts artifacts: 'my_input.txt, input.xz, out.txt', fingerprint: true
                         
                         echo "Tagowanie obrazu..."
