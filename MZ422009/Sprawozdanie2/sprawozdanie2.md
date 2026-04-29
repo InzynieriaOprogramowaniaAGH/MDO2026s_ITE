@@ -152,3 +152,122 @@ W repozytorium Docker Hub dostępny jest obraz: `zucho/express-deploy`, tagi: `v
 ![DockerHub-weryfikacja](SS-19.png)
 
 Potwierdza to poprawną publikację artefaktu.
+
+# Lab 7 #
+Celem ćwiczenia było zautomatyzowanie procesu budowy, testowania oraz publikacji obrazu Docker przy użyciu narzędzia Jenkins Pipeline.
+Wykonane kroki:
+
+## 7.1. Jenkins pipeline i Jenkinsfile
+Jenkins Pipeline umożliwia nam zdefiniowanie procesu CI/CD jako kodu w pliku Jenkinsfile. Pipeline składa się z etapów (stages), które są wykonywane sekwencyjnie.
+W tym kroku zdefiniowaliśmy dokładnie każdy krok pipeline w pliku Jenkinsfile. W moim przypadku pipeline składa się z etapów:
+`Checkout SCM` – pobranie repozytorium z GitHuba,
+`Clean` – wyczyszczenie katalogu roboczego,
+`Clone` – przygotowanie kodu aplikacji Express,
+`Build` – budowa obrazu buildowego,
+`Test` – uruchomienie testów,
+`Deploy` – przygotowanie obrazu docelowego,
+`Publish` – wysłanie obrazu do Docker Hub oraz zapis artefaktu. Dzięki użyciu *${BUILD_NUMBER}* każdy artefakt otrzymuje unikalną wersję.
+
+### Treść pliku Jenkinsfile: ###
+
+```
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_USER = 'zucho'
+        IMAGE_NAME = 'express-deploy'
+        BUILD_IMAGE = 'express-bldr:latest'
+        TEST_IMAGE = 'express-tester:latest'
+        DEPLOY_IMAGE = 'zucho/express-deploy'
+        VERSION = "v${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Clean') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Clone') {
+            steps {
+                checkout scm
+                sh 'ls -la'
+                sh 'ls -la MZ422009/Sprawozdanie2'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('MZ422009/Sprawozdanie2') {
+                    sh 'docker build --no-cache -f Dockerfile.bld -t $BUILD_IMAGE .'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('MZ422009/Sprawozdanie2') {
+                    sh 'docker build --no-cache -f Dockerfile.test -t $TEST_IMAGE .'
+                    sh 'docker run --rm $TEST_IMAGE'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('MZ422009/Sprawozdanie2') {
+                    sh 'docker build --no-cache -f Dockerfile.deploy -t $DEPLOY_IMAGE:$VERSION -t $DEPLOY_IMAGE:latest .'
+                    sh 'docker run --rm $DEPLOY_IMAGE:$VERSION'
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                sh 'docker push $DEPLOY_IMAGE:$VERSION'
+                sh 'docker push $DEPLOY_IMAGE:latest'
+                sh 'docker save $DEPLOY_IMAGE:$VERSION | gzip > express-deploy-${BUILD_NUMBER}.tar.gz'
+                archiveArtifacts artifacts: "express-deploy-${BUILD_NUMBER}.tar.gz", fingerprint: true
+            }
+        }
+    }
+}
+```
+
+## 7.2. Przebieg wykonania
+
+### Krok 1 - utworzenie pipeline w Jenkins ###
+Utworzono nowy projekt typu Pipeline i wybrano opcję - `Pipeline script from SCM`
+
+### Krok 2 - konfiguracja repozytorium ###
+Ustawiono:
+
+*->* SCM: Git
+*->* Repository URL: link do repozytorium projektu
+*->* Credentials: konto Git
+*->* Branch: wybranie brancha, w moim przypadku */MZ422009
+
+![Konfiguracja](SS-21.png)
+
+### Krok 3 - ustawienie ścieżki do Jenkinsfile ###
+W okienku `Script Path` ustawiamy swoją ścieżkę do pliku Jenkinsfile.
+
+![Script Path](SS-22.png)
+
+### Krok 4 - uruchomienie pipeline ###
+Moje pierwsze uruchiomienia nie przechodziły, ponieważ problem pojawił się z etapem Clone repo. Błąd wynikał z niepoprawnej konfiguracji (prosty błąd w linku do repozytorium). Po naprawieniu błędu pipeline wykonał się poprawnie, ponieważ przeszedł wszystkie etapy kończąc je statusem *SUCCESS*.
+
+![Poprawnosc](SS-23.png)
+
+### Krok 5 - publikacja obrazu i weryfikacja w Docker Hub ###
+W etapie publish wykonano podobne kroki co w lab 6 ręcznie, czyli: `docker tag`, `docker push` i `archiwizację artefaktu (docker save)`. Obraz został zapisany jako `express-deploy-${BUILD_NUMBER}.tar.gz`. Następnie zweryfikowano obecność obrazu w Docker Hub:
+*->* repozytorium: `zucho/express-deploy`
+*->* dostępne tagi: `latest`, wersjonowane (`v1`, `v5` lub build number).
+
+![Docker Hub 2](SS-20.png)
+
+
+# Wnioski #
+Zastosowanie Jenkins Pipeline umożliwiło pełną automatyzację procesu budowy i publikacji obrazu Docker. W porównaniu do podejścia ręcznego z poprzedniego ćwiczenia, rozwiązanie to eliminuje błędy użytkownika oraz zapewnia powtarzalność procesu. Pipeline realizuje kompletny proces CI/CD i generuje artefakt gotowy do wdrożenia. 
