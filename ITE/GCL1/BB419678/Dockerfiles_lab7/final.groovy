@@ -8,11 +8,11 @@ pipeline {
     }
 
     stages {
-        stage('Sklonowanie repozytorium') {
-            steps {
-                git branch: 'BB419678', url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
-            }
-        }
+        // stage('Sklonowanie repozytorium') {
+        //     steps {
+        //         git branch: 'BB419678', url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+        //     }
+        // }
         
         stage('Zbudowanie Neovima i paczki DEB') {
             steps {
