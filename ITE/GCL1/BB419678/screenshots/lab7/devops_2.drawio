@@ -1,0 +1,43 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="yBqwUmeZIVmOJGgXm2ZG">
+    <mxGraphModel dx="1044" dy="510" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-6" edge="1" parent="1" source="S7s4Nb2A82aHwufbyxpj-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="S7s4Nb2A82aHwufbyxpj-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-7" edge="1" parent="1" source="S7s4Nb2A82aHwufbyxpj-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="S7s4Nb2A82aHwufbyxpj-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-8" edge="1" parent="1" source="S7s4Nb2A82aHwufbyxpj-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;" target="S7s4Nb2A82aHwufbyxpj-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Docker DIND" vertex="1">
+          <mxGeometry height="60" width="120" x="353" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Obraz testera (neovim-tester-jenkins)" vertex="1">
+          <mxGeometry height="60" width="120" x="353" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;div&gt;Obraz buildera&lt;/div&gt;&lt;div&gt;(neovim-builder-jenkins)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="209" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-9" edge="1" parent="1" source="S7s4Nb2A82aHwufbyxpj-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="S7s4Nb2A82aHwufbyxpj-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Obraz runtime" vertex="1">
+          <mxGeometry height="60" width="120" x="499" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;div&gt;Artefakty,&lt;/div&gt;&lt;div&gt;&amp;nbsp;paczki deb,&lt;/div&gt;&lt;div&gt;&amp;nbsp;logi&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="499" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-11" edge="1" parent="1" source="S7s4Nb2A82aHwufbyxpj-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="S7s4Nb2A82aHwufbyxpj-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S7s4Nb2A82aHwufbyxpj-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Jenkins CI/CD" vertex="1">
+          <mxGeometry height="60" width="120" x="353" y="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
