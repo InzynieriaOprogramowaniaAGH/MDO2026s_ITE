@@ -1,0 +1,20 @@
+FROM jq-build:local AS builder
+
+WORKDIR /opt/jq
+
+RUN make install
+
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libonig5 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /usr/local/bin/jq /usr/local/bin/jq
+COPY --from=builder /usr/local/lib/libjq.so* /usr/local/lib/
+
+RUN ldconfig
+
+ENTRYPOINT ["jq"]
+CMD ["--version"]
