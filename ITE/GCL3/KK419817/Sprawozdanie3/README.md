@@ -25,7 +25,7 @@ ssh-keygen -t ed25519
 ssh-copy-id ansible@192.168.56.102
 ```
 
-Ustawiłem nazwy dns:
+Ustawiłem nazwy dns w `/etc/hosts`:
 
 ![alt text](image-1.png)
 
@@ -51,3 +51,18 @@ fedora ansible_user=ansible
 ```
 
 ![alt text](image-4.png)
+
+Następnie jakimś cudem zepsułem połączenie między VMkami, potem połączenie z siecią, potem repozytorium się zepsuło a 'git pull' pobierał się z prędkością 10kB/s a potem i tak nie działał i - choć teoretycznie powinienem opisać proces naprawy tych wszystkich rzeczy - to jednak ze względu na dobro moje i osób w moim otoczeniu, postanowiłem mimo wszystko zaniechać tej praktyki akurat w tym przypadku.
+
+Na koniec wykonałem `git push --force`.
+
+Wracając, końcowo:
+
+Z tych wszystkich powodów używam dwóch VMek z NATem.
+Port forwarduje 2222 dla ubuntu i 2223 dla fedory.
+Łączę się z ip lokalnego hosta, obecna zawartość `/etc/hosts`:
+
+```bash
+192.168.56.101 ubuntu
+10.0.2.2 fedora
+```
