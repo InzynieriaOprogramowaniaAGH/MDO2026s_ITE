@@ -467,4 +467,34 @@ Diagramy UML całego procesu:
 
 ![img](../screenshots/lab7/flowchart.png)
 
-**Finalna Lista kontrolna:**
+**Wyniki:**
+
+![img](../screenshots/lab7/Screenshot%20from%202026-04-30%2015-52-12.png)
+
+![img](../screenshots/lab7/Screenshot%20from%202026-04-30%2015-53-23.png)
+
+![img](../screenshots/lab7/Screenshot%20from%202026-04-30%2015-56-10.png)
+
+![img](../screenshots/lab7/Screenshot%20from%202026-04-30%2015-56-22.png)
+
+![img](../screenshots/lab7/Screenshot%20from%202026-04-30%2015-56-57.png)
+
+
+![img](../screenshots/lab7/Screenshot%20from%202026-04-30%2015-57-20.png)
+
+![img](../screenshots/lab7/Screenshot%20from%202026-04-30%2015-57-27.png)
+
+![img](../screenshots/lab7/Screenshot%20from%202026-04-30%2015-57-44.png)
+
+
+Na podstawie tych wyników można stwierdzić, że wymagania z listy kontrolnej zostały spełnione (przynajmniej te podstawowe).
+
+**Dyskusja:**
+
+1. Czy opublikowany obraz może być pobrany z Rejestru i uruchomiony w Dockerze bez modyfikacji?
+
+Nie, bo nie jest tam wysyłany. Jednak dla aplikacji desktopowej/paczkowej taka operacja nie jest wymagana – w tym projekcie artefakt .deb pełni rolę właściwego publikowalnego produktu.
+
+2. Czy dołączony do jenkinsowego przejścia artefakt, gdy pobrany, ma szansę zadziałać od razu na maszynie o oczekiwanej konfiguracji docelowej?
+
+Tak, został przetestowany w kontenerze Ubuntu 24.04 podczas smoke testu. Pobrany z archiwum Jenkinsa i zainstalowany (dpkg -i) na podobnym systemie powinien działać.
