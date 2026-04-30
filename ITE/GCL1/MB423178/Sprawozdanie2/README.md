@@ -1,7 +1,9 @@
 # Sprawozdanie - Metodyki DevOps (Zajęcia 5-7)
 
 **Imię i nazwisko:** Mikołaj Bednarczyk  
-**Nr indeksu:** MB423178  
+**Grupa:** Gr 1 , ITE
+**Nr indeksu:** 423178  
+**Data:** 30.04.2025
 
 ---
 
@@ -81,6 +83,9 @@ Poniższy diagram przedstawia wysokopoziomowy przepływ zadań w potoku CI/CD, o
 
 ### Szczegółowa architektura wdrażania i publikacji (Diagram Wdrożeniowy)
 Zgodnie z wytycznymi z zajęć, etapy `Deploy` oraz `Publish` zostały ściśle odizolowane. Architektura wykorzystuje dedykowaną podsieć, w której kontener aplikacji eksponuje port `8080`, a tymczasowy kontener testowy weryfikuje jego stan narzędziem `curl`. Publikacja (z dołączeniem metadanych) odbywa się wyłącznie w przypadku kodu HTTP 200.
+
+![Diagram Aktywności szczegolowy](screeny/diagram_szczegol.png)  
+*Rys. 1. Szczegółowy diagram aktywności.*
 
 ![Diagram Wdrożeniowy](screeny/diagram_wdrozeniowy.png)  
 *Rys. 2. Diagram wdrożeniowy: architektura izolowanego środowiska testowego i mechanizm dodawania metadanych.*
@@ -169,6 +174,155 @@ Na maszynie głównej zainstalowałem pakiet `ansible` i zweryfikowałem jego po
 ![alt text](screeny/lab7_7.png)
 
 ---
+
+## Załączniki: Kod źródłowy (Infrastructure as Code)
+
+Aby zapewnić pełną odtwarzalność projektu i spełnić wymogi z listy kontrolnej (udostępnienie przepisów w kopiowalnej postaci), poniżej załączam kompletny kod użyty w procesie automatyzacji.
+
+### 1. Skrypt startowy środowiska Jenkins (DIND)
+Skrypt użyty do powołania architektury Docker-in-Docker oraz głównego kontenera Jenkins.
+```bash
+#!/bin/bash
+echo "running Dockera (DIND)..."
+docker run --name jenkins-docker --rm --detach \
+  --privileged --network jenkins --network-alias docker \
+  --env DOCKER_TLS_CERTDIR=/certs \
+  --volume jenkins-docker-certs:/certs/client \
+  --volume jenkins-data:/var/jenkins_home \
+  --publish 2376:2376 \
+  docker:dind --storage-driver overlay2
+
+echo "waiting 5 seconds for the Docker daemon to start..."
+sleep 5
+
+echo "starting Jenkins..."
+docker run --name jenkins-blueocean --rm --detach \
+  --network jenkins --env DOCKER_HOST=tcp://docker:2376 \
+  --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 \
+  --publish 8080:8080 --publish 50000:50000 \
+  --volume jenkins-data:/var/jenkins_home \
+  --volume jenkins-docker-certs:/certs/client:ro \
+  myjenkins-blueocean:latest
+
+echo "Done! Jenkins is starting. It will be available at http://localhost:8080"
+```
+
+### 2. Dockerfile instalujący klienta Dockera wewnątrz Jenkinsa
+```dockerfile
+FROM jenkins/jenkins:2.541.3-jdk21
+USER root
+RUN apt-get update && apt-get install -y lsb-release ca-certificates curl && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc && \
+    chmod a+r /etc/apt/keyrings/docker.asc && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+    https://download.docker.com/linux/debian $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" \
+    | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && apt-get install -y docker-ce-cli && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+USER jenkins
+RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api"
+```
+
+### 3. Dockerfile.petClinic.deploy (Lekkie środowisko produkcyjne)
+Obraz wykorzystywany wyłącznie do wdrażania artefaktu w kroku *Smoke Test*. Nie zawiera kodu źródłowego ani narzędzi budujących.
+```dockerfile
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY target/*.jar app.jar
+EXPOSE 8080
+CMD ["java", "-jar", "app.jar"]
+```
+
+### 4. Plik Jenkinsfile (Główny potok CI/CD)
+Przepis deklaratywny realizujący kroki od pobrania kodu, przez testy sieciowe w dedykowanej sieci Dockera, aż po generowanie podpisów cyfrowych (OpenSSL) i metadanych.
+```groovy
+pipeline {
+    agent any
+    options {
+        skipDefaultCheckout()
+    }
+    stages {
+        stage('clean workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+        stage('clone') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('build') {
+            steps {
+                dir('ITE/GCL1/MB423178/Sprawozdanie1') {
+                    sh 'docker build --no-cache -t petclinic-build:latest -f Dockerfile.petClinic.build .'
+                }
+            }
+        }
+        stage('test') {
+            steps {
+                dir('ITE/GCL1/MB423178/Sprawozdanie1') {
+                    sh 'docker build --no-cache -t petclinic-test:latest -f Dockerfile.petClinic.test .'
+                }
+                dir('ITE/GCL1/MB423178/Sprawozdanie2') {
+                    sh 'docker run --name pt-${BUILD_NUMBER} petclinic-test:latest || true'
+                    sh 'docker cp pt-${BUILD_NUMBER}:/app/target ./target'
+                    sh 'docker rm pt-${BUILD_NUMBER}'
+                }
+            }
+        }
+        stage('deploy') {
+            steps {
+                dir('ITE/GCL1/MB423178/Sprawozdanie2') {
+                    sh 'docker network create petclinic-net-${BUILD_NUMBER} || true'
+                    sh 'docker build --no-cache -t petclinic-runtime:${BUILD_NUMBER} -f Dockerfile.petClinic.deploy .'
+                    sh 'docker run -d --network petclinic-net-${BUILD_NUMBER} --name petclinic-app-${BUILD_NUMBER} petclinic-runtime:${BUILD_NUMBER}'
+                }
+            }
+        }
+        stage('smoke test') {
+            steps {
+                sh 'sleep 15'
+                sh '''
+                HTTP_STATUS=$(docker run --rm --network petclinic-net-${BUILD_NUMBER} curlimages/curl -s -o /dev/null -w "%{http_code}" http://petclinic-app-${BUILD_NUMBER}:8080)
+                if [ "$HTTP_STATUS" -ne 200 ]; then exit 1; fi
+                
+                CONTENT=$(docker run --rm --network petclinic-net-${BUILD_NUMBER} curlimages/curl -s http://petclinic-app-${BUILD_NUMBER}:8080)
+                echo "$CONTENT" | grep -qi "PetClinic"
+                echo "$CONTENT" | grep -qi "Welcome"
+                '''
+            }
+        }
+        stage('publish') {
+            steps {
+                dir('ITE/GCL1/MB423178/Sprawozdanie2') {
+                    sh '''
+                    openssl genrsa -out private_key.pem 2048
+                    openssl dgst -sha256 -sign private_key.pem -out target/app.jar.sig target/*.jar
+                    
+                    echo "Aplikacja: Spring PetClinic" > target/metadata.txt
+                    echo "Build Jenkinsa numer: ${BUILD_NUMBER}" >> target/metadata.txt
+                    echo "Data zbudowania: $(date)" >> target/metadata.txt
+                    echo "Zabezpieczenie SHA256:" >> target/metadata.txt
+                    sha256sum target/*.jar >> target/metadata.txt
+                    '''
+                    
+                    archiveArtifacts artifacts: 'target/*.jar, target/*.sig, target/metadata.txt', fingerprint: true
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            sh 'docker stop petclinic-app-${BUILD_NUMBER} || true'
+            sh 'docker rm petclinic-app-${BUILD_NUMBER} || true'
+            sh 'docker network rm petclinic-net-${BUILD_NUMBER} || true'
+        }
+    }
+}
+```
 
 ## Ważna adnotacja dotycząca użycia AI
 Zgodnie z wymaganiami z pliku Rules.md, informuję, że podczas pisania tego sprawozdania wspomagałem się modelem językowym (LLM) jako narzędziem do korekty tekstu oraz rozwiązywania niektórych problemów tehcnicznych.
