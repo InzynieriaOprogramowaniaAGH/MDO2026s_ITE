@@ -2,6 +2,7 @@
 
 **Imię i nazwisko:** Mikołaj Bednarczyk  
 **Grupa:** Gr 1 , ITE
+
 **Nr indeksu:** 423178  
 **Data:** 30.04.2025
 
@@ -85,10 +86,10 @@ Poniższy diagram przedstawia wysokopoziomowy przepływ zadań w potoku CI/CD, o
 Zgodnie z wytycznymi z zajęć, etapy `Deploy` oraz `Publish` zostały ściśle odizolowane. Architektura wykorzystuje dedykowaną podsieć, w której kontener aplikacji eksponuje port `8080`, a tymczasowy kontener testowy weryfikuje jego stan narzędziem `curl`. Publikacja (z dołączeniem metadanych) odbywa się wyłącznie w przypadku kodu HTTP 200.
 
 ![Diagram Aktywności szczegolowy](screeny/diagram_szczegol.png)  
-*Rys. 1. Szczegółowy diagram aktywności.*
+*Rys. 2. Szczegółowy diagram aktywności.*
 
 ![Diagram Wdrożeniowy](screeny/diagram_wdrozeniowy.png)  
-*Rys. 2. Diagram wdrożeniowy: architektura izolowanego środowiska testowego i mechanizm dodawania metadanych.*
+*Rys. 3. Diagram wdrożeniowy: architektura izolowanego środowiska testowego i mechanizm dodawania metadanych.*
 
 ---
 
@@ -175,7 +176,7 @@ Na maszynie głównej zainstalowałem pakiet `ansible` i zweryfikowałem jego po
 
 ---
 
-## Załączniki: Kod źródłowy (Infrastructure as Code)
+## Załączniki: Kod źródłowy
 
 Aby zapewnić pełną odtwarzalność projektu i spełnić wymogi z listy kontrolnej (udostępnienie przepisów w kopiowalnej postaci), poniżej załączam kompletny kod użyty w procesie automatyzacji.
 
