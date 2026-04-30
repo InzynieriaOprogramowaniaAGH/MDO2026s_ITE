@@ -2,4 +2,8 @@ FROM jq-build:local
 
 WORKDIR /opt/jq
 
-CMD ["make", "check"]
+COPY jq-functional-tests.sh /usr/local/bin/jq-functional-tests.sh
+
+RUN chmod +x /usr/local/bin/jq-functional-tests.sh
+
+CMD ["/usr/local/bin/jq-functional-tests.sh"]
