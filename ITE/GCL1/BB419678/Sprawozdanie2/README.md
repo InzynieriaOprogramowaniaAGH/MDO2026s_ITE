@@ -12,7 +12,7 @@ Instalacja środowiska Jenkins (potrzebujemy także obrazu DIND):
 
 ![img](../screenshots/lab5/Zrzut%20ekranu%202026-04-10%20081231.png)
 
-Blueocean to taki fajny wrapper graficzny na Jenkinsa, który sam jest silnikiem do tworzenia Pipeline'ów CI/CD. Pozwala na szybsze postawianie projektów osobom, które dopiero zaczynąją przygode w tym obszarze.
+Blueocean to  wrapper graficzny na Jenkinsa, który sam jest silnikiem do tworzenia Pipeline'ów CI/CD. Pozwala na szybsze postawianie projektów osobom, które dopiero zaczynąją przygode w tym obszarze i pozwala na lepsze wizualizacje etapów budowania, testowania i postawiania oprogramowania.
 
 
 ![img](../screenshots/lab5/Zrzut%20ekranu%202026-04-10%20081314.png)
@@ -22,11 +22,9 @@ Sprawdzamy działanie kontenerów:
 
 ![img](../screenshots/lab5/Zrzut%20ekranu%202026-04-10%20084039.png)
 
-
 Robimy początkowy setup Jenkinsa - pobieramy hasło pierwszego logowania i tworzymy nasze konto admina, logując się na: http://localhost:8080
 
 ![img](../screenshots/lab5/Zrzut%20ekranu%202026-04-10%20084100.png)
-
 
 
 ![img](../screenshots/lab5/Zrzut%20ekranu%202026-04-10%20084353.png)
@@ -36,7 +34,7 @@ Podajemy nasze hasło jednorazowego dostępu:
 ![img](../screenshots/lab5/Zrzut%20ekranu%202026-04-10%20084614.png)
 
 
-Po utworzeniu naszego admina wchodzimy na dashboard jenkinsa i  przystępuje do utworzenia projektu dla 1 zadania.
+Po utworzeniu naszego admina wchodzimy na dashboard jenkinsa i  przystępujemy do utworzenia projektu dla 1 zadania.
 ![img](../screenshots/lab5/Zrzut%20ekranu%202026-04-10%20084826.png)
 
 
@@ -54,7 +52,7 @@ wywołuje /bin/sh zamiast /bin/bash. Należy o tym wiedzieć, gdyż poźniej si�
 
 ![img](../screenshots/lab5/Zrzut%20ekranu%202026-04-10%20085402.png)
 
-Kolejny projekt sprawdza, czy godzina w systemie operacyjny jest nieparzysta i w związku z tym zwraca błąd. Można to zrobić za pomocą prostego skryptu powłoki (sh, nie bash!):
+Kolejny projekt sprawdza, czy godzina w systemie operacyjnym jest nieparzysta i w związku z tym zwraca błąd. Można to zrobić za pomocą prostego skryptu powłoki (sh, nie bash!):
 
 ![img](../screenshots/lab5/Zrzut%20ekranu%202026-04-10%20085624.png)
 
@@ -163,20 +161,154 @@ EOF
     }
 }
 ```
+### Wyjaśnienie pipeline:
+
+1. Clone - Klonowanie repozytorium z plikami dockerfile do budowania i testowania oprogramowania.
+
+2. Build - Budowanie oprogramowania na oddzielnym kontenerze 'builder'(build-dependencies, build-tools itp.)
+
+3. Test - Testowanie oprogramowania na  kontenerze 'tester' (test-dependencies, make unittest)
+
+4. Publish - stworzenie tzw. tarball (tar.gz) na tymczasowym kontenerze i stworzenie archiveArtefacts.
+
+5. Deploy - testowanie tarball'a w środowisku runtime na minimalnym kontenerze (slim).
 
 
-Problemem podczas tworzenia tego pipeline'u okazał się ```make unittest``` - niektóre testy nie przechodzą ze względu na systemd, dlatego trzeba owinąć stage testowania w klauzule CatchError lub dodać do polecenia powłoki ```|| true```, co nie jest optymalnym rozwiązaniem. Poprawa i rozwinięcie tego pipeline jest tematem na następne zajęcia.
+### Problemy 
+Problemem podczas tworzenia tego pipeline'u okazał się ```make unittest``` - niektóre testy nie przechodzą ze względu na brak systemd w kontenerze dockera, dlatego trzeba owinąć stage testowania w klauzule CatchError lub dodać do polecenia powłoki ```|| true```, co nie jest optymalnym rozwiązaniem. Poprawa i rozwinięcie tego pipeline jest tematem na następne zajęcia. Dodatkowo warto poprawnie wpisywać nazwy scieżek w woluminach, gdyż też może dać nam problem z wyłowywaniem testów.
 
+
+ 
 ![img](../screenshots/lab5/test_fail.png)
 
 ## Temat 6
-Cel zajęć - modyfikacja wcześniejszego pipeline'u do wybranego oprogramowania
+Cel zajęć - modyfikacja  pipeline'u do wybranego oprogramowania
 
+Głownym zadaniem jest tutaj dostosowanie pipeline do wymagań ustalonych zajęciach.
 
 
 ![img](../screenshots/lab6/Zrzut%20ekranu%202026-04-17%20092551.png)
 
+Tutaj musimy wykonać trochę modyfikacji względem naszego pierwotnego workflow'u. Po zbudowaniu binarki z repozytorium przenosimy wraz z przykładowymi plikiem/plikami do parsowania do kontenera 'deploy', w którym wykonujemy modyfikacje plików i sprawdzamy czy oprogramowanie działa poprawnie. Jeżeli krok 'deploy' przechodzi, tworzymy paczkę DEB (tutaj wybrałem ubuntu czyli musi być to paczka DEB, zależy to od systemu operacyjnego) i dodajemy zależności do niej tak, aby przy instalacji tej paczki aby apt (package manager dla ubuntu) pobrał jej zależności runtime (libluajit, libvterm itp.)
+
+W związku z tym modyfikuje mój pipeline w celu dodania tych funkcjonalności:
+
+```groovy
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_HOST = 'tcp://docker:2376'
+        DOCKER_CERT_PATH = '/certs/client'
+        DOCKER_TLS_VERIFY = '1'
+    }
+
+    stages {
+        stage('Sklonowanie repozytorium') { // klonowanie przez https
+            steps {
+                git branch: 'BB419678', url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+        
+        stage('Zbudowanie Neovima i paczki DEB') {
+            steps {
+                dir('ITE/GCL1/BB419678/Dockerfiles_lab6') {
+                    sh 'docker build -t neovim-builder-jenkins -f Dockerfile.nvim.build .'
+                }
+            }
+        }
+        
+        stage('Testy jednostkowe') {
+            steps {
+                dir('ITE/GCL1/BB419678/Dockerfiles_lab6') {
+                    sh 'docker build -t neovim-tester-jenkins -f Dockerfile.nvim.test .'
+                    sh 'docker run --rm neovim-tester-jenkins || true'
+                }
+            }
+        }
+
+stage('Archiwizacja Artefaktów (Paczka DEB)') {
+            steps {
+                dir('ITE/GCL1/BB419678/Dockerfiles_lab6') {
+                    sh '''
+                        # Tworzymy tymczasowy kontener 
+                        docker create --name temp-archive-container neovim-builder-jenkins
+                        # Kopiujemy cały folder build z kontenera do obecnego katalogu roboczego
+                        docker cp temp-archive-container:/workspace/build ./temp_build_dir
+                        # Szukamy pliku .deb w skopiowanym folderze i zmieniamy mu nazwę na docelową
+                        cp ./temp_build_dir/*.deb ./neovim-final.deb
+                        echo "--- SPRAWDZANIE ZALEŻNOŚCI PACZKI ---"
+                        # metadane pliku .deb
+                        dpkg -I ./neovim-final.deb | grep 'Depends'
+                        # Sprzątamy
+                        docker rm temp-archive-container
+                        rm -rf ./temp_build_dir
+                    '''
+                    
+                    // plik neovim-final.deb istnieje w workspace i tworzymy tzw. archiveArtefacts
+                    archiveArtifacts artifacts: 'neovim-final.deb', fingerprint: true
+                }
+            }
+        }
+    }
+}
+```
+
+
+
+### Pełna lista kontrolna projektu:
+
+1. Wybrana aplikacja - neovim,
+
+2. Licencja - Apache 2.0 (open source) - pozwala na wykonanie zadania,
+
+3. Program buduje się (kontener neovim-jenkins-builder),
+
+4. Testy przechodzą oprócz tych, które wymagają systemd w środowisku testowania (4/600),
+
+5. Fork własnej kopii repozytorium - nie robimy tego.
+
+6. Przykładowy deployment diagram:
+
+![img](../screenshots/lab6/Screenshot%20from%202026-04-26%2019-35-51.png)
+
+7. Nie ma stricte kontenera bazowego - po sklonowaniu bazowego repozytorium obraz build klonuje neovima i zaczyna jego budowanie,
+
+8. Build wykonuje się w kontenerze neovim-builder-jenkins,
+
+9. Testy wykonują się w kontenerze neovim-tester-jenkins,
+
+10. Tak, potwierdza to dockerfile: ```FROM neovim-builder-jenkins:latest```,
+
+11. logi z całego procesu są przechwytywane przez Jenkinsa,
+
+12. Do zrobienia.
+
+13. Teoretycznie nadaje się, ale lepiej zrobić oddzielny. Musi być on w takim samym systemie, na jakim budowany był program, dodatkowo musi mieć wszystkie zależności runtime, aby można było sprawdzić jego działanie,
+
+14. Do zrobienia.
+
+15. Do zrobienia.
+
+16. Wcześniej był to tarball, teraz tworzymy paczkę .deb,
+
+
+17. Projekt jest skonfigurowany pod ubuntu 24.04, a jego package manager - apt, używa paczek .deb do zarządzania oprogramowaniem,
+
+18. Teoretycznie nie ma strice wersjonowania, mamy natomiast opcje ```fingerprint: true```, czyli hash wersji oprogramowania, który wraz z rozrostem projektu będzie się zmieniać, aczkolwiek nie jest to najlepsze rozwiązanie,
+
+19. Artefakt załączony jest jako wynik builda w Jenkinsie,
+
+20. Do tego używamy wcześniej wspomnianego ```fingerprint: true```
+
+21. Tak, w folderze Dockerfiles_lab6
+
+22. Do zrobienia.
+
+
+
 ## Temat 7
-Cel zajęć - Rozbudowanie pipeline w oprogramowaniu Jenkins.
+
+Cel zajęć - Przygotowanie kompletnego obiektu typu pipeline dla wybranego projektu.
 
 
