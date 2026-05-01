@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+    stages {
+        stage('Clean') {
+            steps { cleanWs() }
+        }
+        stage('Clone') {
+            steps {
+                git branch: 'main', url: 'https://github.com/fmtlib/fmt.git'
+            }
+        }
+        stage('Builder Container') {
+            steps {
+                sh '''
+                cat << 'EOF' > Dockerfile.deps
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y cmake g++ make git tar
+WORKDIR /app
+EOF
+                docker build -t fmt-deps-image -f Dockerfile.deps .
+                docker run --rm -v $(pwd):/app fmt-deps-image sh -c "mkdir -p build && cd build && cmake .. && make -j$(nproc)"
+                '''
+            }
+        }
+        stage('Tester Container') {
+            steps {
+                sh 'docker run --rm -v $(pwd):/app fmt-deps-image sh -c "cd build && make test"'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh '''
+                cat << 'EOF' > test_deploy.cpp
+#include <fmt/core.h>
+int main() { fmt::print("Deploy dziala\\n"); return 0; }
+EOF
+                docker run --rm -v $(pwd):/app fmt-deps-image sh -c "g++ test_deploy.cpp -o test_deploy -Iinclude -Lbuild -lfmt && LD_LIBRARY_PATH=build ./test_deploy"
+                '''
+            }
+        }
+        stage('Publish') {
+            steps {
+                sh '''
+                mkdir -p artifact/include artifact/lib
+                cp -r include/fmt artifact/include/
+                cp build/libfmt.a artifact/lib/
+                tar -czvf fmt-artifact.tar.gz -C artifact .
+                '''
+                archiveArtifacts artifacts: 'fmt-artifact.tar.gz', fingerprint: true
+            }
+        }
+    }
+}
