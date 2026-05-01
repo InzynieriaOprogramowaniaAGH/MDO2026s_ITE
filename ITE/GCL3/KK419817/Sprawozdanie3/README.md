@@ -39,7 +39,7 @@ Zwykły ping ubuntu:
 ![alt text](image-3.png)
 
 ping
-`ansible all -i ~/ansible-lab/inventory.ini -m ping`
+`ansible all -i inventory.ini -m ping`
 
 inventory.ini:
 
@@ -87,3 +87,21 @@ fedora ansible_port=2223 ansible_user=ansible
 Połączenie z maszynami przez ansible zostało zweryfikowane.
 
 ## Zdalne wywoływanie procedur
+
+Utworzyłem playbook:
+
+```yaml
+
+```
+
+Pierwsze uruchomienie:
+
+`ansible-playbook -i inventory.ini playbook1.yaml`
+
+![alt text](image-11.png)
+
+Drugie uruchomienie:
+
+![alt text](image-12.png)
+
+Widać że ansible coś zmieniło - najpierw mamy status `changed` a po drugim wykonaniu `OK` - czyli wprowadzono odpowiednie modyfikacje i te modyfikacje faktycznie zostały zapisane.
