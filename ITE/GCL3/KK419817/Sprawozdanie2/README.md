@@ -87,6 +87,7 @@ docker logs jenkins-blueocean
 ```
 
 Przeprowadzam zalecaną instalację wtyczek i tworzę pierwszego admina (admin/admin)
+
 ![acc creation](image-3.png)
 
 
@@ -124,6 +125,8 @@ docker images | grep ubuntu
 ![alt text](image-6.png)
 
 Pierwszy failował bo padł kontener dind. Uruchomiłem go ponownie tym samym poleceniem co na początku zajęć. Następne buildy już zadziałały poprawnie.
+
+(Można użyć `--restart=always` aby kontener zawsze się restartował po zakończeniu)
 
 ---
 
@@ -166,7 +169,7 @@ pipeline {
         stage('Build') {
             steps {
                  dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
-                    sh 'docker build -f Dockerfile.build -t express-build .'
+                    sh 'docker build --no-cache -f Dockerfile.build -t express-build .'
                 }
             }
         }
@@ -174,7 +177,7 @@ pipeline {
             steps {
                 dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
                     echo 'Start testów'
-                    sh 'docker build -f Dockerfile.test -t express-test .'
+                    sh 'docker build --no-cache -f Dockerfile.test -t express-test .'
                     sh 'docker run --rm express-test'
                 }
             }
@@ -192,5 +195,161 @@ pipeline {
 ```
 
 Zadziałał poprawnie, zbudowano obrazy (tak jak wcześniej lokalnie) i włączono testy:
+
 ![sukces_pipeline](image-8.png)
 
+![alt text](image-9.png)
+
+Pipeline przeszedł poprawnie conajmniej dwa razy.
+
+---
+### Sekcja "Pipeline: składnia"
+
+Utworzyłem [Jenkinsfile](Jenkinsfile):
+
+```Jenkinsfile
+pipeline {
+    agent {
+        docker {
+            image 'docker:latest'
+            args '-u root  -v /var/run/docker.sock:/var/run/docker.sock'
+            reuseNode true
+        }
+    }
+
+    stages {
+         stage('Pre-cleanup') {
+            steps {
+                sh 'docker system prune -af --volumes'
+            }
+        }
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git',
+                    branch: 'KK419817'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    sh 'docker build --no-cache -f Dockerfile.build -t express-build .'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    sh 'docker build --no-cache -f Dockerfile.test -t express-test .'
+                    sh 'docker run --rm express-test'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    // Deploy testing app
+                    sh '''
+                docker build --no-cache -t container_deploy_image - <<EOF
+FROM express-build
+WORKDIR /app
+RUN echo 'const express = require("./"); \
+const app = express(); \
+app.get("/", (req, res) => res.send("This site works correctly")); \
+app.listen(3000, () => console.log("App is listening on port 3000"));' > server.js
+EXPOSE 3000
+CMD ["node", "server.js"]
+EOF
+'''
+                    sh 'docker run -d -p 3000:3000 --name container_deploy container_deploy_image'
+                    
+                    // Wait for container to be ready
+                    sh 'sleep 5'
+
+                    // Validate deployment
+                    echo 'Validating deployment...'
+
+                    sh '''docker run --rm --network host alpine/curl sh -c '
+RESPONSE=$(curl -s http://localhost:3000)
+echo "Validation response: $RESPONSE"
+if echo "$RESPONSE" | grep -q "This site works correctly"; then
+    echo "Deploy validation SUCCESS"
+    exit 0
+else
+    echo "Deploy validation FAILED"
+    exit 1
+fi
+' '''
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    echo 'Publishing...'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker rm -f container_deploy || true'
+        }
+        success {
+            echo 'Pipeline success'
+        }
+        failure {
+            echo 'Pipeline failed'
+        }
+    }
+}
+```
+
+Skonfigurowałem nowy pipeline `pipeline-2-jenkinsfile`:
+
+![alt text](image-10.png)
+
+Po poprawce (usunięcie MDO2026s_ITE ze ścieżki) pipeline uruchomił się poprawie.
+
+![alt text](image-11.png)
+
+Wykorzystałem podejście z agentem kontenerowym a nie z DinD. Polega ono na uruchomieniu tymczasowego kontenera z obrazem dockera, do którego montuję socket dockera z hosta. Dzięki temu wszystkie komendy docker build i docker run są wykonywane bezpośrednio przez dockera hosta. Jest to prostsze w konfiguracji niż osobny kontener DinD, ale mniej bezpieczne, ponieważ Jenkins zyskuje pełny dostęp do dockera hosta. W podejściu z DinD Jenkins łączyłby się z osobnym kontenerem udostępniającym własnego demona dockera, dająć lepszą izolację kosztem większej złożoności i gorszej wydajności.
+
+---
+
+#### Deploy stage
+
+Naprawiłem początkowy błąd w pipelinie - zamiast `require("express");` w kontenerze walidującym użyłem `require("./");`. Pierwotna wersja nie działała ponieważ express jest już obecny jako całość w tym samym folderze a nie jako pakiet w node_modules (jeśli zainstalowałbym go za pomocą np. `npm install`). 
+
+Walidacja deploymentu udana:
+![alt text](image-12.png)
+
+Jak widać nic się w pipelinie nie cachuje, wszystkie warstwy/obrazy są 'świeże':
+![alt text](image-13.png)
+
+
+#### Publish stage
+
+Utworzyłem publish stage
+
+```
+    stage('Publish') {
+        steps {
+            dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                echo 'Publishing Docker image as artifact...'
+                
+                sh 'docker save container_deploy_image -o express-app-image.tar'
+                sh 'chmod 644 express-app-image.tar'
+                archiveArtifacts artifacts: 'express-app-image.tar', fingerprint: true
+                
+                echo 'Docker image published and archived successfully'
+            }
+        }
+    }
+```
+
+Naprawiłem błąd "ERROR: java.nio.file.AccessDeniedException:" w publish stage dodając uprawnienia dla wsyzstkich uzytkowników `sh 'chmod 644 express-app-image.tar'`

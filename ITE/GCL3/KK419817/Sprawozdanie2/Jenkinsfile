@@ -2,23 +2,28 @@ pipeline {
     agent {
         docker {
             image 'docker:latest'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            args '-u root  -v /var/run/docker.sock:/var/run/docker.sock'
             reuseNode true
         }
     }
 
     stages {
-        // stage('Checkout') {
-        //     steps {
-        //         git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git',
-        //             branch: 'KK419817'
-        //     }
-        // }
+         stage('Pre-cleanup') {
+            steps {
+                sh 'docker system prune -af --volumes'
+            }
+        }
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git',
+                    branch: 'KK419817'
+            }
+        }
 
         stage('Build') {
             steps {
                 dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
-                    sh 'docker build -f Dockerfile.build -t express-build .'
+                    sh 'docker build --no-cache -f Dockerfile.build -t express-build .'
                 }
             }
         }
@@ -26,13 +31,70 @@ pipeline {
         stage('Test') {
             steps {
                 dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
-                    sh 'docker run --rm express-build npm test'
+                    sh 'docker build --no-cache -f Dockerfile.test -t express-test .'
+                    sh 'docker run --rm express-test'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    // Deploy testing app
+                    sh '''
+                docker build --no-cache -t container_deploy_image - <<EOF
+FROM express-build
+WORKDIR /app
+RUN echo 'const express = require("./"); \
+const app = express(); \
+app.get("/", (req, res) => res.send("This site works correctly")); \
+app.listen(3000, () => console.log("App is listening on port 3000"));' > server.js
+EXPOSE 3000
+CMD ["node", "server.js"]
+EOF
+'''
+                    sh 'docker run -d -p 3000:3000 --name container_deploy container_deploy_image'
+                    
+                    // Wait for container to be ready
+                    sh 'sleep 5'
+
+                    // Validate deployment
+                    echo 'Validating deployment...'
+
+                    sh '''docker run --rm --network host alpine/curl sh -c '
+RESPONSE=$(curl -s http://localhost:3000)
+echo "Validation response: $RESPONSE"
+if echo "$RESPONSE" | grep -q "This site works correctly"; then
+    echo "Deploy validation SUCCESS"
+    exit 0
+else
+    echo "Deploy validation FAILED"
+    exit 1
+fi
+' '''
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                dir('ITE/GCL3/KK419817/Sprawozdanie2/') {
+                    echo 'Publishing Docker image as artifact...'
+                    
+                    sh 'docker save container_deploy_image -o express-app-image.tar'
+                    sh 'chmod 644 express-app-image.tar'
+                    archiveArtifacts artifacts: 'express-app-image.tar', fingerprint: true
+                    
+                    echo 'Docker image published and archived successfully'
                 }
             }
         }
     }
 
     post {
+        always {
+            sh 'docker rm -f container_deploy || true'
+        }
         success {
             echo 'Pipeline success'
         }
