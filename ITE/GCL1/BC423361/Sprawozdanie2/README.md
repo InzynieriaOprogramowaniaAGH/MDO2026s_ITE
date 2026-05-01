@@ -46,6 +46,7 @@
 
 3.2 Diagram aktywności
 ```mermaid
+graph TD
  A[Start: SCM Checkout] --> B[Wyczyszczenie Workspaceu]
     B --> C[Budowa obrazu z zależnościami C++]
     C --> D[Etap BUILD: cmake i make]
