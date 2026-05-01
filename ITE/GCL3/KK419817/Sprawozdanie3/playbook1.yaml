@@ -1,0 +1,24 @@
+---
+- name: Ansible Lab
+  hosts: all
+  tasks:
+    - name: Ping
+      ping:
+
+    - name: Kopiuj inventory
+      copy:
+        src: ./inventory.ini
+        dest: /tmp/inventory.ini
+      when: inventory_hostname != 'ubuntu'
+
+    - name: Zaktualizuj pakiety w systemie
+      command: dnf upgrade -y
+      when: inventory_hostname != 'ubuntu'
+      become: yes
+
+    - name: Zrestartuj usługę sshd
+      service:
+        name: sshd
+        state: restarted
+      when: inventory_hostname != 'ubuntu'
+      become: yes
