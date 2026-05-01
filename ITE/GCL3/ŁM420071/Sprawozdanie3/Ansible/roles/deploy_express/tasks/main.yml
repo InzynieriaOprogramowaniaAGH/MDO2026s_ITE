@@ -1,0 +1,71 @@
+---
+- name: "Sanity Check: Zasoby i Porty"
+  block:
+    - name: "Sprawdzenie miejsca na dysku"
+      command: df -h /opt
+      register: disk_res
+      changed_when: false
+
+    - name: "Sprawdzenie czy port {{ app_port }} jest wolny"
+      shell: "ss -tuln | grep :{{ app_port }}"
+      register: port_res
+      failed_when: false
+      changed_when: false
+  ignore_errors: yes
+
+- name: "Zapewnienie działania Dockera"
+  block:
+    - name: "Instalacja Dockera (dnf)"
+      command: dnf install -y docker python3-docker
+      register: dnf_out
+      changed_when: "'Nothing to do' not in dnf_out.stdout"
+
+    - name: "Start i Enable usługi Docker"
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+- name: "Transfer artefaktów i ustawienie uprawnień"
+  block:
+    - name: "Tworzenie katalogu"
+      file:
+        path: "{{ remote_app_path }}"
+        state: directory
+        mode: '0777'
+
+    - name: "Kopiowanie plików aplikacji (Zestaw plików)"
+      copy:
+        src: "build_artifact/"
+        dest: "{{ remote_app_path }}/"
+        mode: '0777'
+
+- name: "Uruchomienie kontenera z aplikacją"
+  shell: |
+    docker rm -f {{ app_name }} || true
+    docker run -d \
+      --name {{ app_name }} \
+      -p {{ app_port }}:{{ app_port }} \
+      -v {{ remote_app_path }}:/usr/src/app:z \
+      -w /usr/src/app \
+      {{ container_image }} \
+      sh -c "npm install && node app.js"
+  register: docker_run
+
+- name: "Weryfikacja: Sanity Check działania aplikacji"
+  uri:
+    url: "http://localhost:{{ app_port }}"
+    status_code: 200
+  register: web_check
+  until: web_check.status == 200
+  retries: 20
+  delay: 5
+
+- name: "Procedura czyszczenia (Cleanup)"
+  block:
+    - name: "Usunięcie kontenera"
+      shell: "docker rm -f {{ app_name }}"
+    - name: "Usunięcie plików aplikacji"
+      file:
+        path: "{{ remote_app_path }}"
+        state: absent

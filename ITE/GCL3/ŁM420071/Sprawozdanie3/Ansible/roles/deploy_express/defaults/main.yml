@@ -1,0 +1,4 @@
+app_name: "express_app"
+remote_app_path: "/opt/express_app"
+container_image: "node:18-alpine"
+app_port: 3000
