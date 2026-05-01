@@ -91,12 +91,37 @@ Połączenie z maszynami przez ansible zostało zweryfikowane.
 Utworzyłem playbook:
 
 ```yaml
+---
+- name: Ansible Lab
+  hosts: all
+  tasks:
+    - name: Ping
+      ping:
 
+    - name: Kopiuj inventory
+      copy:
+        src: ./inventory.ini
+        dest: /tmp/inventory.ini
+      when: inventory_hostname != 'ubuntu'
+
+    - name: Zaktualizuj pakiety w systemie
+      command: dnf upgrade -y
+      when: inventory_hostname != 'ubuntu'
+      become: yes
+
+    - name: Zrestartuj usługę sshd
+      service:
+        name: sshd
+        state: restarted
+      when: inventory_hostname != 'ubuntu'
+      become: yes
 ```
 
 Pierwsze uruchomienie:
 
-`ansible-playbook -i inventory.ini playbook1.yaml`
+`ansible-playbook -i inventory.ini playbook1.yaml --ask-become-pass`
+
+(dodałem --ask-become-pass aby móc podać hasło potrzebne do niektórych operacji z wyższmi uprawnieniami)
 
 ![alt text](image-11.png)
 
@@ -105,3 +130,9 @@ Drugie uruchomienie:
 ![alt text](image-12.png)
 
 Widać że ansible coś zmieniło - najpierw mamy status `changed` a po drugim wykonaniu `OK` - czyli wprowadzono odpowiednie modyfikacje i te modyfikacje faktycznie zostały zapisane.
+
+Po wyłączeniu sshd na targecie, target jest unreachable:
+
+`sudo systemctl stop sshd`
+
+![alt text](image-7.png)
