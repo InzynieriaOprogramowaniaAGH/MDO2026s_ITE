@@ -2,4 +2,6 @@ FROM flask-builder:latest
 
 WORKDIR /app
 
-CMD ["pytest"]
+RUN pip install pytest
+
+CMD ["python", "-m", "pytest"]
