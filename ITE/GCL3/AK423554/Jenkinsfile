@@ -1,0 +1,91 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    echo "Budowanie"
+                    sh 'docker build --no-cache -t fastify-builder:latest -f ./ITE/GCL3/AK423554/lab3/Dockerfile.build ./ITE/GCL3/AK423554/lab3/'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                script {
+                    echo "Testowanie"
+                    sh 'docker build -t fastify-test:latest -f ./ITE/GCL3/AK423554/lab3/Dockerfile.test ./ITE/GCL3/AK423554/lab3/'
+                    
+                    def status = sh(script: 'docker run --rm fastify-test:latest', returnStatus: true)
+
+                    if (status != 0) {
+
+                        echo "Testy nie przeszły"
+                    }
+                }
+            }
+        }
+        
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh 'docker rm -f c-deploy || true'
+                    sh 'docker run -d --name c-deploy --network jenkins-net fastify-builder:latest'
+            
+                    sleep 2
+                    echo "Logi kontenera:"
+                    sh 'docker logs c-deploy'
+                }
+            }
+        }
+
+        stage('Verify') {
+            steps {
+                script {
+           
+                    sh 'docker run --rm --network jenkins-net curlimages/curl curl -s -f http://c-deploy:3000/'
+                }
+            }
+    }
+    
+        stage('Publish to NPM') {
+            steps {
+             withCredentials([string(credentialsId: 'npm-token-id-f2a', variable: 'NPM_TOKEN')]) {
+                    script {
+                        sh '''
+                           docker run --rm \
+                            -e NPM_TOKEN=${NPM_TOKEN} \
+                            -e BUILD_NUMBER=${BUILD_NUMBER} \
+                            fastify-builder:latest bash -c '
+                        
+                            npm pkg set name="zajecia6ak123"
+                            npm version 1.0.${BUILD_NUMBER} --no-git-tag-version
+                        
+                            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+                            npm publish --access public --ignore-scripts
+                            '
+                        '''
+                    }
+                }
+            }
+        }
+}
+    post {
+        always {
+            echo "Sprzątanie"
+            sh 'docker stop c-deploy || true'
+            sh 'docker image prune -f'
+        //script {
+                //withCredentials([string(credentialsId: 'npm-token-id', variable: 'NPM_TOKEN')]) {
+                     //sh '''
+                        //docker run --rm -e NPM_TOKEN=${NPM_TOKEN} node:20 bash -c "
+                            //echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
+                           // npm unpublish ak423554-lab6 --force
+                        //"
+                     //'''
+                //}
+        //}
+    }
+}
+}

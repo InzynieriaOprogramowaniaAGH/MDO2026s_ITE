@@ -1,3 +1,6 @@
 FROM fastify-builder:latest
 
+WORKDIR /app/fastify-repo
+
+
 CMD ["npm", "test"]

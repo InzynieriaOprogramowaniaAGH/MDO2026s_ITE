@@ -1,9 +1,29 @@
-FROM node:20
-
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+FROM node:22
 
 WORKDIR /app
 
-RUN git clone --depth 1 https://github.com/fastify/fastify.git .
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 https://github.com/fastify/fastify.git ./fastify-repo
 
-RUN npm install
+RUN cd ./fastify-repo && npm install
+
+RUN npm install ./fastify-repo
+
+RUN echo "const fastify = require('fastify')({ logger: true }); \
+          \
+          fastify.get('/', async (request, reply) => { \
+            reply.type('text/html').send('<h1>Witaj w mojej aplikacji!</h1><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.</p>'); \
+          }); \
+          \
+          const start = async () => { \
+            try { \
+              await fastify.listen({ port: 3000, host: '0.0.0.0' }); \
+              console.log('--- SERWER DZIAŁA NA PORCIE 3000 ---'); \
+            } catch (err) { \
+              console.error('--- BŁĄD PODCZAS STARTU ---'); \
+              process.exit(1); \
+            } \
+          }; \
+          start();" > app.js
+
+CMD ["node", "app.js"]
