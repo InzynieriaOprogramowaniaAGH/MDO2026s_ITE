@@ -1,0 +1,38 @@
+---
+- name: Podstawowe operacje systemowe
+  hosts: Endpoints
+  become: yes # root (sudo)
+
+  tasks:
+    - name: 1. Wyslanie ping'a Ansible
+      ansible.builtin.ping:
+
+    - name: 2. Skopiowanie inventory.ini
+      ansible.builtin.copy:
+        src: inventory.ini
+        dest: /tmp/inventory.ini
+
+    - name: 3. Bootstrap - reczna instalacja zaleznosci DNF5 dla Ansible
+      ansible.builtin.command: dnf install -y python3-libdnf5
+
+    - name: 4. Aktualizacja pakietow (Obejscie bledu DNF5)
+      ansible.builtin.command: dnf upgrade -y
+      register: dnf_update_result
+      # Zgłaszaj zmianę tylko wtedy, gdy log wykaże zainstalowanie/aktualizację
+      changed_when: "'Nothing to do.' not in dnf_update_result.stdout"
+
+    - name: 5. Restart sshd
+      ansible.builtin.systemd:
+        name: sshd
+        state: restarted
+    
+    - name: 6. Instalacja brakujacego demona rngd (pakiet rng-tools)
+      ansible.builtin.command: dnf install -y rng-tools
+      register: rng_install
+      changed_when: "'Nothing to do.' not in rng_install.stdout"
+
+    - name: 7. Restart rngd
+      ansible.builtin.systemd:
+        name: rngd
+        state: restarted
+        enabled: yes

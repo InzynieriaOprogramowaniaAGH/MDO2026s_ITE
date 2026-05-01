@@ -1,0 +1,12 @@
+# Konkretna wersja node
+FROM node:20.12.0-bullseye 
+
+WORKDIR /app
+COPY . .
+
+RUN npm install
+
+RUN npm test
+
+# Utworzenie artefaktu i czyszczenie środowiska
+RUN rm -f *.tgz && npm pack

@@ -1,0 +1,6 @@
+---
+- name: Wdrozenie aplikacji
+  hosts: Endpoints
+  become: yes
+  roles:
+    - deploy_app

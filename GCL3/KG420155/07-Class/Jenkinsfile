@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+
+    environment {
+        ARTIFACT_NAME = "commander-package-${BUILD_NUMBER}.tgz"
+    }
+
+    stages {
+        stage('Clean Workspace & Clone') {
+            steps {
+                // Zapewnia brak starych, zcache'owanych plików
+                cleanWs()
+                // Pobiranie kodu z SCM
+                checkout scm
+            }
+        }
+        
+        stage('Build & Test') {
+            steps {
+                script {
+                    // Obraz BLDR (Dependencies + Build)
+                    sh 'docker build -t commander-build -f Dockerfile.build .'
+                    
+                    // Przeprowadzenie testów i zrzut logów
+                    sh 'docker run --rm commander-build npm test > test-logs.txt || true'
+                    
+                    // Wyciągnięcie gotowego artefaktu
+                    sh "docker run --rm -v ${WORKSPACE}:/out commander-build sh -c 'cp /app/*.tgz /out/${ARTIFACT_NAME}'"
+                }
+            }
+        }
+
+        stage('Deploy (Smoke Test)') {
+            steps {
+                script {
+                    // Kontener docelowy (cienki obraz uruchomieniowy)
+                    sh 'docker build -t commander-deploy -f Dockerfile.deploy .'
+                    
+                    // Wdrożenie i uruchomienie aplikacji (Smoke test paczki)
+                    sh "docker run --rm -v ${WORKSPACE}/${ARTIFACT_NAME}:/deploy/package.tgz commander-deploy sh -c 'npm install ./package.tgz && node smoke-test.js'"
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                // Archiwizacja paczki
+                archiveArtifacts artifacts: "${ARTIFACT_NAME}, test-logs.txt", followSymlinks: false
+                
+                // Symulacja NPM Publish
+                sh "docker run --rm -v ${WORKSPACE}:/workspace -w /workspace node:20.12.0-slim npm publish ${ARTIFACT_NAME} --dry-run"
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Sprzątanie przestrzeni roboczej po zakończeniu
+            cleanWs()
+        }
+    }
+}
