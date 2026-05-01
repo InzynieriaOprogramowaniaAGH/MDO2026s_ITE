@@ -1,14 +1,368 @@
+# Sprawozdanie 2
+
+## Class 05
+
+### Wstęp
+
+CI/CD (Continuous Integration / Continuous Deployment) to praktyka automatyzacji procesu budowania, testowania i wydawania oprogramowania. Umożliwia automatyzację przepływów pracy związanych z integracją, testowaniem oraz wdrażaniem kodu, co ogranicza nakład pracy manualnej przy jednoczesnej poprawie jakości oprogramowania - pozwalając na szybsze i bardziej spójne wydania.
+
+Jenkins Pipeline to zestaw wtyczek wspierający implementację i integrację potoków ciągłego dostarczania/wdrażania w środowisku Jenkins. Udostępnia rozbudowany zestaw narzędzi do modelowania procesów - od prostych po złożone potoki - za pośrednictwem dedykowanego języka dziedzinowego (DSL).
+
+### Instalacja Jenkins
+
+Instalację Jenkins przeprowadzono zgodnie z kolejnymi krokami dokumentacji. Skorzystano z oficjalnego obrazu `jenkins/jenkins image` z `Docker Huba`. 
+
+Na początku stworzono sieć Jenkins za pomocą komendy. Poleceniem ls zweryfikowano poprawne utworzenie sieci.
 ```bash
 sudo docker network create jenkins
 sudo docker network ls
+```
+
+W celu wykonania polecenia Dockera w węzłach Jenkins, pobrano i uruchomiono obraz Dockera `docker:dind`.
+```bash
 sudo docker run   --name jenkins-docker   --rm   --detach   --privileged   --network jenkins   --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind   --storage-driver overlay2
+```
+
+Na podstawie przygotowanego pliku `Dockerfile.jenkins` zbudowano obraz Jenkins wzbogacony o wtyczkę Blue Ocean. Zbudowany obraz uruchomiono jako kontener o nazwie `jenkins-blueocean`. Kontener został podłączony do sieci `jenkins` i skonfigurowany tak, aby komunikował się z wcześniej uruchomionym kontenerem dind.
+```bash
 sudo docker build -t myjenkins-blueocean:2.541.3-1 .
 sudo docker build -t myjenkins-blueocean:2.541.3-1 -f ./Dockerfile.jenkins .
 sudo docker run   --name jenkins-blueocean   --restart=on-failure   --detach   --network jenkins   --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client   --env DOCKER_TLS_VERIFY=1   --publish 8080:8080   --publish 50000:50000   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   myjenkins-blueocean:2.541.3-1
-sudo docker ps
-sudo docker network inspect jenkins
-
-sudo docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
-2f3df83f0662438eb60f21eede0d2574
 ```
 
+Po uruchomieniu kontenerów zweryfikowano konfigurację sieci. Następnie pobrano wygenerowane hasło administratora, niezbędne do pierwszego logowania w interfejsie webowym Jenkins.
+```bash
+sudo docker network inspect jenkins
+sudo docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+Stworzenie pierwszwgo administratora:
+![Zdjęcie 1](img/s1.png)
+
+### Konfiguracja i uruchomienie pierwszych projektów
+
+1. Projekt konsolowy wyświetlający `uname`
+Skrypt `uname-test`
+```bash
+uname -a
+```
+Rezultat: 
+![Zdjęcie 2](img/s2.png)
+
+2. Projekt konsolowy wyświetlający, który zwraca błąd, jeżeli godzina jest nieparzysta
+
+Skrypt `hour-test`
+```bash
+hour=$(date +%H)
+
+if [ $((hour % 2)) -ne 0 ]; then
+  echo "Errpr, hour is odd"
+  exit 1
+else
+  echo "Hour is even"
+fi
+```
+
+Rezultat:
+![Zdjęcie 3](img/s3.png)
+
+3. Projekt pipeline pobierający obraz kontenera `ubuntu`
+
+Skrypt `docker-pull-test` (pipeline)
+```bash
+pipeline {
+    agent any
+
+    stages {
+        stage('Pull Docker Image') {
+            steps {
+                sh '''
+                {
+                    docker pull ubuntu
+                }
+                '''
+            }
+        }
+    }
+}
+```
+
+### Stworzenie obiektu typu pipeline
+
+Dyrektywa `agent` określa, na jakim węźle ma zostać wykonany dany pipeline lub jego etap. Wartość `any` oznacza, że Jenkins może uruchomić pipeline na dowolnym dostępnym agencie lub węźle w środowisku. Blok `stage` definiuje pojedynczy, logicznie wyodrębniony etap potoku. Każdy etap posiada nazwę opisującą wykonywaną czynność i zawiera jeden lub więcej kroków (`steps`).
+
+Poniższy pipeline zawiera dwa etapy: klonowanie repozytorium oraz zbudowanie obrazu Docker znajdującego się w repozytorium, w katalogu personalnym. 
+
+Skrypt `docker-pull-test` (pipeline)
+```bash
+pipeline {
+    agent any
+    stages {
+        stage('clone repository') {
+            steps {
+                git branch: 'MŁ420124',
+                url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+        stage('build docker image') {
+            steps {
+                script {
+                    dir('ITE/GCL3/MŁ420124/Dockerfiles') {
+                        def customImage = docker.build(
+                            "devskillerbld:${env.BUILD_ID}",
+                            "-f Dockerfile.devskiller.bld ."
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+Rezultat z pipeline:
+![Zdjęcie 5](img/s5.png)
+
+## Class06
+
+1. Wybór aplikacji 
+
+- Wybrano repozyturium https://github.com/Genocs/qrcode. Jest to .NET biblioteczny, możliwy do zbudowania za pomocą polecenia `dotnet build` oraz posiadający szereg testów do przeprowadzania ćwiczenia. Licencja potwierdza możliwość swobodnego obrotu kodem - kod korzysta z licencji MIT. Wybrany program buduje się oraz przechodzą dołączone do niego testy.
+
+![Zdjęcie 7](img/s7.png)
+
+- Fork jest uzasadniony - pozwala na dodanie Dockerfiles, Jenkinsfile i testów integracyjnych bez zaśmiecania oryginalnego projektu. Własny fork: https://github.com/maksluczak/qrcode#.
+
+- Stworzono diagram UML zawierający planowany pomysł na proces CI/CD.
+
+![Zdjęcie UML](img/uml.png)
+
+- Klonowanie repozytorium realizowane jest w ramach pierwszego etapu pliku `Jenkinsfile`
+
+```bash
+stage('Clone') {
+    steps {
+        cleanWs()
+        checkout scm
+    }
+}
+```
+
+2. Procesy budowania kontenera, testy
+
+- Jako kontener bazowy wybrano obraz `mcr.microsoft.com/dotnet/sdk:8.0`, ponieważ zawiera pełne środowisko kompilacji .NET, co czyni go kompletnym narzędziem buildowym.
+
+- Stworzono Dockerfile `Dockerfile.qrcode.bld`.
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+RUN apt-get update && apt-get install -y git
+
+WORKDIR /app
+COPY . .
+
+RUN dotnet restore
+RUN dotnet build -c Release
+```
+
+- Następnie uruchomiono go w wyizolowanym środowisku.
+
+```bash
+sudo docker build -t qrcodebld -f ./Dockerfile.qrcode.bld .
+```
+
+- Testy zostały wykonane wewnątrz kontenera. Kontener testowy jest oparty o kontener build.
+
+```dockerfile
+FROM qrcodebld:latest
+
+WORKDIR /app
+
+RUN dotnet test -c Release
+```
+
+- Uruchomienie kontenera do testów.
+
+```bash
+sudo docker build -t qrcodetests -f ./Dockerfile.qrcode.tests .
+```
+
+- Fragment Jenkinsfile realizujący build oraz testy
+
+```bash
+stage('Build') {
+    steps {
+        sh 'docker build -t qrcodebld -f Dockerfile.qrcode.bld .'
+    }
+}
+
+stage('Test') {
+    steps {
+        sh 'docker build -t qrcodetests -f Dockerfile.qrcode.tests .'
+        sh 'docker run --rm qrcodetests'
+    }
+}
+```
+
+3. Wyciągnięcie biblioteki
+
+- Stworzono kontener tymczasowy, aby wyciągnąć z niego zbudowaną bibliotekę do repozytorium projektowego.
+
+```bash
+sudo docker create --name temp_conteiner qrcodebld
+sudo docker cp temp_conteiner:/app/src/Genocs.QRCodeLibrary/bin/Release/net8.0/Genocs.QRCodeLibrary.dll ./Genocs.QRCodeLibrary.dll
+sudo docker rm temp_conteiner
+```
+
+- W przypadku projektu nie ma klasycznego kontenera Deploy, ponieważ budowana jest biblioteka (.dll). Aby wykonać deploy, konieczne jest użycie zaimportowanej biblioteki w testowtm projekcie (stworzenie QR Code dla losowej strony internetowej). Kod został zbudowany poleceniem `dotnet build`, uruchomiona, sprawdzona została poprawność wykonania (stworzył się plik `qrcode.bmp`).
+
+```bash
+stage('Deploy') {
+    steps {
+        script {
+            sh '''
+            docker run --rm -v $(pwd):/app -w /app qrcodebld bash -c "
+            dotnet new console -n TestProj --force
+            dotnet add TestProj/TestProj.csproj reference src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj
+                    
+            cat <<EOF > TestProj/Program.cs
+using System;
+using System.IO;
+using Genocs.QRCodeGenerator.Encoder;
+
+try {
+    var generator = new QRCodeGenerator();
+    var data = generator.CreateQrCode(\\"https://jenkins.io\\", QRCodeGenerator.ECCLevel.Q);
+    var qr = new BitmapByteQRCode(data);
+    byte[] bmpBytes = qr.GetGraphic(5);
+    File.WriteAllBytes(\\"qrcode.bmp\\", bmpBytes);
+    Console.WriteLine(\\"Success! Test Passed.\\");
+} catch (Exception ex) {
+    Console.WriteLine(\\"Test Failed: \\" + ex.Message);
+    Environment.Exit(1);
+}
+EOF
+            dotnet run --project TestProj/TestProj.csproj
+            "
+            '''
+        }
+    }
+}
+```
+
+4. Deploy
+
+- Jako artefakt publikowany ma być paczka `.nupkg` (NuGet) oraz obrazek `qrcode.bmp` jako dowód działania. Pozwala na łatwe zarządzanie zależnościami i wersjonowanie.
+
+- Dostępność artefaktu: publikacja do Rejestru online, artefakt załączony jako rezultat builda w Jenkinsie. Artefakty są dostępne bezpośrednio w panelu Jenkinsa dzięki komendzie `archiveArtifacts`.
+
+```bash
+stage('Publish') {
+    steps {
+        sh '''
+        docker run --rm -v $(pwd):/app -w /app qrcodebld bash -c "
+        dotnet build src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj -c Release
+        dotnet pack src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj -c Release -o /app/final_artifacts
+        "
+        '''
+    }
+}
+```
+
+- Na samym końcu Jenkinsfile wykonano blok post, który definiuje kroki, które mają zostać wykonane po zakończeniu całego pipelineu lub konkretnego etapu - niezależnie od tego, czy zakończył się sukcesem, czy nie. W przypadku sukcesu dokonywana jest archiwizacja, a w przypadku porażki odpowiedni komunikat.
+
+- Ostateczny `Jenkinsfile` projektu umieszczony na zforkowanym repozytorium na GitHubie
+
+```bash
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone') {
+            steps {
+                cleanWs()
+                checkout scm
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh 'docker build -t qrcodebld -f Dockerfile.qrcode.bld .'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'docker build -t qrcodetests -f Dockerfile.qrcode.tests .'
+                sh 'docker run --rm qrcodetests'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh '''
+                    docker run --rm -v $(pwd):/app -w /app qrcodebld bash -c "
+                    dotnet new console -n TestProj --force
+                    dotnet add TestProj/TestProj.csproj reference src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj
+                    
+                    cat <<EOF > TestProj/Program.cs
+using System;
+using System.IO;
+using Genocs.QRCodeGenerator.Encoder;
+
+try {
+    var generator = new QRCodeGenerator();
+    var data = generator.CreateQrCode(\\"https://jenkins.io\\", QRCodeGenerator.ECCLevel.Q);
+    var qr = new BitmapByteQRCode(data);
+    byte[] bmpBytes = qr.GetGraphic(5);
+    File.WriteAllBytes(\\"qrcode.bmp\\", bmpBytes);
+    Console.WriteLine(\\"Success! Test Passed.\\");
+} catch (Exception ex) {
+    Console.WriteLine(\\"Test Failed: \\" + ex.Message);
+    Environment.Exit(1);
+}
+EOF
+                    dotnet run --project TestProj/TestProj.csproj
+                    "
+                    '''
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                sh '''
+                docker run --rm -v $(pwd):/app -w /app qrcodebld bash -c "
+                dotnet build src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj -c Release
+                dotnet pack src/Genocs.QRCodeLibrary/Genocs.QRCodeLibrary.csproj -c Release -o /app/final_artifacts
+                "
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'final_artifacts/*.nupkg, TestProj/qrcode.bmp', fingerprint: true
+            echo "Task completed successfully. Artifacts saved."
+        }
+        failure {
+            echo "Pipeline terminated with error."
+        }
+    }
+}
+```
+
+- Weryfikacja uruchomienia w webowej aplikacji Jenkins. Wiadomość o sukcesie i pomyślnej archiwizacji.
+
+![Zdjęcie 8](img/s8.png)
+
+- Pomyślna archiwizacja
+
+![Zdjęcie 9](img/s9.png)
+
+- Porównanie UML do faktycznego pipeline projektu. W diagramie UML `Publish` odbywa się w etapie `post`, co było błędnym założeniem. Zmieniły się nazwy na oddające faktycznie wykonywane zadania.
+
+![Zdjęcie 10](img/s10.png)
