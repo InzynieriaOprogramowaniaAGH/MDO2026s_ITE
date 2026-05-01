@@ -1,0 +1,83 @@
+pipeline {
+    agent any
+
+    environment {
+        // FILES_DIR = "ITE/GCL3/JK417545/url_shortener_files"
+        FILES_DIR = "."
+        BUILD_IMAGE = "url-shortener-builder"
+        DEPLOY_IMAGE = "url-shortener-deploy"
+    }
+
+    stages {
+
+        stage('Build Builder') {
+            steps {
+                dir("${FILES_DIR}") {
+                    sh "docker build --no-cache -t ${BUILD_IMAGE} -f Dockerfile.build ."
+                }
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                dir("${FILES_DIR}") {
+                    sh "docker-compose -f docker-compose.test.yml up --exit-code-from app-test"
+                }
+            }
+            post {
+                always {
+                    dir("${FILES_DIR}") {
+                        sh "docker-compose -f docker-compose.test.yml down -v"
+                    }
+                }
+            }
+        }
+
+        stage('Build Runtime Image') {
+            steps {
+                dir("${FILES_DIR}") {
+                    sh "docker build --no-cache -t ${DEPLOY_IMAGE} -f Dockerfile.runtime ."
+                }
+            }
+        }
+
+        stage('Deploy & Smoke Test') {
+            steps {
+                dir("${FILES_DIR}") {
+                    sh "docker-compose -f docker-compose.deploy.yml up -d"
+                    sh "sleep 15"
+                    sh "chmod +x smoke_test.sh"
+                    sh "./smoke_test.sh list.url"
+                }
+            }
+            post {
+                always {
+                    dir("${FILES_DIR}") {
+                        sh "docker-compose -f docker-compose.deploy.yml down -v"
+                    }
+                }
+            }
+        }
+
+        stage('Publish Artifact') {
+            steps {
+                dir("${FILES_DIR}") {
+                    withCredentials([string(credentialsId: 'NPM_TOKEN', variable: 'NPM_TOKEN')]) {
+                        sh "chmod +x publish.sh"
+                        sh "./publish.sh ${BUILD_IMAGE}"
+                    }
+                    archiveArtifacts artifacts: '*.tgz', fingerprint: true
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline Success!"
+        }
+        failure {
+            echo "Pipeline Failure. Check logs."
+        }
+    }
+}

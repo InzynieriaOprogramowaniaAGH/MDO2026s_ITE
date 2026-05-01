@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  app-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    image: url-shortener-tester
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/urlshortener
+  mongo:
+    image: mongo:4.2.1
+    hostname: mongo

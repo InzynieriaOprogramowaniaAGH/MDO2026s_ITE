@@ -1,0 +1,6 @@
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=url-shortener-builder /app/package*.json ./
+RUN npm install --omit=dev --legacy-peer-deps
+COPY --from=url-shortener-builder /app/dist ./dist
+CMD ["node", "dist/main"]
