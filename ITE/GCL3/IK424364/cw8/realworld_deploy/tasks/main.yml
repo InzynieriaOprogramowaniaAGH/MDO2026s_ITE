@@ -1,0 +1,50 @@
+---
+- name: Sanity Check
+  shell: df -h / | tail -1 | awk '{print $4}'
+  register: disk_space
+  ignore_errors: yes
+
+- name: Instalacja Docker
+  shell: "dnf install -y docker python3-docker"
+  become: yes
+
+- name: Włączenie Dockera
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Kopia pliku binarnego
+  copy:
+    src: files/realworld-app.jar
+    dest: /opt/realworld-app.jar
+    mode: '0755'
+
+- name: Dockerfile dla JAR
+  copy:
+    dest: /opt/Dockerfile
+    content: |
+      FROM eclipse-temurin:25-jre-noble
+      COPY realworld-app.jar /app.jar
+      ENTRYPOINT ["java", "-jar", "/app.jar"]
+
+- name: Build image z JAR
+  shell: "docker build -t realworld-from-jar /opt"
+  become: yes
+
+- name: Kontener docker
+  shell: |
+    docker stop realworld-final || true
+    docker rm realworld-final || true
+    docker run -d --name realworld-final -p 8081:8080 realworld-from-jar
+  become: yes
+
+- name: Health Check
+  uri:
+    url: "http://localhost:8081/api/tags"
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 5
+  delay: 10

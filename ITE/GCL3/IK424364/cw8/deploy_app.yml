@@ -1,0 +1,6 @@
+---
+- name: Deploy realworld-app
+  hosts: endpoints
+  become: yes
+  roles:
+    - realworld_deploy

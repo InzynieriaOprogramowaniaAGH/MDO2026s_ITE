@@ -1,0 +1,33 @@
+---
+- name: Przygotowanie systemów
+  hosts: endpoints
+  become: yes
+  tasks:
+    - name: Testowanie łączności
+      ping:
+
+    - name: Plik inventory.ini
+      copy:
+        src: ./inventory.ini
+        dest: /home/ansible/inventory_backup.ini
+        owner: ansible
+        mode: '0644'
+
+    - name: Aktualizacja pakietów (Ubuntu)
+      apt:
+        update_cache: yes
+        upgrade: dist
+      when: ansible_os_family == "Debian"
+
+    - name: Aktualizacja pakietów (Fedora)
+      shell: "dnf upgrade -y"
+      when: ansible_os_family == "RedHat"
+      become: yes
+
+    - name: Restart serwisów
+      service:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - sshd
+      ignore_errors: yes
