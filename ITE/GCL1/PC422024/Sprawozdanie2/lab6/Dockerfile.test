@@ -4,4 +4,4 @@ WORKDIR /app
 RUN cmake -S . -B build -DJSON_BuildTests=On
 RUN cmake --build build --parallel 4
 WORKDIR /app/build
-RUN ctest --output-on-failure
+RUN ctest --output-on-failure && cd .. && rm -rf build
