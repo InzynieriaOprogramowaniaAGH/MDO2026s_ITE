@@ -2,11 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone') {
-            steps {
-                git branch: 'PC422024', url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
-            }
-        }
 
         stage('Build, Extract & Publish') {
             steps {
