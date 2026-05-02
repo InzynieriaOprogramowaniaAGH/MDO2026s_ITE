@@ -10,4 +10,4 @@ WORKDIR /app
 
 RUN git clone --depth 1 https://github.com/nlohmann/json.git .
 
-RUN g++ -I single_include docs/examples/parse__string.cpp -o sample-app
+RUN g++ -I single_include docs/mkdocs/docs/examples/parse__string__parser_callback_t.cpp -o sample-app
