@@ -8,7 +8,7 @@ Celem zadania była instalacja serwera Jenkins, konfiguracja początkowa oraz ut
 ------------------------------------------------------------------------
 
 ### Krok 1. Uruchomienie instancji Jenkins z dostępem do Dockera
-Wykorzystano autorski `Dockerfile.jenkins` wspierający klienta Docker. Kontener uruchomiono z prawami roota (`-u root`) oraz wmontowano gniazdo demona Dockera hosta (socket), aby umożliwić Jenkinsowi zlecanie budowy kontenerów.
+Wykorzystano `Dockerfile.jenkins` wspierający klienta Docker. Kontener uruchomiono z prawami roota (`-u root`) oraz wmontowano gniazdo demona Dockera hosta (socket), aby umożliwić Jenkinsowi zlecanie budowy kontenerów.
 
 ```bash
 docker build -t my-jenkins -f ITE/GCL1/MD419430/Sprawozdanie1/Dockerfile.jenkins ITE/GCL1/MD419430/Sprawozdanie1/
@@ -78,7 +78,9 @@ Celem zadania było zaprojektowanie i wdrożenie pełnego procesu CI/CD (ścież
 ------------------------------------------------------------------------
 
 ### Krok 1. Projektowanie procesu
-W pierwszej kolejności zaplanowano architekturę. Zdecydowano się na testowanie "Black-Box". Główne procesy odbywają się w podstawowym kontenerze (C1), w którym budujemy aplikację i uruchamiamy testy jednostkowe. Następnie do weryfikacji działania programu uruchamiany jest drugi, lekki kontener (C2), który działa jak zwykły użytkownik testujący dostępność poprzez sieć.
+W pierwszej kolejności zaplanowano architekturę pokazaną na poniższym diagramie UML. Zdecydowano się na utworzenie oddzielnych środowisk do budowania i docelowego uruchamiania aplikacji. Główne procesy (instalacja zależności, budowa i testy jednostkowe) odbywają się w podstawowym kontenerze narzędziowym (`Dockerfile.ci`). Następnie potok buduje lżejszy docelowy kontener uruchomieniowy (`Dockerfile`) i stawia go w nowo utworzonej, izolowanej sieci w środowisku testowym.
+
+Do weryfikacji faktycznego działania programu uruchamiany jest drugi, krótko żyjący kontener integracyjny (klient z narzędziem `curl`), który działa jak zwykły użytkownik testujący dostępność usługi poprzez sieć. Po pozytywnym przejściu testu obraz zostaje zarchiwizowany i wysłany do rejestru Docker Hub, a tymczasowe kontenery testowe są sprzątane ze środowiska.
 
 ![alt text](../img/L6/L6-diagram-uml.png)
 
@@ -114,13 +116,15 @@ CMD ["npm", "run", "start:prod"]
 ------------------------------------------------------------------------
 
 ### Krok 4. Potok w Jenkinsie (`Jenkinsfile`)
-Proces podzielono na następujące kroki:
+Proces podzielono na następujące kroki, adekwatnie odwzorowujące zaktualizowany `Jenkinsfile`:
 
-1. **Pobieranie kodu (Clone)**: Skrypt automatycznie pobiera z GitHuba najnowszą wersje kodu.
-2. **Budowanie i testowanie (C1)**: Aplikacja jest zamykana w kontenerze z unikalną nazwą powiązaną numerem kompilacji. Wykonywane są tam testy (`npm run test`). Błędy natychmiastowo przerywają działanie potoku.
-3. **Uruchomienie**: Program włącza się jako usługa tła w dedykowanej wirtualnej sieci Dockera (`test-net`). Port 3000 programu ukryto wewnątrz wirtualnej prywatnej sieci i nie jest on widoczny na zewnątrz co uskutecznia oddzielenie środowiska developerskiego.
-4. **Test z użyciem klienta (C2)**: Do sieci testowej dołącza kolejny mikro-kontener służący jako klient z poleceniem `curl`. Narzędzie wykonuje standardowe wywołanie HTTP do głównego kontenera aplikacji. Reakcja decyduje, czy budowa kończy się sukcesem, czy kasowana jest w obliczu rzuconego awaryjnego błędu.
-5. **Publikacja aplikacji (Publish)**: Typową finalną formą dla aplikacji Node.js jest rejestr pakietów NPM. Jako scenariusz publikacji dodano użycie bezpiecznej komendy symulującej pakowanie i upload `npm publish --dry-run`. Zapobiega to wgrywaniu testowych bibliotek do rejestru publicznego wykonując poprawne operacje walidujące w bezpieczny sposób.
+1. **Czyszczenie workspace i pobranie kodu (SCM)**: Przed pobraniem wywoływane jest całkowite wyczyszczenie przestrzeni roboczej (`deleteDir()`), aby upewnić się, że potok przebuduje cały kod (nie cache'owany). Następnie nowa treść jest pobierana przez SCM.
+2. **Budowanie obrazu CI (C1)**: Tworzony jest obraz narzędziowy `BLDR_IMAGE`, budowany z wykorzystaniem środowiska `Dockerfile.ci`. Służy on do budowy i uruchomienia testów.
+3. **Testy**: Uruchamiany jest kontener z zbudowanego obrazu, wewnątrz którego wywoływana jest komenda `npm run test`.
+4. **Budowanie obrazu runtime**: Używając właściwego pliku `Dockerfile`, powstaje mniejszy obraz aplikacji zawierający jedynie jej docelową wersję wyjściową (`RUNTIME_IMAGE`). Różnica chroni środowisko produkcyjne przed niechcianymi plikami z fazy budowania.
+5. **Wdrożenie i test w środowisku testowym (deploy test)**: Tworzona jest izolowana sieć testowa na demonie Dockera (`test-net-...`). W środowisku tym podnoszona jest skonteneryzowana aplikacja, po czym drugi kontener (`curlimages/curl`) z wnętrza tej wirtualnej sieci potwierdza faktyczne uruchomienie serwera aplikacji odpowiednim żądaniem na dostępny wewnątrz port 3000.
+6. **Publikacja do Docker Registry (Publish)**: Po pozytywnych testach potok wgrywa (push) wygenerowany obraz do usługi Docker Hub pod utworzonym dla aplikacji miejscem, wstawiając numer budowania (tag). Generuje to artefakt "deployable" gotowy do użycia przez docelowych klientów. Zapisywana jest notatka do pliku `image.txt`, podczepianego jako log Jenkinsa.
+7. **Porządki w systemie**: Po finalizacji potok obligatoryjnie zatrzymuje i usunie zużyte testowe aplikacje serwera oraz kasuje tymczasowo zapisane kopie obrazów ze środowiska CI, dzięki czemu minimalizowane są odpady i zachowana jest powtarzalność.
 
 ![alt text](../img/L6/L6-01.png) 
 
@@ -129,12 +133,3 @@ Proces podzielono na następujące kroki:
 ![alt text](../img/L6/L6-03.png)
 
 ![alt text](../img/L6/L6-04.png)
-
-------------------------------------------------------------------------
-
-### Weryfikacja zgodnie z wytycznymi z ćwiczeń
-*   **Commit/Clone**: Działa w pełni zautomatyzowanie z pomocą podłączenia pod system źródłowy SCM oraz serwera GitHub.
-*   **Build**: Zrealizowano wewnątrz zmniejszonego kontenera w izolacji bazując na tagu `node:slim`.
-*   **Test**: Obejmuje środowiskowe zintegrowane sprawdzenie HTTP testem dymnym (*Smoke-Test*) wykorzystujac zewnetrzny symulator klienta.
-*   **Deploy**: Realizacja przebiegła bez wpływu na resztę systemu stawiając na wyłączną wirtualną łączność dockera, gdzie stworzony przedtem kontener-budowniczy spełnił sie jako środowisko wdrożeniowe.
-*   **Publish**: Artefaktem stał sie sformowany z całości i sprawdzony pakiet deweloperski aplikacji node dla rejestru NPM i przetestowany próbnie dry-run'em. Posilkowano sie wersjonowaniem semanticznym wykorzystujac wpisane wartości od reki w pliki struktury aplikacji.
