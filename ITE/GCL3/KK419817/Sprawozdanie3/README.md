@@ -3,6 +3,7 @@
 ## Przygotowanie środowiska wirtualnego
 
 ### Instalacja systemu Fedora Server
+
 Pobrałem obraz `Fedora-Server-dvd-x86_64-43-1.6.iso` i zainstalowałem go w VirtualBoxie według poleceń, ustawiając odpowiednie nazwy.
 
 Upewniłem się o obecności sshd i tar.
@@ -17,6 +18,7 @@ Utworzyłem migawkę.
 ![alt text](image.png)
 
 ### Konfiguracja Ansible i uwierzytelniania SSH
+
 Na głównej maszynie zainstalowałem ansible:
 
 ```bash
@@ -37,6 +39,7 @@ Klucze SSH umożliwiają bezpieczne połączenie bez konieczności wielokrotnego
 ## Konfiguracja inwentarza
 
 ### Mapowanie nazw hostów
+
 Ustawiłem nazwy dns w `/etc/hosts`:
 
 ![alt text](image-1.png)
@@ -50,6 +53,7 @@ Zwykły ping ubuntu:
 ![alt text](image-3.png)
 
 ### Plik inwentaryzacyjny
+
 ping
 `ansible all -i inventory.ini -m ping`
 
@@ -105,6 +109,7 @@ Przekierowanie portów przez NAT zapewnia stabilne połączenie między maszynam
 ## Zdalne wywoływanie procedur
 
 ### Utworzenie playbooka
+
 Utworzyłem playbook:
 
 ```yaml
@@ -144,14 +149,14 @@ Utworzyłem playbook:
 
 Status `changed` wskazuje, że Ansible wykrył różnice i wprowadził zmiany w systemie docelowym.
 
-###  Ponowne uruchomienie
+### Ponowne uruchomienie
 
 ![alt text](image-12.png)
 
 Widać że ansible coś zmieniło - najpierw mamy status `changed` a po drugim wykonaniu `OK` - czyli wprowadzono odpowiednie modyfikacje i te modyfikacje faktycznie zostały zapisane.
 
-
 ### Test bez dostępu SSH
+
 Po wyłączeniu sshd na targecie, target jest unreachable:
 
 `sudo systemctl stop sshd`
@@ -164,3 +169,8 @@ Ansible wymaga stabilnego połączenia SSH do wszystkich zarządzanych hostów. 
 
 Moduły dedykowane Ansible (jak `copy` czy `service`) potrafią wykryć, czy zmiana jest potrzebna. Dzięki temu ponowne uruchomienie playbooka nie wprowadza niepotrzebnych modyfikacji. W przypadku `command` niestety takiego mechanizmu nie posiadamy.
 
+---
+
+Uruchomiłem nowy playbook `deploy.yaml`:
+
+![alt text](image-8.png)
