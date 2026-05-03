@@ -1,0 +1,121 @@
+---
+- name: Deploy Express App with Docker
+  hosts: fedora
+  become: yes
+  vars:
+    docker_image: "blackcaer/express-app:latest"
+    container_name: "express-app-container"
+    container_port: 3000
+    min_disk_space_mb: 500
+
+  tasks:
+    # ===== SANITY CHECK =====
+    - name: Sanity Check - wolne miejsce na dysku
+      shell: |
+        SPACE=$(df -m / | tail -1 | awk '{print $4}')
+        if [ $SPACE -lt {{ min_disk_space_mb }} ]; then
+          echo "WARN: Mało miejsca na dysku (${SPACE}MB). Wymagane: {{ min_disk_space_mb }}MB"
+        fi
+        echo $SPACE
+      register: disk_space
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Sanity Check - czy port 3000 jest wolny
+      shell: |
+        if ss -tuln | grep -q ':3000 '; then
+          echo "WARN: Port 3000 jest już zajęty"
+        fi
+      register: port_check
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Sanity Check - czy Docker jest zainstalowany
+      command: which docker
+      register: docker_installed
+      ignore_errors: yes
+      changed_when: false
+      failed_when: false
+
+    # ===== INSTALACJA DOCKERA =====
+    - name: Zainstaluj Docker na Fedorze
+      shell: dnf install -y docker
+      when: docker_installed.rc != 0
+
+    - name: Uruchom i włącz usługę Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Dodaj użytkownika ansible do grupy docker
+      user:
+        name: ansible
+        groups: docker
+        append: yes
+
+    # ===== DEPLOY =====
+    - name: Pobierz obraz z Docker Hub
+      docker_image:
+        name: "{{ docker_image }}"
+        source: pull
+        state: present
+
+    - name: Zatrzymaj i usuń stary kontener (jeśli istnieje)
+      docker_container:
+        name: "{{ container_name }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Uruchom kontener z aplikacją
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ docker_image }}"
+        state: started
+        ports:
+          - "{{ container_port }}:{{ container_port }}"
+        restart_policy: unless-stopped
+
+    - name: Poczekaj na uruchomienie kontenera
+      wait_for:
+        port: "{{ container_port }}"
+        delay: 2
+        timeout: 30
+
+    # ===== WERYFIKACJA =====
+    - name: Zweryfikuj łączność z kontenerem
+      uri:
+        url: "http://localhost:{{ container_port }}"
+        method: GET
+        status_code: 200
+      register: app_response
+      retries: 3
+      delay: 2
+
+    - name: Wyświetl odpowiedź z aplikacji
+      debug:
+        msg: "Aplikacja działa poprawnie! Odpowiedź: {{ app_response.content }}"
+
+    # ===== CLEANUP =====
+    - name: Zatrzymaj kontener
+      docker_container:
+        name: "{{ container_name }}"
+        state: stopped
+
+    - name: Usuń kontener
+      docker_container:
+        name: "{{ container_name }}"
+        state: absent
+
+    - name: Usuń obraz Docker
+      docker_image:
+        name: "{{ docker_image }}"
+        state: absent
+
+    - name: Wyczyść nieużywane obrazy i kontenery
+      command: docker system prune -af
+      ignore_errors: yes
+
+    - name: Podsumowanie
+      debug:
+        msg: "Deployment zakończony. Kontener został uruchomiony, zweryfikowany i usunięty."
