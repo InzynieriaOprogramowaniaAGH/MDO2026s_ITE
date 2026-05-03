@@ -20,7 +20,7 @@ pipeline {
         stage('Build image') {
             steps {
                 dir("${env.COMPOSE_DIR}") {
-                    sh 'docker-compose build readme-aura-build'
+                    sh 'docker compose build readme-aura-build'
                 }
             }
         }
@@ -28,7 +28,7 @@ pipeline {
         stage('Test') {
             steps {
                 dir("${env.COMPOSE_DIR}") {
-                    sh 'docker-compose build readme-aura-test && docker compose run --rm readme-aura-test'
+                    sh 'docker compose build readme-aura-test && docker compose run --rm readme-aura-test'
                 }
             }
         }
@@ -49,7 +49,7 @@ npx readme-aura init --template PurpleGlow
 npx readme-aura build
 '''
                     sh '''
-                        docker-compose run --rm --no-deps \
+                        docker compose run --rm --no-deps \
                           -v "$PWD/jenkins-smoke-inner.sh:/tmp/jenkins-smoke-inner.sh:ro" \
                           --entrypoint /bin/sh readme-aura-build /tmp/jenkins-smoke-inner.sh
                     '''
