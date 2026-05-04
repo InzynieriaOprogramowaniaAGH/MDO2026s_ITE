@@ -29,7 +29,7 @@ pipeline {
         stage('Test') {
             steps {
                 dir("${env.COMPOSE_DIR}") {
-                    sh 'docker compose build --no-deps readme-aura-test && docker compose run --rm readme-aura-test'
+                    sh 'docker build -t mdo-ite:sprawozdanie3-test -f Dockerfile.test . && docker run --rm mdo-ite:sprawozdanie3-test'
                 }
             }
         }
@@ -39,7 +39,7 @@ pipeline {
                 dir("${env.COMPOSE_DIR}") {
                     sh """
                         set -e
-                        docker compose build --no-deps readme-aura-deploy
+                        docker build -t mdo-ite:sprawozdanie6-deploy -f Dockerfile.deploy .
                         docker run --rm mdo-ite:sprawozdanie6-deploy
                         docker tag mdo-ite:sprawozdanie6-deploy mdo-ite:sprawozdanie6-deploy-build-${env.BUILD_NUMBER}
                     """.stripIndent()
