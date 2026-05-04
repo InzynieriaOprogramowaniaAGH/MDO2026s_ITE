@@ -60,7 +60,7 @@ pipeline {
                                 -e NPM_TOKEN=\${NPM_TOKEN} \
                                 -e BUILD_NUMBER=${env.BUILD_NUMBER} \
                                 mdo-ite:sprawozdanie6-deploy \
-                                sh -c "npm version --no-git-tag-version \\\$(node -p 'require(\"./package.json\").version')-canary.\$BUILD_NUMBER && npm pack && npm config set //registry.npmjs.org/:_authToken \\\$NPM_TOKEN && npm publish *.tgz --tag canary --access public"
+                                sh -c "rm -f *.tgz && npm version --no-git-tag-version \\\$(node -p 'require(\"./package.json\").version')-canary.\$BUILD_NUMBER && npm pack && npm config set //registry.npmjs.org/:_authToken \\\$NPM_TOKEN && npm publish *.tgz --tag canary --access public"
                         """
                     }
                 }
