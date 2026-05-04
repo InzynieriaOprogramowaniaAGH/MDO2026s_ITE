@@ -39,8 +39,30 @@ pipeline {
                     sh """
                         set -e
                         docker compose build readme-aura-deploy
+                        docker run --rm mdo-ite:sprawozdanie6-deploy
                         docker tag mdo-ite:sprawozdanie6-deploy mdo-ite:sprawozdanie6-deploy-build-${env.BUILD_NUMBER}
                     """.stripIndent()
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                dir("${env.COMPOSE_DIR}") {
+                    sh 'mkdir -p artifacts'
+                    sh 'docker create --name tmp-deploy mdo-ite:sprawozdanie6-deploy'
+                    sh 'docker cp tmp-deploy:/readme-aura/. artifacts/'
+                    sh 'docker rm tmp-deploy'
+                    archiveArtifacts artifacts: 'artifacts/*.tgz', fingerprint: true
+                    withCredentials([string(credentialsId: 'npm-token', variable: 'NPM_TOKEN')]) {
+                        sh """
+                            docker run --rm \
+                                -e NPM_TOKEN=\${NPM_TOKEN} \
+                                -e BUILD_NUMBER=${env.BUILD_NUMBER} \
+                                mdo-ite:sprawozdanie6-deploy \
+                                sh -c "npm version --no-git-tag-version \\\$(node -p 'require(\"./package.json\").version')-canary.\$BUILD_NUMBER && npm pack && npm config set //registry.npmjs.org/:_authToken \\\$NPM_TOKEN && npm publish *.tgz --tag canary --access public"
+                        """
+                    }
                 }
             }
         }
@@ -50,7 +72,7 @@ pipeline {
     post {
         always {
             dir("${env.COMPOSE_DIR}") {
-                sh 'rm -f jenkins-npm-publish.sh || true'
+                sh 'docker rm tmp-deploy || true'
                 sh 'rm -rf artifacts || true'
             }
         }
