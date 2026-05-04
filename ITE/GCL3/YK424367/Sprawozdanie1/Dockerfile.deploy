@@ -1,0 +1,16 @@
+FROM mdo-ite:sprawozdanie3-build
+
+WORKDIR /readme-aura
+
+RUN set -e; \
+  npm pack; \
+  TGZ=$(ls -1 *.tgz | head -1); \
+  test -n "$TGZ"; \
+  mkdir -p /tmp/ra-smoke && cd /tmp/ra-smoke; \
+  npm init -y; \
+  npm install "/readme-aura/$TGZ"; \
+  npx readme-aura init --template PurpleGlow; \
+  npx readme-aura build; \
+  cd /readme-aura; \
+  rm -rf /tmp/ra-smoke; \
+  rm -f ./*.tgz

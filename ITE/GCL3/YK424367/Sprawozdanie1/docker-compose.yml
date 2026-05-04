@@ -13,3 +13,11 @@ services:
     depends_on:
       - readme-aura-build
 
+  readme-aura-deploy:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.deploy
+    image: mdo-ite:sprawozdanie6-deploy
+    depends_on:
+      - readme-aura-build
+

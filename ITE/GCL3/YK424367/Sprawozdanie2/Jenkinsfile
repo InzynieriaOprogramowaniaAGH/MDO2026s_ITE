@@ -12,6 +12,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                cleanWs()
                 checkout scm
             }
         }
@@ -32,35 +33,25 @@ pipeline {
             }
         }
 
-        stage('Smoke (npx CLI)') {
+        stage('Deploy') {
             steps {
                 dir("${env.COMPOSE_DIR}") {
-                    writeFile file: 'jenkins-smoke-inner.sh', text: '''#!/bin/sh
-set -e
-cd /readme-aura
-npm pack
-TGZ=$(ls -1 *.tgz | head -1)
-test -n "$TGZ"
-mkdir -p /tmp/ra-smoke && cd /tmp/ra-smoke
-npm init -y
-npm install "/readme-aura/$TGZ"
-npx readme-aura init --template PurpleGlow
-npx readme-aura build
-'''
-                    sh '''
-                        docker compose run --rm --no-deps \
-                          -v "$PWD/jenkins-smoke-inner.sh:/tmp/jenkins-smoke-inner.sh:ro" \
-                          --entrypoint /bin/sh readme-aura-build /tmp/jenkins-smoke-inner.sh
-                    '''
+                    sh """
+                        set -e
+                        docker compose build readme-aura-deploy
+                        docker tag mdo-ite:sprawozdanie6-deploy mdo-ite:sprawozdanie6-deploy-build-${env.BUILD_NUMBER}
+                    """.stripIndent()
                 }
             }
         }
+
     }
 
     post {
         always {
             dir("${env.COMPOSE_DIR}") {
-                sh 'rm -f jenkins-smoke-inner.sh || true'
+                sh 'rm -f jenkins-npm-publish.sh || true'
+                sh 'rm -rf artifacts || true'
             }
         }
     }
