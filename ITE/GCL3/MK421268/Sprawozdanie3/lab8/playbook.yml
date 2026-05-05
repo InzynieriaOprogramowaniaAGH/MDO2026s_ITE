@@ -1,0 +1,36 @@
+---
+- name: Test polaczenia 
+  hosts: all
+  tasks:
+    - name: Wyslanie ping
+      ping:
+
+- name: Kopiowanie plikow
+  hosts: Endpoints
+  tasks:
+    - name: Kopiowanie inventory.ini na endpoints 
+      copy:
+        src: inventory.ini
+        dest: /home/ansible/inventory.ini
+
+- name: Administracja systemem 
+  hosts: Endpoints
+  become: yes 
+  tasks:
+    - name: Aktualizacja pakietow (apt update & upgrade)
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: rng-tools
+      apt:
+        name: rng-tools
+        state: present
+
+    - name: restart sshd i rngd
+      service:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - sshd
+        - rng-tools

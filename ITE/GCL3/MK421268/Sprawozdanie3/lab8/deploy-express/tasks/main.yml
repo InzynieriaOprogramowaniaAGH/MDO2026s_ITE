@@ -1,0 +1,93 @@
+---
+- name: Sanity Check - Sprawdz dostepne miejsce na dysku
+  shell: df -h / | tail -1 | awk '{print $4}'
+  register: disk_space
+  ignore_errors: yes
+
+- name: Wyswietl informacje o systemie
+  debug:
+    msg: "System operacyjny to {{ ansible_distribution }}, wolne miejsce: {{ disk_space.stdout }}"
+
+- name: Instalacja Dockera
+  apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Uruchom i wlacz usluge Docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Znajdz paczke z aplikacja
+  find:
+    paths: "{{ role_path }}/files"
+    patterns: "express-*.tgz"
+  register: found_tgz
+  delegate_to: localhost
+
+- name: Kopiowanie paczki z aplikacja
+  copy:
+    src: "{{ found_tgz.files | sort(attribute='mtime') | last | attr('path') }}"
+    dest: /tmp/express-app.tgz
+  become: yes
+
+- name: Uruchomienie aplikacji w kontenerze Node
+  shell: |
+    docker rm -f test-app 2>/dev/null || true
+    docker run -d \
+      --name test-app \
+      -p 3000:3000 \
+      -v /tmp/express-app.tgz:/app.tgz \
+      node:20-alpine sh -c "
+        mkdir -p /app &&
+        tar -xzf /app.tgz -C /app --strip-components=1 &&
+        cd /app &&
+        npm install --omit=dev &&
+        node index.js
+      "
+  register: run_output
+  become: yes
+
+- name: Odczekanie na uruchomienie aplikacji
+  wait_for:
+    host: localhost
+    port: 3000
+    delay: 5
+    timeout: 120
+    state: started
+  become: yes
+
+- name: Sprawdz logi kontenera
+  shell: docker logs test-app 2>&1
+  register: container_logs
+  become: yes
+
+- name: Wyswietl logi kontenera
+  debug:
+    msg: "{{ container_logs.stdout_lines }}"
+
+- name: Weryfikacja dzialania aplikacji (Test HTTP)
+  uri:
+    url: http://localhost:3000/advanced
+    method: GET
+    status_code: 200
+    return_content: yes
+  register: check_output
+
+- name: Dowod dzialania
+  debug:
+    msg: "Sukces! Odpowiedź serwera: {{ check_output.content }}"
+
+- name: Posprzataj - zatrzymaj i usun kontener
+  shell: docker rm -f test-app
+  become: yes
+
+- name: Usun skopiowane pliki
+  file:
+    path: /tmp/express-app.tgz
+    state: absent
+  become: yes
