@@ -70,10 +70,10 @@ pipeline {
                     sleep 5
                     sh "docker logs ${CONTAINER_NAME}"
 
-                    sh "curl -f -s -i http://localhost:${PORT}/"
+                    sh "docker run --rm --network host curlimages/curl -f -s -i http://localhost:${PORT}/"
 
-                    echo "🏥 Sprawdzanie statusu zdrowia (Healthcheck)..."
-                    sh "curl -f http://localhost:${PORT}/health"
+                    echo "Sprawdzanie statusu zdrowia (Healthcheck)..."
+                    sh "docker run --rm --network host curlimages/curl -f http://localhost:${PORT}/health"
 
                     sh "docker logs ${CONTAINER_NAME}"
                 }
