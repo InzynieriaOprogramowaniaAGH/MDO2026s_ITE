@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME = 'moj-express-bldr' 
         CONTAINER_NAME = 'express-prod-app'
         PORT = '3000'
+        REGISTRY = '192.168.64.2:5000'
         
         PROJECT_DIR = 'ITE/GCL1/SB422052/Sprawozdanie1'
     }
@@ -40,8 +41,12 @@ pipeline {
 
        stage('4. Publish') {
             steps {
+                
                 dir("${PROJECT_DIR}") {
                     script {
+                       
+                        sh "docker tag ${IMAGE_NAME} ${REGISTRY}/${IMAGE_NAME}:latest"
+                        sh "docker push ${REGISTRY}/${IMAGE_NAME}:latest"
                         echo "Pakowanie kodu produkcyjnego do artefaktu..."
                         
                         
@@ -64,7 +69,7 @@ pipeline {
                     sh "docker rm -f ${CONTAINER_NAME} || true"
                     
                     echo "Uruchamianie nowej wersji aplikacji na porcie ${PORT}..."
-                    sh "docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${IMAGE_NAME}"
+                    sh "docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${REGISTRY}/${IMAGE_NAME}:latest"
                     
                     echo "Smoke Test - sprawdzanie czy kontener działa bez modyfikacji..."
                     sleep 5
