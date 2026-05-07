@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'moj-express-bldr' 
+        IMAGE_NAME = 'moj-express-bldr'
+        REPO_NAME = 'sebboze3/moj-express-bldr'
         CONTAINER_NAME = 'express-prod-app'
         PORT = '3000'
-        REGISTRY = 'localhost:5000'
         
         PROJECT_DIR = 'ITE/GCL1/SB422052/Sprawozdanie1'
     }
@@ -44,9 +44,16 @@ pipeline {
                 
                 dir("${PROJECT_DIR}") {
                     script {
-                       
-                        sh "docker tag ${IMAGE_NAME} ${REGISTRY}/${IMAGE_NAME}:latest"
-                        sh "docker push ${REGISTRY}/${IMAGE_NAME}:latest"
+                        withCredentials([usernamePassword(credentialsId: 'REGISTRY_USER_TOKEN', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                            sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+                            
+                            sh "docker tag ${LOCAL_IMAGE} ${REPO_NAME}:latest"
+                            
+                            sh "docker push ${REPO_NAME}:latest"
+                            
+                            sh "docker logout"
+                        }
+                 
                         echo "Pakowanie kodu produkcyjnego do artefaktu..."
                         
                         
@@ -69,7 +76,7 @@ pipeline {
                     sh "docker rm -f ${CONTAINER_NAME} || true"
                     
                     echo "Uruchamianie nowej wersji aplikacji na porcie ${PORT}..."
-                    sh "docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${REGISTRY}/${IMAGE_NAME}:latest"
+                    sh "docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${REPO_NAME}:latest"
                     
                     echo "Smoke Test - sprawdzanie czy kontener działa bez modyfikacji..."
                     sleep 5
