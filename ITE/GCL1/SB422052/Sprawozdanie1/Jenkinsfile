@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = 'moj-express-bldr' 
         CONTAINER_NAME = 'express-prod-app'
         PORT = '3000'
-        REGISTRY = '192.168.64.2:5000'
+        REGISTRY = 'localhost:5000'
         
         PROJECT_DIR = 'ITE/GCL1/SB422052/Sprawozdanie1'
     }
