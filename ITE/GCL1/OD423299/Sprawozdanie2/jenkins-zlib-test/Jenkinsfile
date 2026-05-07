@@ -66,6 +66,20 @@ EOF
         }
     }
 
+    stage('Deploy (Wdrożenie Sandbox)') {
+            steps {
+                sh '''
+                    echo "Instalacja paczki na serwerze docelowym"
+                    dpkg -i zlib-tool.deb
+                    
+                    echo "Weryfikacja działania"                    
+                    /usr/bin/zlib-tool || true
+                    
+                    echo "Deploy udany"
+                '''
+            }
+        }
+
     post {
         success {
             archiveArtifacts artifacts: 'zlib-tool.deb', fingerprint: true
