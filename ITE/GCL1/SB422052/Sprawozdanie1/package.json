@@ -1,13 +1,15 @@
 {
-  "name": "moj-express-lab5",
+  "name": "proste-api-express",
   "version": "1.0.0",
-  "description": "Prosta aplikacja Express na zaliczenie",
-  "main": "server.js",
+  "description": "Przykładowa aplikacja Express",
+  "main": "app/server.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "echo \"[TEST] Wszystkie testy jednostkowe zaliczone!\" && exit 0"
+    "start": "node app/server.js",
+    "test": "mocha app/test.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mocha": "^10.2.0",
+    "supertest": "^6.3.3"
   }
 }

@@ -1,12 +1,18 @@
 
 FROM node:18-slim
 
-WORKDIR /app
+
+WORKDIR /usr/src/app
+
+
+COPY package*.json ./
+
+
+RUN npm install
+
 
 COPY . .
 
-RUN if [ -f "package.json" ]; then npm install; fi
-
 EXPOSE 3000
-
-CMD ["bash"]
+USER node
+CMD ["npm", "start"]

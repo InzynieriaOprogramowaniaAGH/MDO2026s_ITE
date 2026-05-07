@@ -69,6 +69,13 @@ pipeline {
                     echo "Smoke Test - sprawdzanie czy kontener działa bez modyfikacji..."
                     sleep 5
                     sh "docker logs ${CONTAINER_NAME}"
+
+                    sh "curl -f -s -i http://localhost:${PORT}/"
+
+                    echo "🏥 Sprawdzanie statusu zdrowia (Healthcheck)..."
+                    sh "curl -f http://localhost:${PORT}/health"
+
+                    sh "docker logs ${CONTAINER_NAME}"
                 }
             }
         }
