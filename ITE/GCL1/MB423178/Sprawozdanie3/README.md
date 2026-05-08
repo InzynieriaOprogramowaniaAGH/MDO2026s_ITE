@@ -4,7 +4,7 @@
 **Grupa:** Gr 1 , ITE
 
 **Nr indeksu:** 423178  
-**Data:** 30.04.2025
+**Data:** .2026
 
 ---
 
@@ -68,3 +68,148 @@ ansible all -m ping -i inventory.ini
 Otrzymałem odpowiedź oznaczającą sukces (wartość SUCCESS oraz "ping": "pong") zarówno z maszyny lokalnej, jak i zdalnej, co stanowiło ostateczne potwierdzenie bezproblemowej komunikacji między węzłami.
 
 ![Test łączności modułem ping w Ansible](screeny/lab8_2.png)
+
+### 3. Zdalne wywoływanie procedur (Pierwszy Playbook)
+Zgodnie z poleceniem, zamiast wykonywać komendy ręcznie, przygotowałem plik konfiguracyjny (Playbook), realizujący podstawową konfigurację maszyny docelowej. 
+
+Utworzyłem plik `setup-system.yml` i zdefiniowałem w nim zadania (tasks) polegające na: wysłaniu testowego pingu, skopiowaniu pliku inwentaryzacji na serwer, zaktualizowaniu pakietów menedżerem APT oraz restarcie wymaganych usług (`sshd` oraz `rngd`).
+
+**Uwaga dotycząca bezpieczeństwa:**
+Zadbałem o to, aby w plikach konfiguracyjnych nie znalazły się żadne zapisane czystym tekstem hasła. Zamiast tego, przy uruchamianiu playbooka korzystam z flagi `--ask-become-pass`, która interaktywnie prosi o hasło do podniesienia uprawnień (`sudo`) na zdalnej maszynie na czas działania skryptu.
+
+Kod playbooka `setup-system.yml`:
+
+```yaml
+---
+- name: Podstawowa konfiguracja maszyn
+  hosts: Endpoints
+  become: yes
+  tasks:
+    - name: 1. Skopiowanie pliku inwentaryzacji
+      ansible.builtin.copy:
+        src: inventory.ini
+        dest: /tmp/inventory.ini
+
+    - name: 2. Aktualizacja pakietow systemowych
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: 3. Instalacja rng-tools-debian (wymagane dla usługi rngd)
+      ansible.builtin.apt:
+        name: rng-tools-debian
+        state: present
+
+    - name: 4. Restart uslug sshd i rngd
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - ssh
+        - rng-tools-debian
+```
+
+Uruchomiłem skrypt poleceniem:
+
+```bash
+ansible-playbook -i inventory.ini setup-system.yml --ask-become-pass
+```
+
+![Poprawne wykonanie pierwszego Playbooka](screeny/lab8_3.png)
+
+Po pomyślnym wykonaniu operacji (statusy ok i changed), przeprowadziłem wymagany test awarii. W menedżerze Hyper-V odłączyłem wirtualną kartę sieciową maszyny `ansible-target` i uruchomiłem Playbook ponownie.
+
+Zgodnie z oczekiwaniami, narzędzie nie mogło nawiązać połączenia po protokole SSH i poprawnie zgłosiło błąd UNREACHABLE. Po teście przywróciłem połączenie sieciowe.
+
+![Test awarii - błąd UNREACHABLE po odłączeniu sieci](screeny/lab8_4.png)
+
+### 4. Zarządzanie stworzonym artefaktem (Wdrożenie aplikacji)
+W kolejnym kroku zautomatyzowałem proces wdrożenia aplikacji z wykorzystaniem wygenerowanego na poprzednich laboratoriach pliku binarnego `spring-petclinic.jar`. Zgodnie z dobrymi praktykami CI/CD, nie kompilowałem aplikacji na serwerze docelowym, lecz pobrałem gotowy artefakt z serwera Jenkins i umieściłem go w katalogu roboczym obok playbooków.
+
+Przygotowałem plik `deploy-app.yml`, który instaluje Dockera, kopiuje plik JAR, uruchamia go w kontenerze JRE, przeprowadza test dostępności usługi (Smoke Test) i czyści środowisko docelowe z wdrożonej aplikacji.
+
+**Rozwiązanie problemów napotkanych podczas wdrożenia:**
+Podczas pierwszego uruchomienia skryptu, playbook zakończył się niepowodzeniem na etapie kroku nr 7 (Smoke Test). Zdefiniowany warunek sprawdzał obecność dokładnej frazy "Welcome to Petclinic" w pobranym kodzie strony. Kod HTML serwowany przez aplikację zawierał jednak te słowa w osobnych znacznikach (nagłówek `<h2>Welcome</h2>` oraz tytuł `<title>PetClinic...</title>`). Ansible słusznie uznał test za niezaliczony i zatrzymał wykonanie skryptu.
+
+Z uwagi na przerwanie skryptu, krok 8 (usuwający kontener) nie został wywołany. Zanim zaktualizowałem Playbook, musiałem ręcznie oczyścić maszynę ze zablokowanego kontenera. Wykorzystałem do tego komendę ad-hoc w Ansible:
+
+```bash
+ansible Endpoints -i inventory.ini -m shell -a "docker rm -f petclinic-prod" -b --ask-become-pass
+```
+
+Następnie zaktualizowałem Playbook, modyfikując warunek `failed_when` przy użyciu operatora `or`, tak aby weryfikował obecność słów niezależnie od siebie:
+
+```yaml
+---
+- name: Wdrozenie aplikacji PetClinic w kontenerze JRE
+  hosts: Endpoints
+  become: yes
+  tasks:
+    - name: 1. Sanity check - czy maszyna odpowiada przed wdrozeniem
+      ansible.builtin.ping:
+      ignore_unreachable: yes
+
+    - name: 2. Instalacja Dockera za pomoca Ansible
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: 3. Utworzenie katalogu na aplikacje
+      ansible.builtin.file:
+        path: /opt/petclinic
+        state: directory
+        mode: '0755'
+
+    - name: 4. Wyslanie pliku binarnego (JAR) na zdalna maszyne
+      ansible.builtin.copy:
+        src: spring-petclinic.jar
+        dest: /opt/petclinic/spring-petclinic.jar
+
+    - name: 5. Uruchomienie aplikacji w kontenerze JRE
+      ansible.builtin.shell: |
+        docker run -d --name petclinic-prod -p 8080:8080 \
+        -v /opt/petclinic/spring-petclinic.jar:/app.jar \
+        eclipse-temurin:17-jre java -jar /app.jar
+
+    - name: 6. Oczekiwanie na uruchomienie serwera aplikacji
+      ansible.builtin.pause:
+        seconds: 35
+
+    - name: 7. Weryfikacja (Smoke Test) czy serwer odpowiada
+      ansible.builtin.uri:
+        url: http://localhost:8080
+        return_content: yes
+      register: webpage
+      failed_when: "'Welcome' not in webpage.content or 'PetClinic' not in webpage.content"
+
+    - name: 8. Oczyszczenie srodowiska (zatrzymanie i usuniecie kontenera)
+      ansible.builtin.shell: |
+        docker stop petclinic-prod
+        docker rm petclinic-prod
+```
+
+Po poprawkach, wdrożenie zainicjowane poniższym poleceniem wykonało się w pełni poprawnie (widoczny na zrzucie ekranu zielony status operacji):
+
+```bash
+ansible-playbook -i inventory.ini deploy-app.yml --ask-become-pass
+```
+
+![Poprawne wykonanie playbooka wdrażającego aplikację](screeny/lab8_5.png)
+
+### 5. Ubieranie logiki w Role (Ansible Galaxy)
+Ostatnim etapem była refaktoryzacja kodu. Zamiast przechowywać wszystkie instrukcje w jednym płaskim pliku YAML, użyłem narzędzia szablonowania, aby przekształcić projekt w ustandaryzowaną rolę konfiguracyjną (Role).
+
+Wygenerowałem szkielet katalogów komendą:
+
+```bash
+ansible-galaxy role init deploy_petclinic
+```
+
+![generowanua szkieletuy](screeny/lab8_6.png)
+
+Zadania skryptu wdrażającego przeniosłem bezpośrednio do wygenerowanego pliku `deploy_petclinic/tasks/main.yml`, oddzielając je od deklaracji hostów i uprawnień. Zaktualizowałem również metadane w pliku `deploy_petclinic/meta/main.yml`, definiując siebie jako autora oraz opisując cel roli. Wygenerowana w ten sposób struktura prezentuje się następująco:
+
+![Struktura katalogów roli Ansible](screeny/lab8_7.png)
+
+Na zakończenie laboratoriów, stworzone artefakty i zaktualizowaną dokumentację umieściłem w repozytorium.
