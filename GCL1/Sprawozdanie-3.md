@@ -1,8 +1,6 @@
 # Sprawozdanie Laboratorium 8: Automatyzacja i wdrożenie aplikacji za pomocą Ansible
 
-**Autor:** Piotr Drożyński  
-**Przedmiot:** Metody i Narzędzia DevOps  
-**Technologie:** Ansible (automatyzacja), Docker (konteneryzacja), Hiredis (biblioteka w języku C)
+**Autor:** Piotr Drożyński
 
 ---
 
@@ -10,86 +8,83 @@
 
 W nowoczesnym wytwarzaniu oprogramowania nie konfiguruje się serwerów ręcznie. Zamiast tego używa się narzędzi typu **Infrastructure as Code** (Infrastruktura jako Kod). Jednym z nich jest **Ansible**.
 
-**Nasz cel:** 
+**Cel:** 
 Mamy dwie maszyny. Pierwsza to „Dyrygent” (**Orchestrator**), a druga to „Wykonawca” (**Target**). Chcemy, aby Dyrygent automatycznie wysłał na drugą maszynę naszą aplikację, zainstalował potrzebne programy i sprawdził, czy wszystko działa – bez naszej ręcznej ingerencji na maszynie docelowej.
 
 ---
 
 ## 2. Przygotowanie maszyn (Adresowanie i Nazewnictwo)
 
-Zaczynamy od tego, aby maszyny mogły się „rozpoznać”. Zamiast operować na trudnych do zapamiętania adresach IP (np. 192.168.1.2), nadajemy maszynom czytelne nazwy.
+Zaczynamy od tego, aby maszyny mogły się „rozpoznać”. Zamiast operować na adresach IP (np. 192.168.1.2), nadajemy maszynom czytelne nazwy.
 
-**Wytłumaczenie:** To tak, jakbyśmy w telefonie zapisywali numer pod nazwą kontaktu. Dzięki temu Ansible wie, że pod nazwą `ansible-target` kryje się konkretny serwer.
+![Konfiguracja hostname na głównej maszynie](lab8/screenshots/glowna_maszyna_hostnamectl.png)
+*Nadanie nazwy "ansible-orchestrator" głównej maszynie.*
 
-![Konfiguracja hostname na głównej maszynie](screenshots/glowna_maszyna_hostnamectl.png)
-*Rys 1. Nadanie nazwy "ansible-orchestrator" głównej maszynie.*
-
-![Konfiguracja hostname na nowej maszynie](screenshots/nowa_maszyna_hostnamectl.png)
-*Rys 2. Przygotowanie maszyny docelowej "ansible-target".*
+![Konfiguracja hostname na nowej maszynie](lab8/screenshots/nowa_maszyna_hostnamectl.png)
+*Przygotowanie maszyny docelowej "ansible-target".*
 
 Aby nazwy działały w sieci lokalnej, edytujemy plik `/etc/hosts`.
 
-![Wpis w etc/hosts](screenshots/etc_hosts_ansible_target.png)
-*Rys 3. Powiązanie adresu IP z nazwą maszyny docelowej.*
+![Wpis w etc/hosts](lab8/screenshots/etc_hosts_ansible_target.png)
+*Powiązanie adresu IP z nazwą maszyny docelowej.*
 
 ---
 
 ## 3. Bezpieczne połączenie bez haseł (SSH)
 
 Ansible steruje innymi komputerami przez protokół SSH. Aby proces był w pełni automatyczny, maszyny muszą sobie ufać na tyle, by nie prosić nas o hasło przy każdym poleceniu.
+Generujemy „cyfrowy klucz”. Klucz publiczny wysyłamy na maszynę docelową. Od teraz Dyrygent może wejść na serwer Wykonawcy tak, jakby miał własne klucze do drzwi.
 
-**Wytłumaczenie:** Generujemy „cyfrowy klucz”. Klucz publiczny wysyłamy na maszynę docelową. Od teraz Dyrygent może wejść na serwer Wykonawcy tak, jakby miał własne klucze do drzwi.
+![Istniejące klucze SSH](lab8/screenshots/istniejace_klucze.png)
+*Sprawdzenie, czy na naszej maszynie są już wygenerowane klucze bezpieczeństwa.*
 
-![Istniejące klucze SSH](screenshots/istniejace_klucze.png)
-*Rys 4. Sprawdzenie, czy na naszej maszynie są już wygenerowane klucze bezpieczeństwa.*
+![Kopiowanie klucza SSH](lab8/screenshots/kopiowanie_klucza.png)
+*Przekazanie klucza publicznego na maszynę docelową.*
 
-![Kopiowanie klucza SSH](screenshots/kopiowanie_klucza.png)
-*Rys 5. Przekazanie klucza publicznego na maszynę docelową.*
-
-![Logowanie bezhasłowe](screenshots/potwierdzenie_bezhaslowego_logowania.png)
-*Rys 6. Test: Logujemy się na drugą maszynę i system nie pyta nas o hasło. Sukces.*
+![Logowanie bezhasłowe](lab8/screenshots/potwierdzenie_bezhaslowego_logowania.png)
+*Test: Logujemy się na drugą maszynę i system nie pyta nas o hasło. Sukces.*
 
 ---
 
-## 4. Inwentaryzacja – lista płac Ansible
+## 4. Inwentaryzacja
 
 Musimy stworzyć listę maszyn, którymi Ansible ma zarządzać. Robi się to w pliku `hosts.ini`.
 
-![Plik hosts.ini](screenshots/hosts_ini.png)
-*Rys 7. Podział maszyn na grupy: Orchestrators (sterujące) i Endpoints (docelowe).*
+![Plik hosts.ini](lab8/screenshots/hosts_ini.png)
+*Podział maszyn na grupy: Orchestrators (sterujące) i Endpoints (docelowe).*
 
 Weryfikujemy, czy Ansible „widzi” te maszyny poleceniem `ping`.
 
-![Test ping-pong](screenshots/ansible_all_hosts_ping_pong.png)
-*Rys 8. Jeśli widzimy "pong" na zielono, oznacza to, że komunikacja działa wzorowo.*
+![Test ping-pong](lab8/screenshots/ansible_all_hosts_ping_pong.png)
+*Jeśli widzimy "pong" na zielono, oznacza to, że komunikacja działa wzorowo.*
 
 ---
 
 ## 5. Automatyzacja – Zadania systemowe
 
-Zanim wgramy naszą aplikację, musimy przygotować serwer (podobnie jak sprzątamy dom przed wstawieniem mebli). Służy do tego playbook `system_setup.yml`.
+Zanim wgramy naszą aplikację, musimy przygotować serwer. Służy do tego playbook `system_setup.yml`.
 
 **Co robi ten skrypt?**
-- Aktualizuje system (odpowiednik Windows Update).
+- Aktualizuje system.
 - Kopiuje pliki konfiguracyjne.
 - Restartuje usługi bezpieczeństwa (SSH).
 
-![Kod system_setup.yml](screenshots/system_setup.yml.png)
-*Rys 9. Playbook z listą zadań administracyjnych.*
+![Kod system_setup.yml](lab8/screenshots/system_setup.yml.png)
+*Playbook z listą zadań administracyjnych.*
 
 ---
 
-## 6. Serce projektu: Rola i Wdrożenie Artefaktu
+## 6. Rola i Wdrożenie Artefaktu
 
 Zgodnie z profesjonalnymi standardami, instrukcje wdrożenia zamknęliśmy w tzw. **Roli**. Pozwala to na łatwe powtarzanie tego samego procesu na wielu serwerach naraz.
 
-![Inicjalizacja roli](screenshots/inicjalizacja_roli.png)
-*Rys 10. Tworzenie folderów dla roli "hiredis_deploy".*
+![Inicjalizacja roli](lab8/screenshots/inicjalizacja_roli.png)
+*Tworzenie folderów dla roli "hiredis_deploy".*
 
 Aby wszystko działo się automatycznie, musieliśmy rozwiązać problem uprawnień. Niektóre zadania wymagają „konta administratora” (Root). Skonfigurowaliśmy serwer tak, by ufał komendom Ansible bez pytania o hasło administratora.
 
-![Rozwiązanie problemu sudo](screenshots/rozwiazanie_problemu_sudo.png)
-*Rys 11. Konfiguracja uprawnień NOPASSWD*
+![Rozwiązanie problemu sudo](lab8/screenshots/rozwiazanie_problemu_sudo.png)
+*Konfiguracja uprawnień NOPASSWD*
 
 ### Co dzieje się podczas wdrożenia?
 
@@ -194,8 +189,8 @@ Podczas pracy Ansible przeszedł przez wszystkie zdefiniowane etapy. Warto zauwa
 
 Najważniejszym dowodem poprawności wdrożenia jest wynik zadania nr 14 (Sanity Check). Ansible połączył się z bazą danych uruchomioną w Dockerze i odebrał od niej sygnał zwrotny, co potwierdziło, że cała infrastruktura „rozmawia” ze sobą prawidłowo.
 
-![Logi z wykonania playbooka](screenshots/ansible_logi.png)
-*Rys 16. Raport z terminala (PLAY RECAP). Widoczny status "ignored=1" oraz końcowy komunikat "Wynik testu: PONG".*
+![Logi z wykonania playbooka](lab8/screenshots/ansible_logi.png)
+*Raport z terminala*
 
 **Interpretacja wyniku widocznego na zrzucie ekranu:**
 - **ok=15**: Wszystkie zadania konfiguracyjne i testowe zostały pomyślnie przetworzone.
