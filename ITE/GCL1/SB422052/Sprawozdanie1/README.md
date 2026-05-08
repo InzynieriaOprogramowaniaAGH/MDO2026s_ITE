@@ -144,34 +144,39 @@ graph TD
     classDef info fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#000;
     classDef action fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#000;
 
-    A([Start: Ręczny Trigger / Webhook Git]):::info --> B{Walidacja wstępna <br> }
+    A([Start: Trigger Pipeline]):::info --> B[Czyszczenie Workspace <br> cleanWs]:::action
+    B --> C[Checkout SCM <br> Pobranie gałęzi SB422052]:::action
 
-    B -- Błąd  --> ERR1[Błąd: exit 1 <br> Przerwanie Pipeline]:::fail
-    B -- Sukces --> C[Checkout SCM <br> Pobranie gałęzi SB422052]:::action
-
-    subgraph Krok_1 [Etap 1: Build & Test środowisko DIND]
-        C --> D[Budowa obrazu kontenera <br> node:18-alpine]
-        D --> E[Uruchomienie środowiska testowego]
-        E --> F{Wykonanie: npm test}
+    subgraph Krok_1 [Etap 2 i 3: Build & Test]
+        C --> D[Budowa obrazu kontenera <br> moj-express-bldr z node:18-slim]
+        D --> E[Uruchomienie środowiska testowego <br> docker run --rm]
+        E --> F{Wykonanie: npm test }
     end
 
-    F -- Błąd testów --> ERR2[Sprzątanie środowiska i FAILURE]:::fail
-    F -- Sukces testów --> G[Testy zaliczone]:::success
+    F -- Błąd testów --> ERR1[Sprzątanie środowiska i FAILURE]:::fail
+    F -- Sukces testów --> G[Testy zaliczone <br> 2 passing]:::success
 
-    subgraph Krok_2 [Etap 2: Publish]
-        G --> H[Generowanie paczki <br> app-release.tar.gz]:::action
-        H --> I[(Archiwizacja Jenkins <br> archiveArtifacts)]
+    subgraph Krok_2 [Etap 4: Publish]
+        G --> H1[Docker Login i Tagowanie]:::action
+        H1 --> H2[Docker Push do rejestru <br> sebboze3/moj-express-bldr:latest]:::action
+        H2 --> I1[Generowanie paczki tar.gz <br> bez .git i node_modules]:::action
+        I1 --> I2[(Archiwizacja Jenkins <br> archiveArtifacts)]
     end
 
-    subgraph Krok_3 [Etap 3: Deploy & Weryfikacja]
-        I --> J[Wdrożenie na serwer <br> docker run -d express-prod-app]:::action
-        J --> K[Wykonanie Smoke Testu <br> docker logs]
-        K --> L{Czy serwer wstał?}
+    subgraph Krok_3 [Etap 5: Deploy & Weryfikacja]
+        I2 --> J[Usunięcie starego kontenera <br> docker rm -f]:::action
+        J --> K[Wdrożenie na serwer <br> docker run -d port 3000]:::action
+        K --> L{Smoke Test <br> curl /health}
     end
 
-    L -- Nie --> ERR3[Logowanie błędu i usunięcie kontenera]:::fail
-    L -- Tak --> M[Czyszczenie środowiska <br> docker rm -f]:::action
-    M --> N([Koniec: Status SUCCESS]):::success
+    L -- Błąd (Status != 200) --> ERR2[Zatrzymanie procesu]:::fail
+    L -- Sukces (200 OK) --> M[Logi: Aplikacja działa]:::success
+    
+    M --> N[Post Action: Czyszczenie <br> cleanWs]:::action
+    ERR1 --> N
+    ERR2 --> N
+    
+    N --> O([Koniec: Definition of Done <br> Status SUCCESS]):::success
 ```
 
 4. Realizacja etapów Pipeline (Ścieżka Krytyczna)
