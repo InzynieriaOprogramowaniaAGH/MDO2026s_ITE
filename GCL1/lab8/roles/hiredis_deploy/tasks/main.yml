@@ -1,0 +1,87 @@
+---
+# === CZĘŚĆ 1: ZADANIA ADMINISTRACYJNE ===
+- name: 1. Inwentaryzacja - Kopiowanie pliku hosts na target
+  copy:
+    src: hosts.ini
+    dest: /home/ansible/hosts_backup.ini
+
+- name: 2. Aktualizacja pakietów systemowych
+  apt:
+    update_cache: yes
+    upgrade: safe
+
+- name: 3. Restart uslug ssh i rng-tools
+  service:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - ssh
+    - rng-tools
+  ignore_errors: yes
+
+# === CZĘŚĆ 2: WDROŻENIE ARTEFAKTU ===
+- name: 4. Instalacja Dockera i kompilatora
+  apt:
+    name: [docker.io, python3-docker, build-essential, libhiredis-dev]
+    state: present
+
+- name: 5. Wymuszenie startu Dockera
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: 6. Przygotowanie katalogu /opt/hiredis_app
+  file:
+    path: /opt/hiredis_app
+    state: directory
+    mode: '0755'
+
+- name: 7. Przeslanie artefaktu i kodu sample.c
+  copy:
+    src: "{{ item }}"
+    dest: "/opt/hiredis_app/"
+  loop:
+    - "hiredis-v1.0-b7-PD420765.tar.gz"
+    - "sample.c"
+
+- name: 8. Rozpakowanie biblioteki .so
+  unarchive:
+    src: "/opt/hiredis_app/hiredis-v1.0-b7-PD420765.tar.gz"
+    dest: "/opt/hiredis_app/"
+    remote_src: yes
+
+- name: 9. Kompilacja aplikacji na maszynie Target
+  shell:
+    cmd: "gcc sample.c -o hiredis_test -L. -lhiredis -I/usr/local/include/hiredis"
+    chdir: /opt/hiredis_app
+
+- name: 10. Naprawa linkowania (Symlink 1.3.0)
+  file:
+    src: "/opt/hiredis_app/libhiredis.so"
+    dest: "/opt/hiredis_app/libhiredis.so.1.3.0"
+    state: link
+
+- name: 11. Konfiguracja DNS (Naprawa błędu name resolution)
+  lineinfile:
+    path: /etc/hosts
+    line: "127.0.0.1 redis-server"
+    state: present
+
+- name: 12. Uruchomienie serwera Redis w Dockerze
+  docker_container:
+    name: redis-server-lab8
+    image: redis:alpine
+    state: started
+    network_mode: host
+
+- name: 13. Smoke Test - Uruchomienie aplikacji i sprawdzenie PONG
+  shell:
+    cmd: "export LD_LIBRARY_PATH=/opt/hiredis_app && ./hiredis_test"
+    chdir: /opt/hiredis_app
+  register: app_output
+
+- name: 14. Weryfikacja wyniku (Sanity Check)
+  debug:
+    msg: "Aplikacja na Target odpowiedziala: {{ app_output.stdout }}"
+  failed_when: "'PONG' not in app_output.stdout"

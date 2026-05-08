@@ -1,0 +1,5 @@
+- name: Wykonanie zadan Lab 8
+  hosts: Endpoints
+  become: yes
+  roles:
+    - hiredis_deploy

@@ -1,0 +1,26 @@
+---
+- name: Konfiguracja systemowa
+  hosts: Endpoints
+  become: yes
+  tasks:
+    - name: 1. Wyslanie pinga
+      ping:
+
+    - name: 2. Kopiowanie inwentarza na maszyne docelowa
+      copy:
+        src: ./hosts.ini
+        dest: /home/ansible/inventory_backup.ini
+
+    - name: 3. Aktualizacja pakietów
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: 4. Restart uslug sshd i rngd
+      service:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - sshd
+        - rngd
+      ignore_errors: yes
