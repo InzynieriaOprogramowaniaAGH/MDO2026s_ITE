@@ -117,7 +117,7 @@ Zapytanie:
 
 ######################################################################################3
 
-# Sprawozdanie: Laboratorium 5 i 6 - Pipeline CI/CD (Jenkins)
+# Sprawozdanie: Laboratorium 5, 6 i 7 - Pipeline CI/CD (Jenkins)
 
 ## 1. Wybrana Aplikacja i Repozytorium
 Do wdrożenia wybrano prostą aplikację backendową napisaną w środowisku **Node.js** z wykorzystaniem frameworka **Express**. 
@@ -154,11 +154,11 @@ graph TD
     end
 
     F -- Błąd testów --> ERR1[Sprzątanie środowiska i FAILURE]:::fail
-    F -- Sukces testów --> G[Testy zaliczone <br> 2 passing]:::success
+    F -- Sukces testów --> G[Testy zaliczone ]:::success
 
     subgraph Krok_2 [Etap 4: Publish]
         G --> H1[Docker Login i Tagowanie]:::action
-        H1 --> H2[Docker Push do rejestru <br> sebboze3/moj-express-bldr:latest]:::action
+        H1 --> H2[Docker Push do rejestru z tagiem latest]:::action
         H2 --> I1[Generowanie paczki tar.gz <br> bez .git i node_modules]:::action
         I1 --> I2[(Archiwizacja Jenkins <br> archiveArtifacts)]
     end
@@ -180,27 +180,34 @@ graph TD
 ```
 
 4. Realizacja etapów Pipeline (Ścieżka Krytyczna)
-Zgodnie z powyższym diagramem, zrealizowano potok CI/CD. Poniżej logi potwierdzające wykonanie kroków:
+Zgodnie z zaplanowanym diagramem, zrealizowano potok CI/CD. Proces jest w pełni zautomatyzowany i powtarzalny dzięki czyszczeniu środowiska przed i po każdym uruchomieniu.
 
-Krok 1: Budowa i Testowanie
-Zbudowano obraz aplikacji na bazie node:18-alpine oraz przeprowadzono testy jednostkowe.
+Krok 1: Build i Testowanie
+Zbudowano obraz aplikacji na bazie obrazu node:18-slim. Wybór tej wersji pozwolił na zachowanie niskiej wagi obrazu przy jednoczesnym zapewnieniu stabilności środowiska. Po budowie obrazu, Jenkins automatycznie uruchomił kontener testowy i wykonał testy jednostkowe przy użyciu biblioteki Mocha.
 
-> ![logi z etapu clone](screeny/4.4.png) 
-> ![logi z etapu build](screeny/build.png)
-Krok 2: Publikacja Artefaktu (Publish)
-Po pomyślnym przejściu testów, kod został spakowany do archiwum .tar.gz i zarchiwizowany w Jenkinsie.
-> ![logi z etapu publish](screeny/publish.png)
+Wynik: Testy zakończone sukcesem.
+
+Krok 2: Publikacja Artefaktów (Publish)
+Po pomyślnym przejściu testów, potok przeszedł do etapu publikacji:
+
+Docker Hub: Obraz został otagowany i wypchnięty do zewnętrznego rejestru pod nazwą sebboze3/moj-express-bldr:latest. Dzięki temu aplikacja jest dostępna do pobrania na dowolnej maszynie.
+
+Archiwum lokalne: Kod produkcyjny został spakowany do archiwum .tar.gz (z wykluczeniem katalogu .git i node_modules) i zarchiwizowany bezpośrednio w Jenkinsie jako artefakt do pobrania.
 
 Krok 3: Wdrożenie i Weryfikacja (Deploy & Smoke Test)
-Uruchomiono kontener produkcyjny, pobrano logi w celu weryfikacji startu serwera, a następnie usunięto środowisko tymczasowe.
+Ostatnim etapem było wdrożenie produkcyjne na lokalnym środowisku Docker.
 
-> ![logi z deploya i smoke testu](screeny/7.7.png)
-> ![ogólny status pipelinu](screeny/6.6.png)
+Jenkins usunął poprzednią instancję aplikacji, aby uniknąć konfliktów portów.
 
+Uruchomiono nową wersję na porcie 3000.
+
+Smoke Test: Wykonano weryfikację "na żywo" za pomocą narzędzia curl. Odpytano endpoint /health, który zwrócił status 200 OK, co potwierdza, że aplikacja nie tylko się uruchomiła, ale poprawnie obsługuje żądania sieciowe.
 
 5. Odpowiedzi na pytania i wnioski
-Format artefaktu: Wybrano archiwum .tar.gz. 
+Format artefaktu: Wybrano obraz Docker (jako główny format redystrybucyjny) oraz archiwum .tar.gz. Obraz Docker zapewnia pełną przenośność (Portable Artifact), eliminując różnice w środowiskach między deweloperem a produkcją.
 
-node vs node-slim: Obraz node posiada pełne środowisko kompilacji. Obraz node-slim jest go pozbawiony, co czyni go lżejszym i bezpieczniejszym na produkcji (mniejsza powierzchnia ataku)  .
+node vs node-slim: Pełny obraz node zawiera dodatkowe narzędzia kompilacji (np. python, kompilatory C++), które są potrzebne przy budowaniu niektórych bibliotek, ale zbędne do samego uruchomienia aplikacji. Obraz node-slim jest ich pozbawiony, co czyni go znacznie lżejszym i bezpieczniejszym na produkcji, ponieważ ogranicza liczbę zainstalowanych pakietów (mniejsza powierzchnia ataku).
 
-Kontener Deploy: Zastosowano osobny kontener runtime, ponieważ kontener budujący zawiera zbędne zależności deweloperskie i pliki tymczasowe, które nie powinny znajdować się w środowisku docelowym.
+Kontener Deploy: W moim projekcie kontenerem wdrożeniowym jest ten sam obraz, który został zbudowany w kroku Build. Dzięki zastosowaniu pliku .dockerignore, obraz ten jest "czysty" – nie zawiera logów, plików testowych ani historii Gita, co czyni go optymalnym do roli produkcyjnej (tzw. Runtime Image).
+
+Definition of Done: Zadanie uznaję za zakończone, ponieważ proces kończy się wystawieniem gotowego do wdrożenia artefaktu na Docker Hubie, a automatyczna weryfikacja (Smoke Test) potwierdza jego pełną sprawność po starcie.

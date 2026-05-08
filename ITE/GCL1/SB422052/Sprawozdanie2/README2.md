@@ -12,8 +12,8 @@ W ramach rozgrzewki przygotowano projekty typu *Freestyle*, weryfikujące popraw
 3. `Zadanie_3_Docker` - Pomyślne pobranie obrazu Ubuntu.
 
 > **Dowód realizacji zadań wstępnych:**
-> ![Widok projektów wstępnych](screeny/1.1.png)
-> ![Logi błędu - zadanie z godziną](screeny/2.2.png)
+> ![Widok projektów wstępnych](Screeny2/1.1.png)
+> ![Logi błędu - zadanie z godziną](Screeny2/2.2.png)
 
 ## 3. Diagram Aktywności (Proces CI/CD)
 Poniższy diagram UML obrazuje zaplanowany przepływ pracy w Jenkinsie:
@@ -72,6 +72,8 @@ Krok 2: Publikacja Artefaktów (Publish)
 Po pomyślnym przejściu testów, potok przeszedł do etapu publikacji:
 
 Docker Hub: Obraz został otagowany i wypchnięty do zewnętrznego rejestru pod nazwą sebboze3/moj-express-bldr:latest. Dzięki temu aplikacja jest dostępna do pobrania na dowolnej maszynie.
+> ![Widok repozytorium dockerhuba](Screeny2/dockerhub.png)
+
 
 Archiwum lokalne: Kod produkcyjny został spakowany do archiwum .tar.gz (z wykluczeniem katalogu .git i node_modules) i zarchiwizowany bezpośrednio w Jenkinsie jako artefakt do pobrania.
 
