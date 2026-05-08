@@ -1,0 +1,34 @@
+ansible-target:
+
+sudo apt update
+sudo apt install tar openssh-server
+sudo adduser ansible
+sudo usermod -aG sudo ansible
+---
+sudo systemctl stop ssh
+sudo systemctl stop ssh.socket
+
+
+
+ansible-master:
+
+sudo apt install ansible
+ansible --version
+ssh-keygen -t ed25519 -f ~/.ssh/id_ansible
+code ~/.ssh/config
+ssh-copy-id -i ~/.ssh/id_ansible.pub ansible@ansible-target
+ssh ansible@ansible-target
+sudo hostnamectl set-hostname ansible-master
+bash
+ping -c 2 ansible-target
+cd MDO2026s_ITE/ITE/GCL1/KB422046/
+mkdir Sprawozdanie3
+cd Sprawozdanie3/
+code inventory.ini
+ansible all -i inventory.ini -m ping
+code pbook.yml
+ansible-playbook -i inventory.ini pbook.yml --ask-become-pass
+---
+ansible-playbook -i inventory.ini pbook.yml --ask-become-pass
+code README.md
+code command_history.txt
