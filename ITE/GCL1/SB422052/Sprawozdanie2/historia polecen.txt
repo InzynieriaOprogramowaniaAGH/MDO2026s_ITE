@@ -1,0 +1,91 @@
+  204  docker network rm jenkins
+  205  docker network create jenkins
+  206  docker rm -f jenkins-blueocean jenkins-docker
+  207  docker network rm jenkins
+  208  docker network create jenkins
+  209  docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind
+  210  docker run --name jenkins-blueocean --rm --detach   --network jenkins --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   --publish 8080:8080 --publish 50000:50000   jenkins/jenkins:lts
+  211  docker ps
+  212  docker exec jenkins-blueocean sed -i 's/<useSecurity>true<\/useSecurity>/<useSecurity>false<\/useSecurity>/' /var/jenkins_home/config.xml
+  213  docker restart jenkins-blueocean
+  214  docker exec -u root jenkins-blueocean bash -c "apt-get update && apt-get install -y docker.io"
+  215  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  216  git commit -m "SB422052 Dodanie pliku Jenkinsfile z etapami Build i Test"
+  217  git push origin SB422052
+  218  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  219  git commit -m "SB422052 Naprawa etapu Test - uzycie dedykowanego kontenera Tester"
+  220  git push origin SB422052
+  221  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  222  git commit -m "SB422052 Ominięcie błędu DIND - budowa obrazu testowego"
+  223  git push origin SB422052
+  224  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  225  git commit -m "SB422052 naprawa"
+  226  git push origin SB422052
+  227  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  228  git commit -m "SB422052 Dodanie etapow Publish i Deploy"
+  229  git push origin SB422052
+  230  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  231  git commit -m "SB422052 Dodanie etapow Publish i Deplo(y"
+  232  git push origin SB422052
+  233  git add .
+  234  git commit -m "Final Lab 5 i 6 - dokumentacja"
+  235  SB422052 git commit -m "Final Lab 5 i 6 - dokumentacja"
+  236  git commit -m "SB244052 Final Lab 5 i 6 - dokumentacja"
+  237  git commit -m "SB422052 l5 l6 sprawko"
+  238  git push origin SB422052
+  239  git add .
+  240  git commit -m "SB422052 l5 l6 sprawko-2"
+  241  git push origin SB422052
+  242  git add .
+  243  git commit -m "SB422052 aktualizacja jenkinsa"
+  244  git push origin SB422052
+  245  git add .
+  246  git commit -m "SB422052 poprawa sciezki dir"
+  247  git push origin SB422052
+  248  git add .
+  249  git commit -m "SB422052 poprawa"
+  250  git push origin SB422052
+  251  git add package.json server.js
+  252  cd ITE/GCL1/SB422052/Sprawozdanie1
+  253  git add package.json server.js
+  254  git commit -m "Poprawne dodanie plikow wlasciwej aplikacji"
+  255  git commit -m "SB422052 Poprawne dodanie plikow wlasciwej aplikacji"
+  256  git push origin SB422052
+  257  git add Jenkinsfile
+  258  git commit -m "Poprawka pakowania tar - wykluczenie archiwum"
+  259  git commit -m "SB422052 Poprawka pakowania tar - wykluczenie archiwum"
+  260  git push origin SB422052
+  261  git add Jenkinsfile
+  262  git commit -m "Ostateczna naprawa pakowania tar"
+  263  git commit -m "SB422052 Ostateczna naprawa pakowania tar"
+  264  git push origin SB422052
+  265  cd ..
+  266  ls
+  267  cd ITE/
+  268  ls
+  269  cd GCL1/
+  270  ls
+  271  cd SB422052/
+  272  ls
+  273  cd Sprawozdanie1/
+  274  ls
+  275  exit
+  276  su - ansible
+  277  ip a
+  278  exit
+  279  git add .
+  280  git commit -m "SB422052 zmiany gałęzi"
+  281  git push origin SB422052
+  282  git add .
+  283  git commit -m "SB422052 zmiany gałęzi"
+  284  git push origin SB422052
+  285  git add .
+  286  git commit -m "SB422052 zmiany gałęzi"
+  287  git push origin SB422052
+  288  git add .
+  289  git commit -m "SB422052 zmiany gałęzi"
+  290  git push origin SB422052
+  291  git add .
+  292  git commit -m "SB422052 final"
+  293  git push origin SB422052
+  294  history

@@ -100,3 +100,6 @@ node vs node-slim: Pełny obraz node zawiera dodatkowe narzędzia kompilacji (np
 Kontener Deploy: W moim projekcie kontenerem wdrożeniowym jest ten sam obraz, który został zbudowany w kroku Build. Dzięki zastosowaniu pliku .dockerignore, obraz ten jest "czysty" – nie zawiera logów ani historii Gita, co czyni go optymalnym do roli produkcyjnej (tzw. Runtime Image).
 
 Definition of Done: Zadanie uznaję za zakończone, ponieważ proces kończy się wystawieniem gotowego do wdrożenia artefaktu na Docker Hubie, a automatyczna weryfikacja (Smoke Test) potwierdza jego pełną sprawność po starcie.
+
+Wysłane zapytanie do ai:
+popraw interpunkcje, przeredaguj
