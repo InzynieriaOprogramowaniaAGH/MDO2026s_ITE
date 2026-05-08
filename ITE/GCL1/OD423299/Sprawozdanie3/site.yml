@@ -1,0 +1,6 @@
+---
+- name: Wdrozenie aplikacji z roli
+  hosts: Endpoints
+  become: true
+  roles:
+    - moja_aplikacja

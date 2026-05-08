@@ -1,2 +1,80 @@
 ---
-# tasks file for moja_aplikacja
+- name: Sanity check maszyny docelowej przed wdrożeniem
+  block:
+    - name: Sprawdź dostępność miejsca na dysku (wymagane min. 1GB)
+      ansible.builtin.assert:
+        that:
+          - ansible_mounts[0].size_available > 1024 * 1024 * 1024
+        fail_msg: "Za mało miejsca na dysku!"
+
+  rescue:
+    - name: Komunikat o niepowodzeniu sanity check
+      ansible.builtin.debug:
+        msg: "Sanity check nie powiódł się, ale kontynuujemy wdrożenie (nie ulegamy awarii)..."
+
+  ignore_errors: yes
+
+- name: Pobierz artefakt z kontenera Jenkinsa
+  delegate_to: localhost
+  become: false 
+  ansible.builtin.command: >
+    docker cp "jenkins-blueocean:/var/jenkins_home/workspace/laby 7/zlib-tool.deb" ./app.deb
+  register: cp_result
+
+- name: Upewnij się, że Docker jest na targetcie
+  ansible.builtin.apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+
+- name: Wyślij wyciągnięty plik na target
+  ansible.builtin.copy:
+    src: "./app.deb" 
+    dest: "/tmp/app.deb"
+    mode: '0644'
+
+- name: Uruchom kontener i zainstaluj .deb
+  community.docker.docker_container:
+    name: moja_aplikacja_kontener
+    image: ubuntu:22.04
+    state: started
+    volumes:
+      - "/tmp/app.deb:/tmp/app.deb"
+    command: >
+      bash -c "apt-get update && apt-get install -y /tmp/app.deb && zlib-tool"
+  register: container_info
+
+- name: Sanity check - weryfikacja czy kontener działa
+  ansible.builtin.assert:
+    that:
+      - "container_info.container.State.Running"
+    fail_msg: "Kontener nie wystartował!"
+- name: Pobierz logi z kontenera (dowód działania)
+  ansible.builtin.command: docker ps -a
+  register: app_logs
+  changed_when: false
+  ignore_errors: yes 
+
+- name: Wyświetl logi w konsoli Ansible
+  ansible.builtin.debug:
+    msg: "stan dockera przed usunięciem: {{ app_logs.stdout }}"
+
+
+- name: Oczyszczanie środowiska docelowego
+  block:
+    - name: Zatrzymaj i usuń kontener aplikacji
+      community.docker.docker_container:
+        name: moja_aplikacja_kontener
+        state: absent
+
+    - name: Usuń plik instalacyjny .deb z maszyny target
+      ansible.builtin.file:
+        path: "/tmp/app.deb"
+        state: absent
+
+    - name: Usuń lokalny plik artefaktu z kontrolera
+      delegate_to: localhost
+      become: false
+      ansible.builtin.file:
+        path: "./app.deb"
+        state: absent
