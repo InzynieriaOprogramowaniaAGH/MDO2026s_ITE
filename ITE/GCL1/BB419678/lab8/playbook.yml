@@ -1,0 +1,30 @@
+---
+- name: Podstawowa konfiguracja i testy systemu
+  hosts: Endpoints
+  become: yes # (wymagane do apt i systemd)
+
+  tasks:
+    - name: ping (wbudowany modul)
+      ansible.builtin.ping:
+
+    - name: Skopiuj plik inwentaryzacji na maszyny Endpoints
+      ansible.builtin.copy:
+        src: ./inventory.ini
+        dest: /tmp/inventory.ini
+
+    - name: Zaktualizuj pakiety w systemie (troche czasu zajmie)
+      ansible.builtin.apt:
+        upgrade: yes
+        update_cache: yes
+
+    - name: Zrestartuj usluge sshd
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+
+    # rngd (RNG tools), jezeli nie ma to dodajemy ignore_errors
+    - name: Zrestartuj usługę rngd (jeśli istnieje)
+      ansible.builtin.service:
+        name: rng-tools
+        state: restarted
+      ignore_errors: yes

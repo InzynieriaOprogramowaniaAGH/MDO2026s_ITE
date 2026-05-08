@@ -1,0 +1,94 @@
+---
+- name: Wdrożenie artefaktu binarnego (Neovim DEB)
+  hosts: Endpoints
+  become: yes # Uruchamiaj zadania jako root (docker)
+  vars:
+    artifact_name: "neovim-final.deb"
+    deploy_dir: "/opt/neovim_deploy"
+
+  tasks:
+    # ---------------------------------------------------------
+    # Sanity check (z ignore_errors)
+    # ---------------------------------------------------------
+    - name: Przeprowadź sanity check (czy to Ubuntu i czy ma minimum 512MB RAM)
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['distribution'] == "Ubuntu"
+          - ansible_facts['memtotal_mb'] >= 512
+        fail_msg: "Maszyna nie spełnia wymagań sprzętowych lub systemowych!"
+        success_msg: "Sanity check zakończony sukcesem."
+      ignore_errors: yes # "nie ulegaj awarii w przypadku niepowodzenia"
+
+    # ---------------------------------------------------------
+    # Sprawdzenie dockera
+    # ---------------------------------------------------------
+    - name: Zainstaluj Dockera (upewnij się wprost, że istnieje)
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Upewnij się, że usługa Docker jest uruchomiona
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    # ---------------------------------------------------------
+    # Przesył paczki .deb na ansible-target
+    # ---------------------------------------------------------
+    - name: Utwórz katalog wdrożeniowy na maszynie docelowej
+      ansible.builtin.file:
+        path: "{{ deploy_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Skopiuj paczkę DEB z Orchestratora na maszynę docelową
+      ansible.builtin.copy:
+        src: "./{{ artifact_name }}"
+        dest: "{{ deploy_dir }}/{{ artifact_name }}"
+
+    # ---------------------------------------------------------
+    # Uruchamiamy paczke na kontenerze
+    # ---------------------------------------------------------
+    - name: Utwórz Dockerfile, by umieścić/udostępnić plik w kontenerze
+      ansible.builtin.copy:
+        dest: "{{ deploy_dir }}/Dockerfile"
+        content: |
+          FROM ubuntu:24.04
+          ARG DEBIAN_FRONTEND=noninteractive
+          # Kopiujemy nasz artefakt z maszyny docelowej do wnętrza kontenera
+          COPY {{ artifact_name }} /tmp/
+          # Instalujemy Neovima rozwiązując jego zależności (apt-get)
+          RUN apt-get update && apt-get install -y /tmp/{{ artifact_name }} && rm -rf /var/lib/apt/lists/*
+          WORKDIR /workspace
+
+    - name: Zbuduj obraz kontenera z wdrożoną aplikacją
+      ansible.builtin.command:
+        cmd: docker build -t neovim-deployed-app .
+        chdir: "{{ deploy_dir }}"
+
+    # ---------------------------------------------------------
+    # Smoke test paczki z opcja --headless
+    # ---------------------------------------------------------
+    - name: Uruchom aplikację w kontenerze (Zwrócenie wersji Neovima)
+      ansible.builtin.command:
+        cmd: docker run --rm neovim-deployed-app nvim --headless -v
+      register: app_verification_output
+
+    - name: Wyświetl dowód działania (Weryfikacja)
+      ansible.builtin.debug:
+        msg: "Aplikacja działa poprawnie! Zwrócona wersja: {{ app_verification_output.stdout_lines[0] }}"
+
+    # ---------------------------------------------------------
+    # Czyszczenie środowiska docelowego
+    # ---------------------------------------------------------
+    - name: Usuń obraz Dockera (sprzątanie)
+      ansible.builtin.command:
+        cmd: docker rmi neovim-deployed-app
+      ignore_errors: yes
+
+    - name: Usuń katalog wdrożeniowy i pliki binarne z maszyny docelowej
+      ansible.builtin.file:
+        path: "{{ deploy_dir }}"
+        state: absent

@@ -1,0 +1,36 @@
+bartosz123@ubuntu-devops:~/MDO2026s_ITE/ITE/GCL1/BB419678/lab8$ ansible-playbook -i inventory.ini playbook.yml 
+
+PLAY [Podstawowa konfiguracja i testy systemu] **********************************************************
+
+TASK [Gathering Facts] **********************************************************************************
+ok: [ansible-target]
+
+TASK [ping (wbudowany modul)] ***************************************************************************
+ok: [ansible-target]
+
+TASK [Skopiuj plik inwentaryzacji na maszyny Endpoints] *************************************************
+ok: [ansible-target]
+
+TASK [Zaktualizuj pakiety w systemie (troche czasu zajmie)] *********************************************
+ok: [ansible-target]
+
+TASK [Zrestartuj usluge sshd] ***************************************************************************
+changed: [ansible-target]
+
+TASK [Zrestartuj usługę rngd (jeśli istnieje)] **********************************************************
+fatal: [ansible-target]: FAILED! => {"changed": false, "msg": "Could not find the requested service rng-tools: host"}
+...ignoring
+
+PLAY RECAP **********************************************************************************************
+ansible-target             : ok=6    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=1   
+
+
+bartosz123@ubuntu-devops:~/MDO2026s_ITE/ITE/GCL1/BB419678/lab8$ ansible-playbook -i inventory.ini playbook.yml 
+
+PLAY [Podstawowa konfiguracja i testy systemu] **********************************************************
+
+TASK [Gathering Facts] **********************************************************************************
+fatal: [ansible-target]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: ssh: connect to host ansible-target port 22: No route to host", "unreachable": true}
+
+PLAY RECAP **********************************************************************************************
+ansible-target             : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
