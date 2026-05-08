@@ -1,5 +1,4 @@
 ---
-# === CZĘŚĆ 1: ZADANIA ADMINISTRACYJNE ===
 - name: 1. Inwentaryzacja - Kopiowanie pliku hosts na target
   copy:
     src: hosts.ini
@@ -19,7 +18,6 @@
     - rng-tools
   ignore_errors: yes
 
-# === CZĘŚĆ 2: WDROŻENIE ARTEFAKTU ===
 - name: 4. Instalacja Dockera i kompilatora
   apt:
     name: [docker.io, python3-docker, build-essential, libhiredis-dev]
