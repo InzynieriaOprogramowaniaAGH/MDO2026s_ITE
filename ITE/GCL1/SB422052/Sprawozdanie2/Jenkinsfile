@@ -7,7 +7,7 @@ pipeline {
         CONTAINER_NAME = 'express-prod-app'
         PORT = '3000'
         
-        PROJECT_DIR = 'ITE/GCL1/SB422052/Sprawozdanie1'
+        PROJECT_DIR = 'ITE/GCL1/SB422052/Sprawozdanie2'
     }
 
     stages {
