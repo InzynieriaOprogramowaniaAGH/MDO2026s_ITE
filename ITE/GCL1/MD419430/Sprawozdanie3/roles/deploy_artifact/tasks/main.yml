@@ -1,0 +1,92 @@
+---
+- name: Sanity check - disk
+  ansible.builtin.command: df -h /
+  register: disk_out
+  changed_when: false
+  failed_when: false
+
+- name: Sanity check - memory
+  ansible.builtin.command: free -m
+  register: mem_out
+  changed_when: false
+  failed_when: false
+
+- name: Sanity check - docker version
+  ansible.builtin.command: docker --version
+  register: docker_ver
+  changed_when: false
+  failed_when: false
+
+- name: Sanity summary
+  ansible.builtin.debug:
+    msg:
+      - "{{ disk_out.stdout }}"
+      - "{{ mem_out.stdout }}"
+      - "{{ docker_ver.stdout | default('docker not installed') }}"
+
+- name: Install docker and git
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - git
+    state: present
+    update_cache: yes
+
+- name: Ensure docker running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Clone repo
+  ansible.builtin.git:
+    repo: "{{ repo_url }}"
+    dest: "{{ repo_dir }}"
+    version: "{{ repo_version }}"
+    force: true
+
+- name: Build runtime image from repo
+  ansible.builtin.command: "docker build -t {{ local_image }} -f {{ app_dir }}/Dockerfile {{ app_dir }}"
+
+- name: Remove local container if exists
+  ansible.builtin.command: "docker rm -f {{ local_container }}"
+  ignore_errors: true
+
+- name: Run local container
+  ansible.builtin.command: "docker run -d --name {{ local_container }} -p {{ app_port }}:{{ app_port }} {{ local_image }}"
+
+- name: Health check local container
+  ansible.builtin.uri:
+    url: "{{ health_url }}"
+    status_code: 200
+  register: health_local
+  retries: 10
+  delay: 2
+  until: health_local.status == 200
+
+- name: Stop and remove local container
+  ansible.builtin.command: "docker rm -f {{ local_container }}"
+  when: cleanup
+
+- name: Pull published image
+  ansible.builtin.command: "docker pull {{ published_image }}"
+
+- name: Remove published container if exists
+  ansible.builtin.command: "docker rm -f {{ published_container }}"
+  ignore_errors: true
+
+- name: Run published container
+  ansible.builtin.command: "docker run -d --name {{ published_container }} -p {{ app_port }}:{{ app_port }} {{ published_image }}"
+
+- name: Health check published container
+  ansible.builtin.uri:
+    url: "{{ health_url }}"
+    status_code: 200
+  register: health_pub
+  retries: 10
+  delay: 2
+  until: health_pub.status == 200
+
+- name: Stop and remove published container
+  ansible.builtin.command: "docker rm -f {{ published_container }}"
+  when: cleanup
