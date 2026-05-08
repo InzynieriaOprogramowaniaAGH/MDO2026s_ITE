@@ -12,10 +12,10 @@ Głównym założeniem laboratorium było wdrożenie serwera Jenkins z wykorzyst
 Pierwszym etapem było przygotowanie izolowanego środowiska opartego o kontenery Docker, po uprzednim upewnieniu się, że kontenery budujące i testujące z poprzednich zajęć działają poprawnie.
 
 * Utworzono dedykowaną sieć w Dockerze o nazwie `jenkins2`.
-![image](Sprawozdanie2/image2.png)
+![image](image2.png)
 
 * Zgodnie z oficjalną instrukcją, uruchomiono obraz Dockera (Docker in Docker - DinD) eksponujący zagnieżdżone środowisko, w trybie uprzywilejowanym.
-![image](Sprawozdanie2/image3.png)
+![image](image3.png)
 
 * Przygotowano niestandardowy plik `Dockerfile.jenkins.BlueOcean` bazujący na oficjalnym obrazie `jenkins/jenkins:lts-jdk17`. Główną różnicą było doinstalowanie w nim niezbędnych narzędzi CLI Dockera oraz specyficznych wtyczek.
 <br> Zawartość pliku Dockerfile:
@@ -37,23 +37,23 @@ RUN jenkins-plugin-cli --plugins "blueocean docker-workflow"
 
 * Wewnątrz pliku Dockerfile skonfigurowano pobieranie kluczy GPG i repozytoriów Dockera, a następnie zainstalowano narzędzie `docker-ce-cli`. Zainstalowano także wtyczki `blueocean` oraz `docker-workflow`.
 * Zbudowano nowy obraz i uruchomiono instancję Jenkinsa z interfejsem Blueocean, podłączając kontener do odpowiedniej sieci i wystawiając porty.
-![image](Sprawozdanie2/image5.png)
-![image](Sprawozdanie2/image6.png)
+![image](image5.png)
+![image](image6.png)
 
 * Z logów kontenera odczytano wygenerowane jednorazowe hasło administratora.
-![image](Sprawozdanie2/image7.png)
+![image](image7.png)
 
 * W interfejsie webowym zalogowano się, odblokowano Jenkinsa i wykonano początkową konfigurację, w tym utworzenie użytkownika `oskar`. Zadbanie o logi i ich archiwizację było jednym z wymogów konfiguracyjnych.
-![image](Sprawozdanie2/image8.png)
-![image](Sprawozdanie2/image9.png)
+![image](image8.png)
+![image](image9.png)
 
-![image](Sprawozdanie2/image10.png)
+![image](image10.png)
 
-![image](Sprawozdanie2/image11.png)
+![image](image11.png)
 
-![image](Sprawozdanie2/image12.png)
+![image](image12.png)
 
-![image](Sprawozdanie2/image13.png)
+![image](image13.png)
 
 ---
 
@@ -62,16 +62,16 @@ RUN jenkins-plugin-cli --plugins "blueocean docker-workflow"
 Po poprawnej konfiguracji Jenkinsa, przystąpiono do tworzenia prostych projektów w celu weryfikacji działania środowiska.
 
 * **Wyświetlanie informacji o systemie:** Utworzono projekt, który wykonywał polecenie `uname`. Konsola Jenkinsa zwróciła poprawny wynik.
-![image](Sprawozdanie2/image17.png)
+![image](image17.png)
 
 * **Zwracanie błędu w oparciu o czas:** Utworzono skrypt w języku Groovy sprawdzający aktualną godzinę. Skrypt miał za zadanie zwrócić błąd i przerwać działanie, gdy godzina wykonania była nieparzysta.
-![image](Sprawozdanie2/image18.png)
-![image](Sprawozdanie2/image19.png)
+![image](image18.png)
+![image](image19.png)
 
 
 * **Pobieranie obrazu kontenera:** W ramach kolejnego kroku, wykorzystując polecenie `docker pull`, wdrożono w projekcie pobieranie obrazu kontenera `ubuntu`.
-![image](Sprawozdanie2/image20.png)
-![image](Sprawozdanie2/image21.png)
+![image](image20.png)
+![image](image21.png)
 
 
 
@@ -82,22 +82,20 @@ Po poprawnej konfiguracji Jenkinsa, przystąpiono do tworzenia prostych projekt�
 Ostatnim obowiązkowym etapem zrealizowanym na zajęciach po wykazaniu poprawnego działania Jenkinsa było stworzenie pełnoprawnego potoku CI.
 
 * Utworzono nowy obiekt typu `pipeline`. Treść potoku została wpisana bezpośrednio do obiektu w Jenkinsie, bez użycia mechanizmu SCM na tym etapie.
-![image](Sprawozdanie2/image22.png)
+![image](image22.png)
 
 * Zdefiniowano potok (`pipeline { agent any ... }`) realizujący następujące kroki:
   * **Czyszczenie obszaru roboczego** (`deleteDir()`).
   * **Klonowanie i Checkout:** Wykorzystano komendę `git` do sklonowania przedmiotowego repozytorium `MDO2026s_ITE`.
   * Następnie wykonano *checkout* do osobistej gałęzi studenta, zawierającej plik Dockerfile właściwy dla *buildera* wybranego w poprzednich etapach projektu.
-![image](Sprawozdanie2/image22.png)
+![image](image22.png)
 
   * **Budowanie obrazu Docker:** Użyto mechanizmów Jenkinsa w celu zbudowania nowego obrazu na podstawie wskazanego pliku Dockerfile. Logi z działania potwierdziły poprawny przebieg.
-![image](Sprawozdanie2/image23.png)
-![image](Sprawozdanie2/image24.png)
+![image](image23.png)
+![image](image24.png)
 
   * **Drugie uruchomienie:** Zgodnie z instrukcją, uruchomiono stworzony potok drugi raz w celu weryfikacji powtarzalności procesu. Potok zakończył się poprawnie i zweryfikowano obecność obrazów za pomocą poleceń systemowych.
-![image](Sprawozdanie2/image25.png)
-
-Oto zintegrowane sprawozdanie z laboratoriów 6 i 7, opracowane na podstawie przekazanych instrukcji i dostarczonych plików projektowych.
+![image](image25.png)
 
 # Sprawozdanie z Laboratorium 6 i 7: Kompletny potok CI/CD i Infrastructure as Code
 
@@ -127,8 +125,8 @@ Rys.1 Przepływ potoku CI/CD
 ## 3. Realizacja ścieżki krytycznej CI/CD w pliku Jenkinsfile
 
 Konfiguracja potoku w Jenkinsie oparta na importowaniu Jenkinsfile prosto z gałęzi git (rozwiązanie SCM). 
-![image](Sprawozdanie2/image27.png)
-![image](Sprawozdanie2/image28.png)
+![image](image27.png)
+![image](image28.png)
 Stworzony potok działa w izolacji (uruchamiany jest wewnątrz kontenera opartego o ww. Dockerfile, działającego jako użytkownik `root`) i podzielony został na logiczne etapy (stages):
 
 1. **Build (Kompilacja):** Krok ten uruchamia kompilator `gcc` z flagą `-lz`, linkując tym samym odpowiednie biblioteki zlib do pliku źródłowego `wrapper.c`. W wyniku kompilacji powstaje binarny plik wykonywalny `wrapper.bin`.
@@ -137,7 +135,7 @@ stage('Build (Kompilacja)') {
             steps {
                 sh '''
                     echo "Kompilacja pliku pobranego z Gita..."
-                    gcc -o wrapper.bin ITE/GCL1/OD423299/Sprawozdanie2/jenkins-zlib-test/src/wrapper.c -lz
+                    gcc -o wrapper.bin ITE/GCL1/OD423299/jenkins-zlib-test/src/wrapper.c -lz
                 '''
             }
         }
@@ -224,4 +222,4 @@ post {
 ```
 
 Wynikiem działań jest załączony artefakt do projektu
-![image](Sprawozdanie2/image29.png)
+![image](image29.png)
