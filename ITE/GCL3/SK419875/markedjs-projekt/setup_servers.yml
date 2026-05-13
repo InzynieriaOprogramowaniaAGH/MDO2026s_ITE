@@ -1,0 +1,23 @@
+---
+- name: Podstawowa konfiguracja serwerow
+  hosts: all
+  # Usunęliśmy globalne become: yes
+
+  tasks:
+    - name: Test lacznosci (Ping)
+      ansible.builtin.ping:
+
+    - name: Aktualizacja listy pakietow (apt update)
+      ansible.builtin.apt:
+        update_cache: yes
+      become: yes  # Sudo tylko tutaj
+      when: inventory_hostname == 'ansible-target'
+
+    - name: Kopiowanie pliku inwentaryzacji na maszyne docelowa
+      ansible.builtin.copy:
+        src: ./inventory.ini
+        dest: /home/ansible/inventory_backup.ini
+        owner: ansible
+        mode: '0644'
+      become: yes  # Sudo tutaj, aby zmienic właściciela pliku
+      when: inventory_hostname == 'ansible-target'

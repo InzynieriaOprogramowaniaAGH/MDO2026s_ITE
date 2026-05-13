@@ -1,0 +1,61 @@
+---
+- name: Instalacja Dockera i wdrozenie aplikacji (Lab 08)
+  hosts: Endpoints
+  become: yes
+
+  tasks:
+    - name: 1. Instalacja Dockera na maszynie docelowej
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: 2. Przygotowanie folderu na aplikacje
+      ansible.builtin.file:
+        path: /home/ansible/app
+        state: directory
+        owner: ansible
+        mode: '0755'
+
+    - name: 3. Przeslanie artefaktu na serwer docelowy
+      ansible.builtin.copy:
+        src: ./artifact.tar.gz
+        dest: /home/ansible/app/artifact.tar.gz
+        owner: ansible
+
+    - name: 4. Rozpakowanie artefaktu
+      ansible.builtin.unarchive:
+        src: /home/ansible/app/artifact.tar.gz
+        dest: /home/ansible/app
+        remote_src: yes
+        owner: ansible
+
+    - name: 5. Naprawa uprawnien dla plików aplikacji
+      ansible.builtin.file:
+        path: /home/ansible/app
+        state: directory
+        recurse: yes
+        mode: '0755'
+
+    - name: 6. Usuwanie starego kontenera (jesli istnieje)
+      ansible.builtin.shell: docker rm -f markedjs-site || true
+
+    - name: 7. Uruchomienie aplikacji w kontenerze (Test biblioteki)
+      ansible.builtin.command:
+        # Uruchamiamy node, montujemy kod i sprawdzamy wersje
+        cmd: docker run --rm -v /home/ansible/app/marked-production:/app -w /app node:alpine node bin/main.js --version
+      register: app_test
+
+    - name: 8. Weryfikacja (Sanity check)
+      ansible.builtin.debug:
+        msg: "Aplikacja Marked działa! Wersja: {{ app_test.stdout }}"
+      failed_when: app_test.rc != 0
+
+    - name: 9. Oczyszczanie środowiska (Wymóg Lab Oczyść środowisko)
+      ansible.builtin.file:
+        path: /home/ansible/app
+        state: absent
+
+    - name: Sukces!
+      ansible.builtin.debug:
+        msg: "Laboratorium 8 zakończone pomyślnie na maszynie {{ inventory_hostname }}"
