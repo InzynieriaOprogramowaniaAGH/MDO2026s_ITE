@@ -40,8 +40,7 @@ pipeline {
                     sh "docker cp temp_bldr_${env.BUILD_NUMBER}:/redis/src/redis-server ./redis-server"
                     sh "docker rm temp_bldr_${env.BUILD_NUMBER}"
                     
-                    sh "cp ${RUNTIME_DIR}/Dockerfile.Runtime ."
-                    sh "docker build -t ${IMAGE_NAME}:latest ."
+                    sh "docker build -f ${RUNTIME_DIR}/Dockerfile.Runtime -t ${IMAGE_NAME}:latest ."
                     
                     sh "chmod +x redis-server"
                     sh "./redis-server --version"
