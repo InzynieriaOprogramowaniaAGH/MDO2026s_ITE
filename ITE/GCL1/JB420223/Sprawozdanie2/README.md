@@ -110,17 +110,3 @@ Wymagania:
 *   Narzędzia pomocnicze systemu diffutils, bash, which, procps-ng.
 *   Dostęp do Internetu w celu pobrania repozytorium https://github.com/redis/redis.git
 *   Miejsce na dysku wewnątrz kontenera na skompilowane binaria
-
-Diagram aktywności:
-
-![Zdj](lab5/5_14.png)
-
-* **Collect** - przygotowanie środowiska, zależności i klonowanie repozytorium
-* **Build** - budowanie programu
-* **Test** - testy programu
-* **Report** - zbieranie logów
-* **Publish** - przygotowanie programu w takiej formie, aby osoba z zewnątrz włączyła go bez pobierania dodatkówych dependencji
-
-Diagram wdrożeniowy:
-
-![Zdj](lab5/5_15.png)

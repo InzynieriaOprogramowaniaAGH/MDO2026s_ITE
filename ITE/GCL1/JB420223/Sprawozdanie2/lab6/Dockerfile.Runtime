@@ -1,0 +1,6 @@
+FROM fedora:40
+RUN dnf install -y openssl && dnf clean all
+WORKDIR /app
+COPY redis-server /usr/local/bin/redis-server
+EXPOSE 6379
+CMD ["redis-server"]
