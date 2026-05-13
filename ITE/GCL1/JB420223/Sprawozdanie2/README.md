@@ -229,9 +229,13 @@ W logach etapu Deploy widać, że skompilowana binarka została poprawnie wyodr�
 Końcowy artefakt w postaci spakowanej binarki jest dostępny do pobrania bezpośrednio z interfejsu Jenkinsa, co zamyka proces publikacji.
 ![Zdj](lab6/6_5.png)
 
----
+### Analiza formy redystrybucyjnej
+W projekcie zdecydowano się na podwójną formę publikacji:
+*   **Archiwum .tar.gz:** Pozwala na szybkie przeniesienie samej binarki na systemy, które nie posiadają zainstalowanego silnika Docker. Jest to format lekki i uniwersalny dla systemów Linux.
+*   **Obraz Docker (Runtime):** Jest to docelowa forma wdrożenia (Deploy). Dzięki zastosowaniu obrazu opartego na Fedorze (bez narzędzi kompilacji), obraz jest bezpieczny i gotowy do uruchomienia w architekturze mikroserwisowej.
 
 ### Wnioski
 *   **Redukcja długu technologicznego:** Wykorzystanie obrazów z Lab 3 pozwoliło na szybką automatyzację bez konieczności redefiniowania środowiska budowania.
 *   **Optymalizacja rozmiaru i bezpieczeństwa:** Dzięki rozdzieleniu etapu kompilacji od uruchomienia (multi-stage), końcowy obraz runtime nie zawiera kodu źródłowego ani narzędzi kompilacji, co jest dobrą praktyką bezpieczeństwa.
 *   **Wersjonowanie IaC:** Umieszczenie logiki CI/CD w pliku `Jenkinsfile` zapewnia pełną powtarzalność procesu na dowolnym serwerze Jenkins z dostępem do Dockera.
+*   **Odniesienie do diagramu aktywności:** Ostatecznie zrealizowany pipeline w pełni pokrywa się z założeniami przedstawionymi na diagramie aktywności. Nie stwierdzono rozbieżności między fazą projektową a implementacją w Jenkinsfile.
