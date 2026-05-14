@@ -4,7 +4,7 @@ Jakub Bednarczyk
 ## Lab 5 Pipeline, Jenkins, izolacja etapów
 
 ### Utworzenie instancji Jenkins
-Jenkins to kompletny serwer CI/CD z silnikiem pipeline, schedulerem, agentami i systemem pluginów, a Blue Ocean to jedynie nowoczesny interfejs graficzny oraz zestaw pluginów, które same nie wystarczą.
+Jenkins to kompletny serwer CI/CD z silnikiem pipeline, schedulerem, agentami i systemem pluginów, a Blue Ocean to jedynie nowoczesny interfejs graficzny oraz zestaw pluginów, które same nie wystarczą
 
 Zaczynamy od setup'u jenkinsa z oficjalnej instrukcji dla linuxa:
 https://www.jenkins.io/doc/book/installing/docker/
@@ -114,27 +114,27 @@ Wymagania:
 ## Lab 6 i 7: Pipeline CI/CD (Automatyzacja Redis)
 
 ### Architektura i analiza problemu technologicznego
-Celem tej części laboratorium było przeniesienie manualnego procesu budowania i testowania serwera Redis (zrealizowanego w Lab 3 i 4) do pełnej, zautomatyzowanej formy pipeline'u CI/CD (Pipeline).
+Celem tej części laboratorium było przeniesienie manualnego procesu budowania i testowania serwera Redis (zrealizowanego w Lab 3 i 4) do pełnej, zautomatyzowanej formy pipeline'u CI/CD
 
 **Analiza izolacji i etapów:**
-*   **Środowisko Build:** Wykorzystano przygotowany wcześniej `Dockerfile.Redis.Build` (Fedora 40) z katalogu Lab 3. Zawiera on pełny zestaw narzędzi kompilacji (`gcc`, `make`, `openssl-devel`).
-*   **Środowisko Test:** Wykorzystano `Dockerfile.Redis.Tests` (Lab 3), który bazując na obrazie builda, przeprowadza automatyczne testy jednostkowe Redisa (`make test`).
-*   **Środowisko Runtime (Wdrożenie):** W celu optymalizacji stworzono nowy, lekki `Dockerfile.Runtime`. Zamiast kopiować cały kod źródłowy, zawiera on jedynie niezbędne biblioteki oraz gotową binarkę `redis-server` wyekstrahowaną z kontenera budującego.
+*   **Środowisko Build:** Wykorzystano przygotowany wcześniej `Dockerfile.Redis.Build`. Zawiera on pełny zestaw narzędzi kompilacji (`gcc`, `make`, `openssl-devel`).
+*   **Środowisko Test:** Wykorzystano `Dockerfile.Redis.Tests`, który bazując na obrazie builda, przeprowadza automatyczne testy jednostkowe Redisa (`make test`).
+*   **Środowisko Runtime (Wdrożenie):** W celu optymalizacji stworzono nowy, lekki `Dockerfile.Runtime`. Zamiast kopiować cały kod źródłowy, zawiera on jedynie niezbędne biblioteki oraz gotową binarkę `redis-server` wyekstrahowaną z kontenera budującego
 
 #### Diagram Aktywności (Proces CI/CD)
 ![Zdj](lab6/6_1.png)
 
 #### Diagram Wdrożeniowy (Deployment Diagram)
-![Zdj](lab6/6_2.png)
-*Diagram wdrożeniowy pokazujący relację między serwerem Jenkins, demonem Dockera (DinD) oraz powstającymi artefaktami.*
-
----
+<p align="center">
+  <img src="lab6/6_2.png" width="50%" height="50%">
+</p>
+*Diagram wdrożeniowy pokazujący relację między serwerem Jenkins, demonem Dockera (DinD) oraz powstającymi artefaktami*
 
 ### Deklaracja Infrastruktury (Infrastructure as Code)
 
-Proces budowania został w pełni opisany w pliku `Jenkinsfile`, co czyni infrastrukturę częścią kodu (IaC). Pipeline korzysta z izolacji etapów w osobnych kontenerach, co gwarantuje powtarzalność buildu.
+Proces budowania został w pełni opisany w pliku `Jenkinsfile`, co czyni infrastrukturę częścią kodu (IaC). Pipeline korzysta z izolacji etapów w osobnych kontenerach, co gwarantuje powtarzalność buildu
 
-**Plik: ITE/GCL1/JB420223/Sprawozdanie2/lab6/Dockerfile.Runtime**
+**Dockerfile.Runtime**
 <pre>
 FROM fedora:40
 RUN dnf install -y openssl && dnf clean all
@@ -144,7 +144,7 @@ EXPOSE 6379
 CMD ["redis-server"]
 </pre>
 
-**Plik: ITE/GCL1/JB420223/Sprawozdanie2/lab6/Jenkinsfile**
+**Jenkinsfile**
 
 <pre>
 pipeline {
@@ -218,24 +218,27 @@ pipeline {
 ### Wyniki i Archiwizacja (Definition of Done)
 
 #### Przebieg pipeline'u w Blue Ocean
-Pipeline został wykonany pomyślnie. Wszystkie etapy (Build, Test, Deploy, Publish) zakończyły się statusem SUCCESS.
+Pipeline został wykonany pomyślnie. Wszystkie etapy (Build, Test, Deploy, Publish) zakończyły się sukcesem
 ![Zdj](lab6/6_3.png)
 
 #### Logi z weryfikacji (Smoke Test)
-W logach etapu Deploy widać, że skompilowana binarka została poprawnie wyodrębniona i jest funkcjonalna (wyświetlenie wersji).
+W logach etapu Deploy widać, że skompilowana binarka została poprawnie wyodrębniona i jest funkcjonalna (wyświetlenie wersji)
 ![Zdj](lab6/6_4.png)
 
 #### Archiwizacja artefaktu
-Końcowy artefakt w postaci spakowanej binarki jest dostępny do pobrania bezpośrednio z interfejsu Jenkinsa, co zamyka proces publikacji.
+Końcowy artefakt w postaci spakowanej binarki jest dostępny do pobrania bezpośrednio z interfejsu Jenkinsa, co zamyka proces publikacji
 ![Zdj](lab6/6_5.png)
 
 ### Analiza formy redystrybucyjnej
 W projekcie zdecydowano się na podwójną formę publikacji:
-*   **Archiwum .tar.gz:** Pozwala na szybkie przeniesienie samej binarki na systemy, które nie posiadają zainstalowanego silnika Docker. Jest to format lekki i uniwersalny dla systemów Linux.
-*   **Obraz Docker (Runtime):** Jest to docelowa forma wdrożenia (Deploy). Dzięki zastosowaniu obrazu opartego na Fedorze (bez narzędzi kompilacji), obraz jest bezpieczny i gotowy do uruchomienia w architekturze mikroserwisowej.
+*   **Archiwum .tar.gz:** Pozwala na szybkie przeniesienie samej binarki na systemy, które nie posiadają zainstalowanego silnika Docker. Jest to format lekki i uniwersalny dla systemów Linux
+*   **Obraz Docker (Runtime):** Jest to docelowa forma wdrożenia (Deploy). Dzięki zastosowaniu obrazu opartego na Fedorze (bez narzędzi kompilacji), obraz jest bezpieczny i gotowy do uruchomienia w architekturze mikroserwisowej
 
 ### Wnioski
-*   **Redukcja długu technologicznego:** Wykorzystanie obrazów z Lab 3 pozwoliło na szybką automatyzację bez konieczności redefiniowania środowiska budowania.
-*   **Optymalizacja rozmiaru i bezpieczeństwa:** Dzięki rozdzieleniu etapu kompilacji od uruchomienia (multi-stage), końcowy obraz runtime nie zawiera kodu źródłowego ani narzędzi kompilacji, co jest dobrą praktyką bezpieczeństwa.
-*   **Wersjonowanie IaC:** Umieszczenie logiki CI/CD w pliku `Jenkinsfile` zapewnia pełną powtarzalność procesu na dowolnym serwerze Jenkins z dostępem do Dockera.
-*   **Odniesienie do diagramu aktywności:** Ostatecznie zrealizowany pipeline w pełni pokrywa się z założeniami przedstawionymi na diagramie aktywności. Nie stwierdzono rozbieżności między fazą projektową a implementacją w Jenkinsfile.
+*   **Wygodna automatyzacja:** Wykorzystanie obrazów z Lab 3 pozwoliło na szybką automatyzację bez konieczności redefiniowania środowiska budowania
+
+*   **Optymalizacja rozmiaru i bezpieczeństwa:** Dzięki rozdzieleniu etapu kompilacji od uruchomienia (multi-stage), końcowy obraz runtime nie zawiera kodu źródłowego ani narzędzi kompilacji, co jest dobrą praktyką bezpieczeństwa
+
+*   **Wersjonowanie IaC:** Umieszczenie logiki CI/CD w pliku `Jenkinsfile` zapewnia pełną powtarzalność procesu na dowolnym serwerze Jenkins z dostępem do Dockera
+
+*   **Odniesienie do diagramu aktywności:** Ostatecznie zrealizowany pipeline w pełni pokrywa się z założeniami przedstawionymi na diagramie aktywności. Nie stwierdzono rozbieżności między fazą projektową a implementacją w Jenkinsfile
