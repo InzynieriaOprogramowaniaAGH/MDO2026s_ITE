@@ -32,3 +32,8 @@ ansible-playbook -i inventory.ini pbook.yml --ask-become-pass
 ansible-playbook -i inventory.ini pbook.yml --ask-become-pass
 code README.md
 code command_history.txt
+code pbook_artifact.yml
+ansible-playbook -i inventory.ini pbook_artifact.yml --ask-become-pass
+ansible-galaxy role init roles/artifact_manage
+code pbook_artifact_w_role.yml
+ansible-playbook -i inventory.ini pbook_artifact_w_role.yml --ask-become-pass
