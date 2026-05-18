@@ -1,0 +1,6 @@
+---
+- name: Uruchomienie pełnego wdrożenia za pomocą roli
+  hosts: Endpoints
+  become: yes
+  roles:
+    - app_deploy

@@ -1,0 +1,83 @@
+---
+- name: Sanity check - Wyślij żądanie ping do maszyny
+  ansible.builtin.ping:
+
+- name: Aktualizacja cache pakietów apt
+  ansible.builtin.apt:
+    update_cache: yes
+  ignore_errors: yes
+
+- name: Restart uslug ssh oraz rngd
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - ssh
+    - rngd
+  ignore_errors: yes
+
+
+
+- name: Upewnij się, że Docker jest zainstalowany
+  ansible.builtin.apt:
+    name: 
+      - docker.io
+      - python3-docker
+    state: present
+    update_cache: yes
+
+- name: Upewnij się, że usługa Docker działa
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Stwórz czysty katalog roboczy dla aplikacji
+  ansible.builtin.file:
+    path: /tmp/app_workspace
+    state: directory
+    mode: '0755'
+
+- name: Pobierz spakowaną aplikację bezpośrednio z rejestru NPM
+  ansible.builtin.get_url:
+    url: "https://registry.npmjs.org/zajecia6ak123/-/zajecia6ak123-1.0.3.tgz"
+    dest: /tmp/app_workspace/app.tgz
+    mode: '0644'
+  ignore_errors: yes
+
+- name: Rozpakuj pobraną aplikację
+  ansible.builtin.unarchive:
+    src: /tmp/app_workspace/app.tgz
+    dest: /tmp/app_workspace/
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  ignore_errors: yes
+
+- name: Stwórz, udostępnij pliki i uruchom aplikację w kontenerze Node
+  community.docker.docker_container:
+    name: fastify-app-container
+    image: node:20
+    state: started
+    restart_policy: always
+    volumes:
+      - /tmp/app_workspace:/usr/src/app
+    working_dir: /usr/src/app
+    command: bash -c "npm install && npm start"
+    ports:
+      - "3000:3000"
+
+- name: Odczekaj chwilę na uruchomienie aplikacji
+  ansible.builtin.pause:
+    seconds: 5
+
+
+
+- name: Oczyszczanie - Zatrzymaj i usuń kontener aplikacji
+  community.docker.docker_container:
+    name: fastify-app-container
+    state: absent
+
+- name: Oczyszczanie - Usuń katalog roboczy
+  ansible.builtin.file:
+    path: /tmp/app_workspace
+    state: absent
