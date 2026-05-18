@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build, Extract & Publish') {
+            steps {
+                dir('ITE/GCL1/PC422024/Sprawozdanie2/lab6') {
+                    sh 'docker build --no-cache -f Dockerfile.build -t my-builder .'
+                    sh 'docker build -f Dockerfile.test -t my-tester .'
+                    sh 'docker create --name temp-builder my-builder'               
+                    
+                    sh 'docker cp temp-builder:/app/sample-app ./sample-app'
+                    sh 'docker cp temp-builder:/app/single_include/nlohmann/json.hpp ./json.hpp'
+                    sh 'docker rm temp-builder'
+                
+                    
+                    sh '''
+                    mkdir -p lib-pkg/usr/local/bin
+                    mkdir -p lib-pkg/DEBIAN
+                    cp sample-app lib-pkg/usr/local/bin/
+                    echo "Package: nlohmann-json-lib\nVersion: 1.0\nArchitecture: amd64\nMaintainer: Student\nDescription: Runtime sample app" > lib-pkg/DEBIAN/control
+                    dpkg-deb --build lib-pkg nlohmann-json-lib.deb
+                    '''
+                    
+                    sh '''
+                    mkdir -p dev-pkg/usr/include/nlohmann
+                    mkdir -p dev-pkg/DEBIAN
+                    cp json.hpp dev-pkg/usr/include/nlohmann/
+                    echo "Package: nlohmann-json-devel\nVersion: 1.0\nArchitecture: all\nMaintainer: Student\nDescription: Headers for development" > dev-pkg/DEBIAN/control
+                    dpkg-deb --build dev-pkg nlohmann-json-devel.deb
+                    '''
+
+                    archiveArtifacts artifacts: '*.deb', followSymlinks: false
+                }
+            }
+        }
+
+        stage('Deploy & Smoke Test') {
+            steps {
+                dir('ITE/GCL1/PC422024/Sprawozdanie2/lab6') {
+                    sh 'docker build -f Dockerfile.deploy -t my-deploy .'
+                    sh 'docker run --rm my-deploy'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
