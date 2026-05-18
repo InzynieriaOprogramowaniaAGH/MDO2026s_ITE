@@ -115,6 +115,120 @@ sudo systemctl stop sshd
 
 Po wyłączeniu serwera SSH na maszynie ansible-target, Ansible raportuje błąd UNREACHABLE. Ansible nie wymaga zainstalowanego agenta na maszynie docelowej, ale jest całkowicie zależny od protokołu SSH. Brak łączności natychmiast przerywa proces dla danego hosta, nie wpływając jednak na wykonanie zadań na pozostałych dostępnych maszynach.
 
+### Zarządzanie stworzonym artefaktem
+
+#### 1. Stworzenie nowej roli na zarządcy
+
+```bash
+ansible-galaxy role init url_shortener_deploy
+```
+
+![](zdj/l8-z13.png)
+
+#### 2. Wypelnienie meta/main.yml
+
+![](zdj/l8-z12.png)
+
+#### 3. Wypelnienie tasks/main.yml
+
+```yml
+---
+
+
+- name: 1. Sanity check sprawdzenie dostepnego miejsca 
+  assert:
+    that:
+      - ansible_memfree_mb > 100
+    fail_msg: "Za malo wolnej pamieci"
+  ignore_errors: yes
+
+- name: 2. Instalacja Dockera na target (Fedora)
+  shell: dnf install -y docker docker-compose
+
+- name: 3. Sprawdzenie czy usluga Docker działa i startuje z systemem
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: 4. Przygotowanie katalogu na targecie
+  file:
+    path: /home/ansible/app
+    state: directory
+    mode: '0755'
+
+- name: 5. Przeslanie artefaktu (*.tgz) 
+  copy:
+    src: ./szymonjednorozec-mdo-url-shortener-0.0.3.tgz       
+    dest: /home/ansible/app/url-shortener.tgz
+    owner: ansible
+    mode: '0644'
+
+- name: 6. Uruchomienie aplikacji w kontenerze Node.js wraz z udostepnieniem i rozpakowaniem artefaktu
+  shell: |
+    tar -xzf url-shortener.tgz
+    
+    docker run -d --name url-shortener-running \
+      -v /home/ansible/app/package:/src:Z \
+      -w /src \
+      -p 8081:8080 \
+      node:20-alpine sleep 100
+  args:
+    chdir: /home/ansible/app
+    executable: /bin/bash
+
+- name: 7. Weryfikacja poprawnego uruchomienia i obecnosci rozpakowanych plikow (Sanity Check)
+  command: docker exec url-shortener-running ls -la
+  register: docker_check
+  failed_when: "'package.json' not in docker_check.stdout"
+
+- name: 8. Oczyszczenie srodowiska z wdrozonej aplikacji i sprzatanie
+  shell: |
+    docker stop url-shortener-running
+    docker rm url-shortener-running
+    rm -rf /home/ansible/app
+  args:
+    executable: /bin/bash
+```
+
+#### 4. Stworzona playbook uruchamiający rolę
+
+![](zdj/l8-z14.png)
+
+#### 5. Uruchomienie playbooka / napotkane problemy
+
+```bash
+ansible-playbook -i inventory.ini deploy.yml --ask-become-pass
+```
+
+- błąd integracji Pythona z menedżerem pakietów DNF5
+![](zdj/l8-z15.png)
+
+Problem ten rozwiązano poprzez zastąpienie natywnego modułu, komendą systemową w module shell
+
+Zamiast:
+```yml
+dnf:
+    name:
+      - docker
+      - docker-compose
+    state: present
+```
+zastosowano:
+```yml
+shell: dnf install -y docker docker-compose
+```
+
+- Podczas montowania wolumenu z rozpakowanym artefaktem do kontenera, system zablokował uprawnienia do odczytu plików wewnątrz kontenera
+![](zdj/l8-z16.png)
+
+Problem został rozwiązany poprzez dodanie flagi :Z do definicji wolumenu (-v /home/ansible/app/package:/src:Z). Flaga ta instruuje Dockera, aby automatycznie nadał odpowiedni kontekst bezpieczeństwa
+
+
+Po poprawieniu problemów:
+
+![](zdj/l8-z17.png)
+
 ## Wnioski laboratorium 8
 
 - Dla pełnej automatyzacji w środowiskach produkcyjnych zaleca się stosowanie natywnych modułów, które raportują changed: false, jeśli system jest już w pełni zaktualizowany. Użycie modułu shell jest prostsze w zapisie, ale oszukuje statystyki.
