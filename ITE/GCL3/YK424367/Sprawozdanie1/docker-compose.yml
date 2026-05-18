@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   readme-aura-build:
     build:
@@ -12,6 +10,14 @@ services:
       context: .
       dockerfile: ./Dockerfile.test
     image: mdo-ite:sprawozdanie3-test
+    depends_on:
+      - readme-aura-build
+
+  readme-aura-deploy:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.deploy
+    image: mdo-ite:sprawozdanie6-deploy
     depends_on:
       - readme-aura-build
 

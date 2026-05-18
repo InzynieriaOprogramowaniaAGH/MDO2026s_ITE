@@ -1,0 +1,12 @@
+FROM mdo-ite:sprawozdanie3-build
+
+WORKDIR /readme-aura
+
+RUN npm pack
+
+CMD ["sh", "-c", \
+  "mkdir -p /tmp/deploy-run && cd /tmp/deploy-run && \
+   npm init -y && \
+   npm install /readme-aura/*.tgz && \
+   npx readme-aura init --template PurpleGlow && \
+   npx readme-aura build"]

@@ -30,7 +30,7 @@ Pierwsze trzy punkty są *obowiązkowe* do wykonania na zajęciach.
   * https://www.jenkins.io/doc/pipeline/steps/git/
   * https://www.jenkins.io/doc/pipeline/examples/#unstash-different-dir
   * [https://www.jenkins.io/doc/book/pipeline/docker/](https://www.jenkins.io/doc/book/pipeline/docker/#building-containers)
-* Spróbuj sklonować repo przedmiotowe (`MDO2025_INO`)
+* Spróbuj sklonować repo przedmiotowe (`MDO2026s_ITE`)
 * Zrób *checkout* do swojego pliku Dockerfile (na osobistej gałęzi) właściwego dla *buildera* wybranego w poprzednim sprawozdaniu programu
 * Zbuduj Dockerfile
 * Uruchom stworzony *pipeline* drugi raz

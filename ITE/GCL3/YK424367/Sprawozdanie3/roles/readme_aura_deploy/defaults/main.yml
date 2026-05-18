@@ -1,0 +1,10 @@
+local_artifact_path: "{{ playbook_dir }}/readme-aura.tgz"
+
+
+artifact_dir: /tmp/readme-aura-deploy
+
+artifact_filename: readme-aura.tgz
+
+node_image: node:20
+
+container_name: readme-aura-container

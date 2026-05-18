@@ -1,0 +1,65 @@
+---
+- name: Ping wszystkich maszyn
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Ping
+      ansible.builtin.ping:
+
+- name: Skopiuj inventory na Endpoints
+  hosts: Endpoints
+  gather_facts: false
+  tasks:
+    - name: Upewnij się, że katalog docelowy istnieje
+      ansible.builtin.file:
+        path: /home/ansible
+        state: directory
+        owner: ansible
+        mode: '0755'
+      become: yes
+
+    - name: Kopiuj inventory.ini
+      ansible.builtin.copy:
+        src: "{{ lookup('env', 'HOME') }}/ansible/inventory.ini"
+        dest: /home/ansible/inventory.ini
+        owner: ansible
+        mode: '0644'
+      become: yes
+
+- name: Zaktualizuj pakiety na Endpoints
+  hosts: Endpoints
+  gather_facts: false
+  tasks:
+    - name: apt update i upgrade
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: yes
+      become: yes
+
+- name: Zrestartuj usługi na Endpoints
+  hosts: Endpoints
+  gather_facts: false
+  tasks:
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+      become: yes
+
+    - name: Restart rngd (może nie istnieć)
+      ansible.builtin.service:
+        name: rngd
+        state: restarted
+      become: yes
+      ignore_errors: yes
+
+# ── ZARZĄDZANIE ARTEFAKTEM ───────────────────────────────────────────────────
+# Artefaktem pipeline'u jest plik .tgz (paczka NPM readme-aura).
+# Uruchom: ansible-playbook -i ~/ansible/inventory.ini site.yml \
+#            -e "local_artifact_path=/ścieżka/do/readme-aura.tgz"
+
+- name: Wdróż readme-aura na Endpoints
+  hosts: Endpoints
+  gather_facts: true
+  roles:
+    - readme_aura_deploy

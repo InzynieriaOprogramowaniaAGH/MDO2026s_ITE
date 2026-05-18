@@ -1,0 +1,93 @@
+pipeline {
+    agent any
+
+    options {
+        disableConcurrentBuilds()
+        skipDefaultCheckout()
+    }
+
+    environment {
+        COMPOSE_DIR = 'ITE/GCL3/YK424367/Sprawozdanie1'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                cleanWs()
+                checkout scm
+            }
+        }
+
+        stage('Build image') {
+            steps {
+                dir("${env.COMPOSE_DIR}") {
+                    sh 'docker compose build readme-aura-build'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir("${env.COMPOSE_DIR}") {
+                    sh 'docker build -t mdo-ite:sprawozdanie3-test -f Dockerfile.test . && docker run --rm mdo-ite:sprawozdanie3-test'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir("${env.COMPOSE_DIR}") {
+                    sh """
+                        set -e
+                        docker build -t mdo-ite:sprawozdanie6-deploy -f Dockerfile.deploy .
+                        docker run --rm mdo-ite:sprawozdanie6-deploy
+                        docker tag mdo-ite:sprawozdanie6-deploy mdo-ite:sprawozdanie6-deploy-build-${env.BUILD_NUMBER}
+                    """.stripIndent()
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                dir("${env.COMPOSE_DIR}") {
+                    sh '''
+                        mkdir -p artifacts
+                        CID=$(docker create mdo-ite:sprawozdanie6-deploy)
+                        docker cp ${CID}:/readme-aura/. artifacts/
+                        docker rm ${CID}
+                    '''
+                    archiveArtifacts artifacts: 'artifacts/*.tgz', fingerprint: true
+                    writeFile file: 'publish.sh', text: """#!/bin/sh
+set -e
+cd /readme-aura
+rm -f *.tgz
+VERSION=\$(node -e "process.stdout.write(require('./package.json').version)")
+npm version --no-git-tag-version \${VERSION}-canary.${env.BUILD_NUMBER}
+npm pack
+npm config set //registry.npmjs.org/:_authToken \${NPM_TOKEN}
+npm publish *.tgz --tag canary --access public
+"""
+                    withCredentials([string(credentialsId: 'npm-token', variable: 'NPM_TOKEN')]) {
+                        sh """
+                            docker run --rm \\
+                                -e NPM_TOKEN=\${NPM_TOKEN} \\
+                                -v ${env.WORKSPACE}/${env.COMPOSE_DIR}/publish.sh:/publish.sh:ro \\
+                                mdo-ite:sprawozdanie6-deploy \\
+                                sh /publish.sh
+                        """
+                    }
+                    sh 'rm -f publish.sh'
+                }
+            }
+        }
+
+    }
+
+    post {
+        always {
+            dir("${env.COMPOSE_DIR}") {
+                sh 'rm -rf artifacts || true'
+            }
+        }
+    }
+}
