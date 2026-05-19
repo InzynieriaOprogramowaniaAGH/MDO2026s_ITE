@@ -1,31 +1,3 @@
-
-===lab5===
-
-projekt wyświetlający uname
-![](1-uname.png)
-
-uruchomienie uname
-![](2-uname-run.png)
-
-projekt który zwraca błąd gdy godzina jest nieparzysta
-![](3-odd-hour.png)
-
-odpalenie programu sprawdzającego godzinę
-![](4-odd-hour-run.png)
-
-pobranie kontenera ubuntu
-![](5-ubuntu.png)
-
-sprawdzenie poprawności działania
-![](6-ubuntu-run.png)
-
-
-![](7-pipeline-script.png)
-
-
-
-
-
 pipeline {
     agent any
 

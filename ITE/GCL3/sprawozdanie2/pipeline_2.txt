@@ -1,0 +1,128 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_VERSION = "14.1.1"
+        IMAGE_TAG = "${APP_VERSION}-${env.BUILD_NUMBER}"
+        DFILES = "ITE/GCL3/sprawozdanie2/dockerfiles"
+    }
+
+    stages {
+
+        stage('Cleanup workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Clone') {
+            steps {
+                git branch: 'KL422041',
+                    url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+
+        stage('Build (Builder container)') {
+            steps {
+                echo "Buduje obraz Builder"
+                sh "docker build -f ${DFILES}/Dockerfile.builder -t my-rg-builder:latest ${DFILES}"
+                sh 'docker run --rm my-rg-builder:latest'
+            }
+        }
+
+        stage('Test (Tester container)') {
+            steps {
+                echo "Buduje obraz Tester"
+                sh "docker build -f ${DFILES}/Dockerfile.tester -t my-rg-tester:latest ${DFILES}"
+
+                echo "Uruchamiam testy"
+                sh '''
+                    set -o pipefail
+                    docker run --rm my-rg-tester:latest 2>&1 | tee test-output.log
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'test-output.log',
+                                     allowEmptyArchive: true,
+                                     fingerprint: true
+                }
+            }
+        }
+
+        stage('Extract .deb artifact from Builder') {
+            steps {
+                echo "Wyciagam pakiet .deb z kontenera Builder"
+                sh """
+                    CID=\$(docker create my-rg-builder:latest)
+                    mkdir -p artifacts
+                    docker cp \${CID}:/app/target/debian/. ./artifacts/
+                    docker rm \${CID}
+
+                    cd artifacts
+                    for f in *.deb; do
+                        mv "\$f" "ripgrep_${IMAGE_TAG}_amd64.deb"
+                    done
+                    ls -la
+                """
+            }
+        }
+
+        stage('Deploy (Deploy container)') {
+            steps {
+                echo "Buduje wersjonowany obraz Deploy"
+                sh "docker build -f ${DFILES}/Dockerfile.deploy -t my-rg-deploy:${IMAGE_TAG} -t my-rg-deploy:latest ${DFILES}"
+
+                echo "Smoke test"
+                sh """
+                    docker run --rm \
+                        -v \$(pwd)/${DFILES}:/data \
+                        my-rg-deploy:${IMAGE_TAG} \
+                        "ripgrep" /data/input-test.list | tee smoke-test.log
+
+                    echo "Smoke test OK"
+                """
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'smoke-test.log',
+                                     allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('Deploy: run as non-blocking service') {
+            steps {
+                sh """
+                    docker rm -f rg-running 2>/dev/null || true
+                    docker run -d --name rg-running \
+                        --entrypoint sleep \
+                        my-rg-deploy:${IMAGE_TAG} 3600
+
+                    docker exec rg-running rg --version
+                """
+            }
+        }
+
+        stage('Publish artifact') {
+            steps {
+                echo "=== Publikuje artefakty .deb ==="
+                archiveArtifacts artifacts: 'artifacts/*.deb',
+                                 fingerprint: true,
+                                 onlyIfSuccessful: true
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker rm -f rg-running 2>/dev/null || true'
+        }
+        success {
+            echo "Pipeline OK. Build #${env.BUILD_NUMBER}, wersja ${IMAGE_TAG}"
+        }
+        failure {
+            echo "Pipeline FAIL. Sprawdz logi."
+        }
+    }
+}
