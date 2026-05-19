@@ -1,4 +1,4 @@
-# --- PLIK ODPOWIEDZI KICKSTART (Fedora Lab 09) ---
+# --- PLIK ODPOWIEDZI KICKSTART (Fedora 44 - Lab 09) ---
 
 # Instalacja nienadzorowana i automatyczny restart (Wymóg instrukcji)
 text
@@ -13,16 +13,15 @@ lang pl_PL.UTF-8
 network --bootproto=dhcp --device=link --activate
 network --hostname=fedora-markedjs-host
 
-# Źródło instalacji - bezpośrednio z mirrorów Fedory 40
-url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-40&arch=x86_64
-repo --name=update --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f40&arch=x86_64
+# Źródło instalacji - zaktualizowane do Fedory 44
+url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-44&arch=x86_64
+repo --name=update --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f44&arch=x86_64
 
 # Użytkownicy (Wymóg: użytkownik inny niż 'user')
 rootpw --plaintext admin
 user --groups=wheel --name=student --password=student --plaintext
 
 # Czyszczenie i partycjonowanie (Wymóg: instalacja "w kółko" i formatowanie nośników)
-# Usunięto nazwy dysków (sda/vda), aby działało wszędzie (Hyper-V, VBox, fizyczny sprzęt)
 clearpart --all --initlabel
 autopart --type=lvm --fstype=ext4
 
@@ -58,7 +57,6 @@ Type=oneshot
 RemainAfterExit=yes
 # Tutaj definiujemy, co ma sie uruchomic. 
 # Jako Proof-of-Concept pobieramy i uruchamiamy prosty serwer Nginx.
-# Jeśli masz swoją aplikację na Docker Hub, podmień 'nginx:alpine' na swój obraz.
 ExecStart=/usr/bin/docker run -d --name markedjs-app --restart always -p 80:80 nginx:alpine
 
 [Install]
