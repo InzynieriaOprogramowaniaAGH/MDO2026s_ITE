@@ -17,11 +17,12 @@ RUN cargo build --release
 
 
 RUN mkdir -p deployment/deb && \
-    cp "$(find target -name 'rg.1' | head -1)" deployment/deb/ && \
-    cp "$(find target -name 'rg.bash' | head -1)" deployment/deb/ && \
-    cp "$(find target -name 'rg.fish' | head -1)" deployment/deb/ && \
-    cp "$(find target -name '_rg.ps1' | head -1)" deployment/deb/
+    ./target/release/rg --generate man > deployment/deb/rg.1 && \
+    ./target/release/rg --generate complete-bash > deployment/deb/rg.bash && \
+    ./target/release/rg --generate complete-fish > deployment/deb/rg.fish && \
+    ./target/release/rg --generate complete-powershell > deployment/deb/_rg.ps1
 
 
+    
 RUN cargo deb --no-build
 CMD ["./target/release/rg", "--version"]
