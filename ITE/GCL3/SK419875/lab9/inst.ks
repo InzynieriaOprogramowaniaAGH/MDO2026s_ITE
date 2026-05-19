@@ -1,6 +1,6 @@
-# --- PLIK ODPOWIEDZI KICKSTART (Fedora 44 - Lab 09) ---
+# KICKSTART
 
-# Instalacja w trybie tekstowym i automatyczny restart (Wymóg instrukcji)
+# Instalacja w trybie tekstowym i automatyczny restart
 text
 reboot
 
@@ -8,19 +8,19 @@ reboot
 keyboard --vckeymap=pl --xlayouts='pl'
 lang pl_PL.UTF-8
 
-# Konfiguracja sieci i Hostname (Wymóg: hostname inny niż localhost)
+# Konfiguracja sieci i Hostname
 network --bootproto=dhcp --device=link --activate
 network --hostname=fedora-markedjs-host
 
-# Źródło instalacji - zaktualizowane do Fedory 44
+# Źródło instalacji - Fedora 44
 url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-44&arch=x86_64
 repo --name=update --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f44&arch=x86_64
 
-# Użytkownicy (Wymóg: użytkownik inny niż 'user')
+# Użytkownicy
 rootpw --plaintext admin
 user --groups=wheel --name=student --password=student --plaintext
 
-# Czyszczenie i partycjonowanie (Wymóg: instalacja "w kółko" i formatowanie nośników)
+# Czyszczenie i partycjonowanie (instalacja w kółko i formatowanie nośników)
 clearpart --all --initlabel
 autopart --type=lvm --fstype=ext4
 
@@ -34,11 +34,10 @@ nano
 docker
 %end
 
-# --- SEKCJA POST-INSTALL ---
-# Wymóg: Rozszerz plik o repozytoria i oprogramowanie.
-# Zapewnij uruchomienie po pierwszym uruchomieniu systemu.
+# POST-INSTALL
 
 %post --log=/root/ks-post-install.log
+
 # 1. Włączamy usługę Dockera, aby startowała razem z systemem
 systemctl enable docker
 
