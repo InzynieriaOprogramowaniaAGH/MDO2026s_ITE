@@ -14,5 +14,14 @@ WORKDIR /app
 
 RUN git clone --depth 1 --branch 14.1.1 https://github.com/BurntSushi/ripgrep.git .
 RUN cargo build --release
+
+
+RUN mkdir -p deployment/deb && \
+    cp "$(find target -name 'rg.1' | head -1)" deployment/deb/ && \
+    cp "$(find target -name 'rg.bash' | head -1)" deployment/deb/ && \
+    cp "$(find target -name 'rg.fish' | head -1)" deployment/deb/ && \
+    cp "$(find target -name '_rg.ps1' | head -1)" deployment/deb/
+
+
 RUN cargo deb --no-build
 CMD ["./target/release/rg", "--version"]
