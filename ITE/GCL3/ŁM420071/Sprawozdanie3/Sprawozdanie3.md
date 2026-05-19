@@ -14,3 +14,11 @@ Dopiszano maszyne z fedora jako ansible target do listy hostow
 ![alt text](role1.png)
 
 ![alt text](anaconda-conf1.png)
+
+![alt text](instaler1.png)
+
+![alt text](startinstall.png)
+
+![alt text](anaconda-post.png)
+
+![alt text](potwierdzenie_dzialania.png)
