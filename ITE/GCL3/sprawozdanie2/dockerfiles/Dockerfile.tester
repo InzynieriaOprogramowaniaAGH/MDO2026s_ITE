@@ -1,7 +1,5 @@
 
 FROM my-rg-builder:latest
-
 WORKDIR /app
-
 
 CMD ["cargo", "test", "--release"]

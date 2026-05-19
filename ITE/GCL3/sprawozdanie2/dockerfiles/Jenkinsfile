@@ -106,7 +106,7 @@ pipeline {
 
         stage('Publish artifact') {
             steps {
-                echo "=== Publikuje artefakty .deb ==="
+                echo "Publikuje artefakty .deb"
                 archiveArtifacts artifacts: 'artifacts/*.deb',
                                  fingerprint: true,
                                  onlyIfSuccessful: true

@@ -1,8 +1,6 @@
 FROM debian:bookworm-slim
 
-
 COPY --from=my-rg-builder:latest /app/target/debian/*.deb /tmp/ripgrep.deb
-
 RUN apt-get update \
     && apt-get install -y --no-install-recommends /tmp/ripgrep.deb \
     && rm -rf /var/lib/apt/lists/* /tmp/ripgrep.deb

@@ -1,31 +1,27 @@
 pipeline {
     agent any
-
     stages {
         stage('Oczyszczanie') {
             steps {
                 deleteDir()
             }
         }
-
         stage('Klonowanie repozytorium') {
             steps {
-                git branch: 'moje-imie-nazwisko', 
-                    url: 'https://github.com/p_mdo_ino/MDO2025_INO.git'
+                git branch: 'KL422041',
+                    url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
             }
         }
-
         stage('Budowanie obrazu (Docker)') {
             steps {
                 script {
-                    sh 'docker build -t my-custom-builder:latest .'
+                    sh 'docker build -f ITE/GCL3/sprawozdanie2/dockerfiles/Dockerfile.builder -t my-custom-builder:latest ITE/GCL3/sprawozdanie2/dockerfiles'
                 }
             }
         }
-
         stage('Weryfikacja buildera') {
             steps {
-                sh 'docker run --rm my-custom-builder:latest --version'
+                sh 'docker run --rm my-custom-builder:latest'
             }
         }
     }
