@@ -218,3 +218,15 @@ timezone Europe/Warsaw --utc
 # Root password
 rootpw --iscrypted --allow-ssh $y$j9T$uYIc/dnv0DogNnI9EUCYvG7Q$BOZtAIoDgM5ditiMn0jySkeeON2cjM4K5aCaXPdb8h4
 ```
+
+Skróciłem link do http://bit.ly/498SrR3 aby móc go łatwo przepisać i dopisałem argument do komendy uruchomieniowej (klikając 'e' na ekranie startowym po uruchomieniu obrazu). 
+```
+inst.ks=https://raw.githubusercontent.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE/refs/heads/KK419817/ITE/GCL3/KK419817/Sprawozdanie3/anaconda-ks.cfg
+```
+
+![alt text](image-9.png)
+
+Następnie wystartowałem instalację nienadzorowaną (F10). Fedora zainstalowała się bez mojej ingerencji, został tylko ekran końcowy z monitem o restart (należy następnie odłączyć 'płytę' z obrazem .iso aby się na nowo maszyna z niego nie próbowała bootować).
+
+![alt text](image-10.png)
+
