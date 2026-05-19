@@ -1,0 +1,9 @@
+galaxy_info:
+  author: MŻ422030
+  description: Deploy minimalpy container on target machine
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble

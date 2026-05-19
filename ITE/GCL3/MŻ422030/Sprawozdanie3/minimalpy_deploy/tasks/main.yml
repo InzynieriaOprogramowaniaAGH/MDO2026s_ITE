@@ -1,0 +1,44 @@
+---
+- name: Sanity check
+  ansible.builtin.ping:
+  ignore_errors: true
+
+- name: Install Docker
+  ansible.builtin.apt:
+    name: docker.io
+    state: present
+    update_cache: true
+  become: true
+
+- name: Start Docker service
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+  become: true
+
+- name: Pull minimalpy image
+  community.docker.docker_image:
+    name: mystackoverflown/minimalpy
+    tag: latest
+    source: pull
+  become: true
+
+- name: Run minimalpy container
+  community.docker.docker_container:
+    name: minimalpy_app
+    image: mystackoverflown/minimalpy:latest
+    state: started
+    ports:
+      - "5430:5430"
+  become: true
+
+- name: Verify container responds
+  ansible.builtin.uri:
+    url: http://localhost:5430
+    status_code: 404
+  register: result
+
+- name: Show verification result
+  ansible.builtin.debug:
+    msg: "Odpowiada z kodem {{ result.status }}"
