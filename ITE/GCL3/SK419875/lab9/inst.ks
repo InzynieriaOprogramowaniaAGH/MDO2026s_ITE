@@ -1,8 +1,7 @@
 # --- PLIK ODPOWIEDZI KICKSTART (Fedora 44 - Lab 09) ---
 
-# Instalacja nienadzorowana i automatyczny restart (Wymóg instrukcji)
+# Instalacja w trybie tekstowym i automatyczny restart (Wymóg instrukcji)
 text
-noninteractive
 reboot
 
 # Konfiguracja klawiatury i języka
@@ -56,7 +55,6 @@ Requires=docker.service
 Type=oneshot
 RemainAfterExit=yes
 # Tutaj definiujemy, co ma sie uruchomic. 
-# Jako Proof-of-Concept pobieramy i uruchamiamy prosty serwer Nginx.
 ExecStart=/usr/bin/docker run -d --name markedjs-app --restart always -p 80:80 nginx:alpine
 
 [Install]
