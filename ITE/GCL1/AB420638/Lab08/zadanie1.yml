@@ -1,0 +1,14 @@
+---
+- name: Test pingu do wszystkich maszyn
+  hosts: all
+  tasks:
+    - name: Wyslij ping
+      ansible.builtin.ping:
+
+- name: Kopiowanie pliku na koncowki
+  hosts: Endpoints
+  tasks:
+    - name: Skopiuj inventory.ini
+      ansible.builtin.copy:
+        src: ./inventory.ini
+        dest: /home/ansible/inventory_kopia.ini

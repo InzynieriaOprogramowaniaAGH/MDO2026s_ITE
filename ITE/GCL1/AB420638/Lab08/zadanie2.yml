@@ -1,0 +1,18 @@
+---
+- name: Administracja systemem (Aktualizacja i Usługi)
+  hosts: Endpoints
+  become: yes
+  tasks:
+    - name: Zaktualizuj pakiety apt (update & upgrade)
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Zrestartuj uslugi ssh i rngd
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - ssh
+        - rngd
+      ignore_errors: yes
