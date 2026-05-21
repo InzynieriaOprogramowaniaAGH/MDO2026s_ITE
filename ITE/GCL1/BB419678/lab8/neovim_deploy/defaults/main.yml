@@ -1,0 +1,4 @@
+---
+# defaults file for neovim_deploy
+artifact_name: "neovim-final.deb"
+deploy_dir: "/opt/neovim_deploy"

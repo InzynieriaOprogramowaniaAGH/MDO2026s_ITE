@@ -1,0 +1,6 @@
+---
+- name: Uruchomienie wdrożenia Neovima
+  hosts: Endpoints
+  become: yes
+  roles:
+    - neovim_deploy

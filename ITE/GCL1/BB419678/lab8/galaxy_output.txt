@@ -1,0 +1,47 @@
+
+PLAY [Uruchomienie wdrożenia Neovima] ******************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [ansible-target]
+
+TASK [neovim_deploy : Przeprowadź sanity check (czy to Ubuntu i czy ma min. 512MB RAM)] ***
+ok: [ansible-target] => {
+    "changed": false,
+    "msg": "Sanity check zakończony sukcesem."
+}
+
+TASK [neovim_deploy : Zainstaluj Dockera (upewnij się wprost, że istnieje)] ****
+ok: [ansible-target]
+
+TASK [neovim_deploy : Upewnij się, że usługa Docker jest uruchomiona] **********
+ok: [ansible-target]
+
+TASK [neovim_deploy : Utwórz katalog wdrożeniowy na maszynie docelowej] ********
+changed: [ansible-target]
+
+TASK [neovim_deploy : Skopiuj paczkę DEB z Orchestratora na maszynę docelową] ***
+changed: [ansible-target]
+
+TASK [neovim_deploy : Utwórz Dockerfile, by umieścić/udostępnić plik w kontenerze] ***
+changed: [ansible-target]
+
+TASK [neovim_deploy : Zbuduj obraz kontenera z wdrożoną aplikacją] *************
+changed: [ansible-target]
+
+TASK [neovim_deploy : Uruchom aplikację w kontenerze (Zwrócenie wersji Neovima)] ***
+changed: [ansible-target]
+
+TASK [neovim_deploy : Wyświetl dowód działania (Weryfikacja)] ******************
+ok: [ansible-target] => {
+    "msg": "Aplikacja działa poprawnie! Zwrócona wersja: NVIM v0.13.0-dev-249+gf2cc0a249d"
+}
+
+TASK [neovim_deploy : Usuń obraz Dockera (sprzątanie)] *************************
+changed: [ansible-target]
+
+TASK [neovim_deploy : Usuń katalog wdrożeniowy i pliki binarne z maszyny docelowej] ***
+changed: [ansible-target]
+
+PLAY RECAP *********************************************************************
+ansible-target             : ok=12   changed=7    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
