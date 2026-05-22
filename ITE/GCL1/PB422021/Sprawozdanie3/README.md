@@ -221,3 +221,56 @@ Natsępnie uruchomiłam całość poleceniem ```ansible-playbook -i inventory.in
 ![Błąd wyświetlania](lab8_ss/lab8ss17.png)
 
 Proces wdrożenia zakończył się sukcesem (failed=0).Moduł uri uderzył na port 3000 uruchomionego kontenera i otrzymał odpowiedź HTTP 200, co dowodzi, że aplikacja faktycznie wstała i działała, a nie tylko została przekopiowana. Na koniec środowisko zostało pomyślnie oczyszczone z testowego wdrożenia - usunięto kontener i wypakowane pliki.
+
+### Lab 9
+
+Laboratoria rozpoczęłam od utworzenia nowej madszyny wirtualnej Fedora. Instalacja przebiegła pomyślnie, więc się do niej zalogowałam.
+
+![Błąd wyświetlania](lab9_ss/lab9ss1.png)
+
+Następnie połączyłam się z Fedorą poprzez ssh, aby móc wygodnie pracować w visual studio code i przeszłam do znalezienia pliku odpowiedzi /root/anaconda-ks.cfg.
+
+![Błąd wyświetlania](lab9_ss/lab9ss2.png)
+
+Natstępnie utworzyłam plik anaconda-ks.cfg i skopiowałam tam zawartość tego co otrzymałam w odpowiedzi na polecenie cat. 
+
+![Błąd wyświetlania](lab9_ss/lab9ss3.png)
+
+W kolejnym kroku zmodyfikowałam ten plik zgodnie z instrukcją, czyli tak aby plik umożliwiał reinstalację w kółko oraz hostname był inny niż localhost (u mnie jest to server-pati).
+
+
+```bash
+url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-40&arch=x86_64
+repo --name=update --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f40&arch=x86_64
+
+keyboard --vckeymap=pl --xlayouts='pl'
+lang pl_PL.UTF-8
+
+network --bootproto=dhcp --device=link --activate
+network --hostname=serwer-pati
+
+%packages
+@^server-product-environment
+@container-management
+@domain-client
+@guest-agents
+@server-hardware-support
+%end
+
+authselect enable-feature with-fingerprint
+
+firstboot --disable
+
+ignoredisk --only-use=sda
+autopart
+
+clearpart --all --initlabel
+
+timezone Europe/Warsaw --utc
+
+rootpw --iscrypted --allow-ssh $y$j9T$NCaUj/mpdPKz6XznP35PrNjt$aeLuyi5K1xxX7Z6q85/5q/.UV8K4FP/nxvAZ/cfM6zA
+user --groups=wheel --name=pati --password=$y$j9T$hE.sQyJ8S08mDz.Md2Fz6EG.$1sJ/PsHGjdfCrBIDJ3DpdCu3MvACKGbaID/tz4k1ko1 -
+
+
+```
+Następnie przystąpiłam do próby instalacji nienadzorowanej. 
