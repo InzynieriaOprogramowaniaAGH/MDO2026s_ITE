@@ -213,3 +213,40 @@ Zadania skryptu wdrażającego przeniosłem bezpośrednio do wygenerowanego plik
 ![Struktura katalogów roli Ansible](screeny/lab8_7.png)
 
 Na zakończenie laboratoriów, stworzone artefakty i zaktualizowaną dokumentację umieściłem w repozytorium.
+
+## Lab 9: Pliki odpowiedzi dla wdrożeń nienadzorowanych (Kickstart)
+
+Celem ostatniego zadania było przygotowanie w pełni zautomatyzowanej instalacji nienadzorowanej (Zero-touch) systemu Fedora z wykorzystaniem technologii Kickstart oraz podejścia Infrastructure as Code (IaC).
+
+### 1. Pierwsza próba: Użycie surowego pliku anaconda-ks.cfg
+Rozpocząłem od zainstalowania "wzorcowej" maszyny wirtualnej UEFI z wykorzystaniem obrazu sieciowego *Everything Netinst*. Następnie pobrałem z niej automatycznie wygenerowany plik odpowiedzi `/root/anaconda-ks.cfg`. 
+
+Na początku spróbowałem zainstalować kolejną maszynę używając tego pliku bazowego bez żadnych modyfikacji. Próba ta zakończyła się niepowodzeniem i obnażyła następujące problemy:
+* **Konieczność interakcji:** Instalator wstrzymał pracę, domagając się ręcznego zatwierdzenia formatowania używanego dysku, co uniemożliwiało reinstalację "w kółko".
+* **Brak pakietów:** Wersja *Netinst* bez zdefiniowanych zewnętrznych repozytoriów w pliku odpowiedzi nie potrafiła odnaleźć źródła plików instalacyjnych.
+* **Brak automatyzacji po instalacji:** Maszyna zatrzymała się na ekranie końcowym (brak automatycznego restartu), a sam system nie posiadał narzędzi (Dockera, `wget`) potrzebnych do uruchomienia naszej aplikacji.
+
+### 2. Modyfikacja pliku odpowiedzi i udana instalacja nienadzorowana
+Aby rozwiązać powyższe problemy i zrealizować założenia projektu, zmodyfikowałem plik `ks.cfg`:
+* Dodałem dyrektywy `url` i `repo` wskazujące na oficjalne repozytoria Fedory 44.
+* Wymusiłem bezwarunkowe formatowanie dysku (`zerombr`, `clearpart --all --initlabel`), co pozwala na bezdotykową reinstalację.
+* Skonfigurowałem nazwy hosta (`fedora-petclinic`), użytkownika z uprawnieniami administratora oraz wymusiłem zautomatyzowany restart (`reboot`) po zakończeniu procesu.
+* Dodałem w sekcji `%packages` pakiety wymagane dla kontenerów (m.in. `moby-engine`).
+* **Skrypt poinstalacyjny:** W sekcji `%post` dodałem logikę odpowiedzialną za wdrożenie aplikacji. Skrypt pobiera z udostępnionego przeze mnie lokalnego serwera HTTP zbudowany wcześniej plik JAR i za pomocą usługi `systemd` gwarantuje jego uruchomienie w kontenerze JRE natychmiast po pierwszym uruchomieniu systemu.
+
+Dzięki tym poprawkom, kolejna instalacja nowej maszyny przebiegła w pełni bezobsługowo. Instalator pobrał konfigurację po dodaniu parametru `inst.ks=http://...` w menu GRUB i nie zadał ani jednego pytania.
+
+![Proces instalacji nienadzorowanej 1](screeny/lab9_1.png)
+
+![Proces instalacji nienadzorowanej 2](screeny/lab9_2.png)
+
+![Proces instalacji nienadzorowanej 3](screeny/lab9_3.png)
+
+### 3. Weryfikacja działania wdrożonego oprogramowania
+Po zautomatyzowanym restarcie systemu zalogowałem się na stworzone konto użytkownika i zweryfikowałem, czy skrypt `%post` wykonał swoje zadanie. Sprawdzenie statusu Dockera poleceniem `sudo docker ps` potwierdziło, że usługa poprawnie uruchomiła środowisko kontenerowe z naszą aplikacją:
+
+![Weryfikacja działającego kontenera Docker](screeny/lab9_4.png)
+
+Następnie przetestowałem odpowiedź serwera narzędziem `curl`. Aplikacja prawidłowo i natychmiastowo obsłużyła żądanie sieciowe (status `HTTP/1.1 200 OK`), udowadniając sukces pełnej automatyzacji.
+
+![Test połączenia z aplikacją po instalacji](screeny/lab9_5.png)
