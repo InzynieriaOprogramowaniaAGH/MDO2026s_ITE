@@ -224,3 +224,155 @@
 ![](1.19.3.png)
 
 *wszystkie zadania poza instalacją Docker'a uzyskały te same statusy wykonania - Docker został już zainstalowany przy pierwszym wykonanym playbook'u, więc przy drugim nie było potrzeby ponawiać tej operacji*
+
+## Laboratorium 9
+
+#### Utworzono nową maszynę wirtualną przy pomocy obrazu Fedora serwer netinst:
+![](1.20.1.png)
+![](1.20.2.png)
+![](1.20.3.png)
+![](1.20.4.png)
+
+#### Wyekstraktowano [plik odpowiedzi](anaconda-ks.cfg):
+![](1.21.png)
+
+#### Utworzono na jego podstawie [nowy plik](ks-modified.cfg) odpowiedzi umożliwiający przeprowadzanie instalacji nienadzorowanej:
+```
+# Installation source
+url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-44&arch=x86_64
+repo --name=updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f44&arch=x86_64
+
+# Keyboard layouts
+keyboard --vckeymap=pl --xlayouts='pl'
+# System language
+lang pl_PL.UTF-8
+# System timezone
+timezone Europe/Warsaw --utc
+
+# Hostnaming
+network --hostname=fedora-vm
+
+# Packages
+%packages
+@^server-product-environment
+%end
+
+# Run the Setup Agent on first boot
+firstboot --disable
+
+# Partition clearing information
+zerombr
+clearpart --all --initlabel
+autopart --type=lvm
+
+# Root password
+rootpw --iscrypted --allow-ssh XXXXXXXXXX
+user --groups=wheel --name=fedorian --password=XXXXXXXXXX --iscrypted
+
+# Reboot after installation
+reboot
+```
+
+#### Uruchomiono pomocniczy serwer w celu przekazania pliku odpowiedzi instalatorowi:
+![](1.22.png)
+
+#### Przeinstalowano maszynę przekazując instalatorowi zmodyfikowany plik odpowiedzi:
+![](1.23.png)
+![](1.24.png)
+
+#### Poszerzono plik odpowiedzi o szereg zadań *post* mających zapewnić działanie artefaktu na nowej maszynie:
+```
+# Installation source
+url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-44&arch=x86_64
+repo --name=updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f44&arch=x86_64
+
+# Keyboard layouts
+keyboard --vckeymap=pl --xlayouts='pl'
+# System language
+lang pl_PL.UTF-8
+# System timezone
+timezone Europe/Warsaw --utc
+
+# Hostnaming
+network --hostname=fedora-vm
+
+# Packages
+%packages
+@^server-product-environment
+openssh-server
+ca-certificates
+openssl-libs
+libpsl
+zlib
+wget
+binutils
+tar
+%end
+
+# Run the Setup Agent on first boot
+firstboot --disable
+
+# Partition clearing information
+zerombr
+clearpart --all --initlabel
+autopart --type=lvm
+
+# Root password
+rootpw --iscrypted --allow-ssh XXXXXXXXXX
+user --groups=wheel --name=fedorian --password=XXXXXXXXXX --iscrypted
+
+# Reboot after installation
+reboot --eject
+
+%post --interpreter=/bin/bash --log=/root/ks-post.log
+set -euxo pipefail
+
+ARTIFACT_HOST="192.168.144.1"
+ARTIFACT_PORT="8080"
+ARTIFACT_FILE="my-custom-curl_1.0.1_amd64.deb"
+ARTIFACT_URL="http://${ARTIFACT_HOST}:${ARTIFACT_PORT}/${ARTIFACT_FILE}"
+
+wget --tries=5 --waitretry=2 -O "/root/${ARTIFACT_FILE}" "$ARTIFACT_URL"
+
+mkdir -p /root/ks-artifact
+cd /root/ks-artifact
+ar x "/root/${ARTIFACT_FILE}"
+DATA_TAR="$(ls data.tar.* | head -n 1)"
+tar -C / -xf "$DATA_TAR"
+
+echo "/usr/local/lib" > /etc/ld.so.conf.d/my-curl.conf
+ldconfig
+chmod 0755 /usr/local/bin/curl
+
+cat >/usr/local/bin/my-curl-start.sh <<'EOF'
+#!/usr/bin/env bash
+/usr/local/bin/curl --version > /var/log/my-curl.log
+EOF
+chmod 0755 /usr/local/bin/my-curl-start.sh
+
+cat >/etc/systemd/system/my-curl.service <<'EOF'
+[Unit]
+Description=Run custom curl on boot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/my-curl-start.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable my-curl.service
+%end
+```
+
+#### Ponownie przeinstalowano maszynę przekazując instalatorowi zmodyfikowany plik odpowiedzi:
+![](1.25.png)
+
+*logi potwierdzają, że program został uruchomiony po starcie i że nie jest to zainstalowany podczas instalacji wariant programu curl*
+
+#### Logi serwera potwierdzają poprawne pobranie kickstarter'ów i artefaktu podczas instalacji:
+![](1.26.png)
