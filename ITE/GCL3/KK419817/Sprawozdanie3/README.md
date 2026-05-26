@@ -258,7 +258,35 @@ Instalacja nienadzorowana działa poprawnie, system instaluje się bez mojej int
 
 ## Kubernetes
 
-Instalacja ze strony https://minikube.sigs.k8s.io/docs/start/?arch=%2Fwindows%2Fx86-64%2Fstable%2F.exe+download 
+Instalacja ze strony https://minikube.sigs.k8s.io/docs/start/
+
+```sh
+curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+```
+
 ![alt text](image-13.png)
 
+Instalacja minikube używa Docker driver z uprawnieniami root, co jest akceptowalne w środowisku deweloperskim, ale stanowiłoby ryzyko w produkcji
+
+Ustawiłem alias
+```
+alias kubectl="minikube kubectl --"
+```
+
+Sprawdzam działające nody i pody
+![alt text](image-14.png)
+
+Wymagania sprzętowe:
+![alt text](image-15.png)
+
+Nie mam potrzeby dostosowywania ustawień pod kubernetesa, ponieważ od początku ta maszyna wirtualna miała przypisane ponad 6GB RAMu, 4 rdzenie i wystarczająco dużą pamięć.
+Całe środowisko działa płynnie i przekracza wymagania kubernetesa.
+
+Uruchomiłem panel kontrolny kubernetesa
+```
+minikube dashboard
+```
+![alt text](image-17.png)
+![alt text](image-16.png)
 
