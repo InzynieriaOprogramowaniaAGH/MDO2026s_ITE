@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab10-app
+  labels:
+    app: lab10-app
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app: lab10-app
+  template:
+    metadata:
+      labels:
+        app: lab10-app
+    spec:
+      containers:
+      - name: lab10-nginx
+        image: lab10-nginx:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
