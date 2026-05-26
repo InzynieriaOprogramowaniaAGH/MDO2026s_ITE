@@ -482,4 +482,75 @@ docker stop 436e727437f4
 
 ## Przygotowanie nowego obrazu
 
+Jako, że mam juz wiele wersji na  [dockerhubie](https://hub.docker.com/repository/docker/blackcaer/express-app/general), muszę stworzyć tylko failujący obraz. Do tego celu utworzyłem [Dockerfile.broken](./Dockerfile.broken).
 
+```sh
+docker build -f Dockerfile.broken -t blackcaer/express-app:broken .
+docker push blackcaer/express-app:broken
+```
+
+![alt text](image-35.png)
+
+![alt text](image-34.png)
+
+## Zmiany w deploymencie oraz kontrola wdrożenia
+
+Zmieniłem replicas do 8, 1, 0 i do 4. Musiałem czekać aż pody się wyłączą (co ciekawe dłużej niż aż się włączą).
+
+`kubectl apply -f deployment.yaml`
+
+![alt text](image-36.png)
+
+Następnie zmieniłem na najnowszą wersję `blackcaer/express-app:22`, starszą `blackcaer/express-app:21` (tutaj zauważyłem że kubernetes zaczął stopniowo tworzyć nowe pody i dopiero potem wyłączał stare) oraz na zepsutą `blackcaer/express-app:broken`.
+Przy tej ostatniej zauważyłem że utworzył się 1 replicaset który miał wprowadzić nową wersję, wersja sfailowała i kubernetes samoczynnie przerwał jej deployment. Nadal działają 3 pody z poprzedniej wersji (21)
+
+![alt text](image-37.png)
+
+![alt text](image-38.png)
+
+Dodatkowo, widzimy istniejące replicasety używające poprzednich wersji, które mają ilość podów ustawioną na 0, bo nie są aktualnie używane.
+
+Wykonuję rollback
+
+```sh
+kubectl rollout history deployment/express-app
+kubectl rollout undo deployment/express-app
+```
+
+![alt text](image-39.png)
+
+Aplikacja wróciła do poprawnego stanu:
+
+![alt text](image-40.png)
+
+Cofam jeszcze dalej, do wersji 22 używając argumentu to-revision
+```sh
+kubectl rollout undo deployment/express-app --to-revision=2
+```
+
+![alt text](image-41.png)
+
+Wykonałem jeszcze raz powyższe kroki aby lepiej zobrazować te zmiany, poniżej widoczny moment przejściowy z wersji 22 na 21 przy 8 replicasetach:
+
+![alt text](image-42.png)
+
+9 replik dla wersji 22 (1 terminating po zmniejszeniu replicas z 1 na 0 i 8 po zmianie wersji).
+
+8 nowych replik dla wersji 21.
+
+Następnie jeszcze raz zmieniłem wersję na broken:
+
+![alt text](image-44.png)
+
+![alt text](image-43.png)
+
+Wyłączył się 3 repliki wersji 21 i włączyło się 5 wersji broken (czyli surge 25%).
+
+Wyświetliłem pody `kubectl get pods` i sprawdziłem logi zepsutego poda `kubectl logs express-app-bc8456df5-tbpkm`:
+
+![alt text](image-45.png)
+
+I wykonałem ponownie undo:
+
+![alt text](image-46.png)
+![alt text](image-47.png)
