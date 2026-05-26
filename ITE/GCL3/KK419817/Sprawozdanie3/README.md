@@ -282,6 +282,11 @@ echo 'alias kubectl="minikube kubectl --"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
+Uruchomiłem minikube
+```sh
+minikube start
+```
+
 Sprawdzam działające nody i pody:
 
 ![alt text](image-14.png)
@@ -342,3 +347,36 @@ kubectl port-forward service/express-app-service 3000:3000
 ![alt text](image-22.png)
 
 ![alt text](image-21.png)
+
+Wykazanie że działa jako kontener `kubectl describe pod express-app`:
+
+![alt text](image-23.png)
+
+Zatrzymałem komendą `kubectl delete deployment express-app`
+
+## Uruchamianie oprogramowania
+
+```sh
+kubectl run express-app-pod --image=blackcaer/express-app:latest --port=3000 --labels app=express-app-pod
+```
+
+Pod działa:
+![alt text](image-24.png)
+
+```sh
+kubectl logs express-app-pod
+kubectl get pods
+```
+![alt text](image-25.png)
+
+Wyprowadzam port:
+`kubectl port-forward pod/express-app-pod 3000:3000`
+
+Aplikacja działa
+
+![alt text](image-26.png)
+
+![alt text](image-27.png)
+
+## Przekucie wdrożenia manualnego w plik wdrożenia
+
