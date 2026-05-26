@@ -56,3 +56,12 @@ ssh ansible@ansible-target
 ### Wysłanie żądania ping do wszystkich maszyn
 
 ![Zdjęcie 2](img/s2.png)
+
+## Class 09
+
+## Class 10
+
+```bash
+curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+```
