@@ -1,0 +1,2 @@
+FROM mystackoverflown/minimalpy:latest
+CMD ["sh", "-c", "echo 'FATAL ERROR'; exit 1"]
