@@ -22,3 +22,29 @@ Dopiszano maszyne z fedora jako ansible target do listy hostow
 ![alt text](anaconda-post.png)
 
 ![alt text](potwierdzenie_dzialania.png)
+
+![alt text](statusy_bezpieczenstwa.png)
+
+![alt text](worker_ready.png)
+
+![alt text](testpod.png)
+
+![alt text](expresspod.png)
+
+![alt text](curl1.png)
+
+![alt text](deploy1.png)
+
+![alt text](connectiontest.png)
+
+![alt text](dashboardreplica.png)
+
+![alt text](replicas1-8.png)
+
+![alt text](replicas0-4.png)
+
+![alt text](imagechange.png)
+
+![alt text](cofniecie_wersji.png)
+
+![alt text](potwierdzenieSkryptu.png)
