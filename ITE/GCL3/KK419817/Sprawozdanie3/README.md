@@ -220,13 +220,45 @@ rootpw --iscrypted --allow-ssh $y$j9T$uYIc/dnv0DogNnI9EUCYvG7Q$BOZtAIoDgM5ditiMn
 ```
 
 Skróciłem link do http://bit.ly/498SrR3 aby móc go łatwo przepisać i dopisałem argument do komendy uruchomieniowej (klikając 'e' na ekranie startowym po uruchomieniu obrazu). 
-```
+```bash
 inst.ks=https://raw.githubusercontent.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE/refs/heads/KK419817/ITE/GCL3/KK419817/Sprawozdanie3/anaconda-ks.cfg
+
+# Po skróceniu:
+
+inst.ks=http://bit.ly/498SrR3
 ```
 
 ![alt text](image-9.png)
 
-Następnie wystartowałem instalację nienadzorowaną (F10). Fedora zainstalowała się bez mojej ingerencji, został tylko ekran końcowy z monitem o restart (należy następnie odłączyć 'płytę' z obrazem .iso aby się na nowo maszyna z niego nie próbowała bootować).
+Następnie wystartowałem instalację nienadzorowaną (F10). Fedora zainstalowała się bez mojej ingerencji, został tylko ekran końcowy z monitem o restart (należy następnie odłączyć 'płytę' z obrazem .iso aby się na nowo maszyna z niego nie próbowała bootować). 
+W następnym etapie dodałem do pliku `reboot` aby samodzielnie restartować system.
 
 ![alt text](image-10.png)
+
+Zmodyfikowałem plik `anaconda-ks.cfg` aby automatycznie instalował i uruchamiał aplikację Express.js z poprzedniego sprawozdania.
+
+
+Zmieniłem środowisko z `@^custom-environment` na 
+```bash
+@^server-product-environment
+@container-management
+```
+Dodając `container-management` niezbędny do uruchomienia dockera.
+
+Utworzyłem sekcję %post która wykonuje się po zakończeniu instalacji systemu
+
+Sekcja %post włącza Docker (`systemctl enable`), pobiera obraz kontenera z DockerHub, tworzy plik systemd i włącza automatyczne uruchamianie aplikacji przy starcie systemu. Dodałem również `%post --log=/root/kickstart-post.log` aby mieć zapis logów z tych operacji.
+
+Na końcu pliku dodałem reboot aby system automatycznie się zrestartował po instalacji. Po ponownym uruchomieniu aplikacja Express.js jest dostępna na porcie 3000.
+
+Instalacja nienadzorowana działa poprawnie, system instaluje się bez mojej interakcji, automatycznie pobiera i uruchamia kontener, a aplikacja się uruchamia.
+
+
+
+
+## Kubernetes
+
+Instalacja ze strony https://minikube.sigs.k8s.io/docs/start/?arch=%2Fwindows%2Fx86-64%2Fstable%2F.exe+download 
+![alt text](image-13.png)
+
 
