@@ -258,6 +258,8 @@ Instalacja nienadzorowana działa poprawnie, system instaluje się bez mojej int
 
 ## Kubernetes
 
+### Instalacja klastra Kubernetes
+
 Instalacja ze strony https://minikube.sigs.k8s.io/docs/start/
 
 ```sh
@@ -270,23 +272,73 @@ sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-a
 Instalacja minikube używa Docker driver z uprawnieniami root, co jest akceptowalne w środowisku deweloperskim, ale stanowiłoby ryzyko w produkcji
 
 Ustawiłem alias
-```
+```sh
 alias kubectl="minikube kubectl --"
 ```
+Jak się okazało, nie działał on w nowych terminalach.
+Aby to naprawić, dodałem go do bashrc
+```sh
+echo 'alias kubectl="minikube kubectl --"' >> ~/.bashrc
+source ~/.bashrc
+```
 
-Sprawdzam działające nody i pody
+Sprawdzam działające nody i pody:
+
 ![alt text](image-14.png)
 
 Wymagania sprzętowe:
+
 ![alt text](image-15.png)
 
 Nie mam potrzeby dostosowywania ustawień pod kubernetesa, ponieważ od początku ta maszyna wirtualna miała przypisane ponad 6GB RAMu, 4 rdzenie i wystarczająco dużą pamięć.
 Całe środowisko działa płynnie i przekracza wymagania kubernetesa.
 
 Uruchomiłem panel kontrolny kubernetesa
-```
+```sh
 minikube dashboard
 ```
+
 ![alt text](image-17.png)
 ![alt text](image-16.png)
 
+Wszystko połączyło się poprawnie.
+
+Pod - najmniejsza jednostka zarządzania w kubernetes
+Deployment - zarządza stanem aplikacji
+Node - "maszyna" w klastrze
+Namespace - służy do logicznej separacji elementów (podobnie jak w c++ itp.)
+
+## Analiza posiadanego kontenera
+
+Utworzyłem plik [deployment.yaml](./deployment.yaml).
+
+
+Uruchomiłem:
+```sh
+cd ITE/GCL3/KK419817/Sprawozdanie3
+kubectl apply -f deployment.yaml
+
+# Sprawdziłem status
+kubectl get deployments
+kubectl get pods
+kubectl get services
+```
+
+![alt text](image-18.png)
+
+Widać że aplikacja działa:
+
+![alt text](image-19.png)
+
+Po `kubectl get pods` i sprawdzeniu nazwy poda, za pomocą komendy `kubectl logs express-app-b456b76f-6d2l6` sprawdziłem logi aby upewnić się że aplikacja działa poprawnie:
+
+![alt text](image-20.png)
+
+Sprawdziłem również stronę po sforwardowaniu portu odpowiedzialnego za aplikację:
+```sh
+kubectl port-forward service/express-app-service 3000:3000
+```
+
+![alt text](image-22.png)
+
+![alt text](image-21.png)
