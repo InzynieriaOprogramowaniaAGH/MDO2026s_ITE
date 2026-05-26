@@ -254,8 +254,6 @@ Na końcu pliku dodałem reboot aby system automatycznie się zrestartował po i
 Instalacja nienadzorowana działa poprawnie, system instaluje się bez mojej interakcji, automatycznie pobiera i uruchamia kontener, a aplikacja się uruchamia.
 
 
-
-
 ## Kubernetes
 
 ### Instalacja klastra Kubernetes
@@ -317,6 +315,40 @@ Namespace - służy do logicznej separacji elementów (podobnie jak w c++ itp.)
 
 Utworzyłem plik [deployment.yaml](./deployment.yaml).
 
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: express-app
+  template:
+    metadata:
+      labels:
+        app: express-app
+    spec:
+      containers:
+      - name: express-app
+        image: blackcaer/express-app:latest
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-app-service
+spec:
+  type: NodePort
+  selector:
+    app: express-app
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30000
+```
 
 Uruchomiłem:
 ```sh
@@ -379,4 +411,75 @@ Aplikacja działa
 ![alt text](image-27.png)
 
 ## Przekucie wdrożenia manualnego w plik wdrożenia
+
+Utworzyłem plik deploymentu [nginx-deployment.yaml](./nginx-deployment.yaml)
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+```
+
+Próbne wdrożenie
+
+```sh
+kubectl apply -f nginx-deployment.yaml
+```
+
+![alt text](image-28.png)
+
+Następnie w pliku zmieniłem `replicas` z 1 na 4 i zaktualizowałem deployment komendą `kubectl apply -f nginx-deployment.yaml`
+
+W dashbordzie od razu widać zmianę, nowe zasoby zaczęły się uruchamiać:
+
+![loading](image-29.png)
+
+Oraz w terminalu:
+
+![alt text](image-30.png)
+
+Sprawdzam status
+
+`kubectl rollout status deployment/nginx-deployment`
+
+![alt text](image-31.png)
+
+Eksponuje wdrożenie jako serwis i przekierowuje port
+
+```sh
+kubectl expose deployment nginx-deployment --type=NodePort --port=80
+kubectl port-forward service/nginx-deployment 8080:80
+```
+
+
+Musiałem wcześniej wyłączyć dockera z poprzednich labów aby nie zajmował portu 8080 (i zasobów):
+
+```sh
+docker ps
+docker stop 436e727437f4
+```
+
+![alt text](image-33.png)
+
+![alt text](image-32.png)
+
+## Przygotowanie nowego obrazu
+
 
