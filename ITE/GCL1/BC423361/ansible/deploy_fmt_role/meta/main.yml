@@ -1,0 +1,14 @@
+galaxy_info:
+  author: Czapla Bartosz
+  description: Rola do deployu pliku tar.gz w kontenerze Docker
+  company: AGH
+  license: MIT
+  min_ansible_version: "2.1"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+  galaxy_tags: []
+
+dependencies: []

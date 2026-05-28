@@ -1,0 +1,43 @@
+---
+- hosts: Endpoints
+  become: yes
+  tasks:
+    - name: Sanity check docelowej maszyny
+      ping:
+      ignore_unreachable: yes
+      ignore_errors: yes
+
+    - name: Instalacja Dockera za pomoca Ansible
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Upewnienie sie ze Docker dziala
+      service:
+        name: docker
+        state: started
+
+    - name: Wyslanie pliku aplikacji na zdalna maszyne
+      copy:
+        src: ./fmt-artifact.tar.gz
+        dest: /tmp/fmt-artifact.tar.gz
+
+    - name: Stworzenie i uruchomienie kontenera z artefaktem
+      command: docker run -d --name fmt-app -v /tmp/fmt-artifact.tar.gz:/app/fmt-artifact.tar.gz ubuntu sleep 60
+
+    - name: Weryfikacja uruchomienia (sprawdzenie pliku w kontenerze)
+      command: docker exec fmt-app ls -la /app/fmt-artifact.tar.gz
+      register: weryfikacja
+
+    - name: Pokaz wynik weryfikacji
+      debug:
+        msg: "{{ weryfikacja.stdout_lines }}"
+
+    - name: Oczyszczenie srodowiska - usuniecie kontenera
+      command: docker rm -f fmt-app
+
+    - name: Oczyszczenie srodowiska - usuniecie pliku z hosta
+      file:
+        path: /tmp/fmt-artifact.tar.gz
+        state: absent

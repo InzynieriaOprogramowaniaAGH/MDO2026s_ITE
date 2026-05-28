@@ -1,0 +1,33 @@
+---
+- hosts: all
+  tasks:
+    - name: Wyslanie zadan ping do wszystkich
+      ping:
+
+- hosts: Endpoints
+  become: yes
+  tasks:
+    - name: Kopiowanie inwentaryzacji
+      copy:
+        src: inventory.ini
+        dest: /tmp/inventory.ini
+
+    - name: Aktualizacja pakietow
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Instalacja rng-tools
+      apt:
+        name: rng-tools
+        state: present
+
+    - name: Restart sshd
+      service:
+        name: ssh
+        state: restarted
+
+    - name: Restart rngd
+      service:
+        name: rng-tools
+        state: restarted
