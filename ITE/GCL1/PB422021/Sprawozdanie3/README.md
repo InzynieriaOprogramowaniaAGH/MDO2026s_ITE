@@ -240,8 +240,8 @@ W kolejnym kroku zmodyfikowałam ten plik zgodnie z instrukcją, czyli tak aby p
 
 
 ```bash
-url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-40&arch=x86_64
-repo --name=update --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f40&arch=x86_64
+url --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-44&arch=x86_64
+repo --name=update --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f44&arch=x86_64
 
 keyboard --vckeymap=pl --xlayouts='pl'
 lang pl_PL.UTF-8
@@ -257,20 +257,31 @@ network --hostname=serwer-pati
 @server-hardware-support
 %end
 
-authselect enable-feature with-fingerprint
-
 firstboot --disable
 
-ignoredisk --only-use=sda
-autopart
+zerombr
 
+# reinstalacja w kółko
 clearpart --all --initlabel
+
+autopart --type=plain
 
 timezone Europe/Warsaw --utc
 
-rootpw --iscrypted --allow-ssh $y$j9T$NCaUj/mpdPKz6XznP35PrNjt$aeLuyi5K1xxX7Z6q85/5q/.UV8K4FP/nxvAZ/cfM6zA
-user --groups=wheel --name=pati --password=$y$j9T$hE.sQyJ8S08mDz.Md2Fz6EG.$1sJ/PsHGjdfCrBIDJ3DpdCu3MvACKGbaID/tz4k1ko1 -
+rootpw pati
+user --groups=wheel --name=pati --password=pati
+reboot
+
+
 
 
 ```
-Następnie przystąpiłam do próby instalacji nienadzorowanej. 
+Następnie przystąpiłam do próby instalacji nienadzorowanej.  W tym celu utworzyłam nową maszynę wirtualną. Po jednej poprawce w pliku odpowiedzie (nie zgadzały się wersje fedory) bezdotykowa instalacja zakończyła się sukcesem.
+
+![Błąd wyświetlania](lab9_ss/lab9ss4.png)
+![Błąd wyświetlania](lab9_ss/lab9ss5.png)
+
+
+Następnie w pliku odpowiedzi dodałam narzędzia takie jak nodejs, wget i tar do sekcji z pakietami, żeby system miał jak pobrać i uruchomić projekt. W sekcji %post napisałam skrypt, który od razu po instalacji systemu tworzy nowy folder w /usr/local/bin i pobiera do niego z mojego Jenkinsa gotowy artefakt z aplikacją w formie paczki tar.gz. Następnie skrypt rozpakowuje pliki i od razu kasuje zbędne archiwum. Żeby spełnić wymóg automatycznego uruchamiania programu, dopisałam konfigurację usługi systemd, która po cichu startuje aplikację w środowisku Node. Na sam koniec aktywowałam tę usługę poleceniem systemctl enable, dzięki czemu po restarcie instalatora system od razu podnosi aplikację i wszystko działa w pełni automatycznie.
+
+ [Finalny plik anaconda-ks.cfg](anaconda-ks.cfg)
