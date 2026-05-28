@@ -282,6 +282,14 @@ Następnie przystąpiłam do próby instalacji nienadzorowanej.  W tym celu utwo
 ![Błąd wyświetlania](lab9_ss/lab9ss5.png)
 
 
-Następnie w pliku odpowiedzi dodałam narzędzia takie jak nodejs, wget i tar do sekcji z pakietami, żeby system miał jak pobrać i uruchomić projekt. W sekcji %post napisałam skrypt, który od razu po instalacji systemu tworzy nowy folder w /usr/local/bin i pobiera do niego z mojego Jenkinsa gotowy artefakt z aplikacją w formie paczki tar.gz. Następnie skrypt rozpakowuje pliki i od razu kasuje zbędne archiwum. Żeby spełnić wymóg automatycznego uruchamiania programu, dopisałam konfigurację usługi systemd, która po cichu startuje aplikację w środowisku Node. Na sam koniec aktywowałam tę usługę poleceniem systemctl enable, dzięki czemu po restarcie instalatora system od razu podnosi aplikację i wszystko działa w pełni automatycznie.
+Następnie w pliku odpowiedzi dodałam niezbędne narzędzia, takie jak nodejs, wget i tar do sekcji z pakietami, żeby po instalacji system miał jak pobrać i uruchomić projekt. Początkowo proces miał opierać się na bezpośrednim pobieraniu artefaktu z Jenkinsa, jednak ze względu na problemy z zaporą sieciową, która blokowała ruch, zastosowałam sprytne obejście. Polegało ono na uruchomieniu prywatnego serwera HTTP za pomocą wbudowanego modułu Pythona bezpośrednio w środowisku VS Code.
+
+W związku z tym w sekcji %post napisałam skrypt, który od razu po instalacji systemu tworzy nowy folder w /usr/local/bin i pobiera do niego gotowy artefakt z aplikacją z mojego lokalnego serwera działającego w VS Code. Następnie skrypt rozpakowuje pliki i od razu kasuje zbędne archiwum. Żeby spełnić wymóg automatycznego uruchamiania programu, dopisałam konfigurację usługi systemd, która po cichu startuje aplikację w środowisku Node.js. Na sam koniec aktywowałam tę usługę poleceniem systemctl enable, dzięki czemu po restarcie maszyny system od razu podnosi aplikację i wszystko działa w pełni automatycznie.
 
  [Finalny plik anaconda-ks.cfg](anaconda-ks.cfg)
+
+![Błąd wyświetlania](lab9_ss/lab9ss6.png)
+![Błąd wyświetlania](lab9_ss/lab9ss7.png)
+![Błąd wyświetlania](lab9_ss/lab9ss8.png)
+
+Zrzuty ekranu potwierdzają sukces przeprowadzonej automatyzacji.
