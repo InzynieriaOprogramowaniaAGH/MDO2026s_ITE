@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aplikacja-kanarek
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: canary-demo
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: canary-demo
+        track: canary
+    spec:
+      containers:
+      - name: nginx-kontener
+        image: moj-nginx:v2
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80

@@ -1,0 +1,2 @@
+FROM nginx:alpine
+CMD ["/bin/sh", "-c", "echo 'Awaria krytyczna!' && exit 1"]
