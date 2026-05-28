@@ -1,0 +1,61 @@
+---
+- name: Sanity check all machines
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Show hostname
+      ansible.builtin.command: hostname
+      register: hostname_output
+      changed_when: false
+
+    - name: Print hostname
+      ansible.builtin.debug:
+        var: hostname_output.stdout
+
+    - name: Ping machine
+      ansible.builtin.ping:
+
+
+- name: Prepare endpoint machine
+  hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Copy inventory file to endpoint
+      ansible.builtin.copy:
+        src: inventory.ini
+        dest: /home/ansible/inventory.ini
+        owner: ansible
+        group: ansible
+        mode: "0644"
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        force_apt_get: true
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - tar
+          - openssh-server
+          - rng-tools5
+        state: present
+        force_apt_get: true
+
+    - name: Restart sshd service
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+
+    - name: Restart rngd service
+      ansible.builtin.service:
+        name: rngd
+        state: restarted
+- name: Deploy jq runtime artifact
+  hosts: Endpoints
+  become: true
+
+  roles:
+    - jq_deploy

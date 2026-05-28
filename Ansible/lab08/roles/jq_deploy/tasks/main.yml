@@ -1,0 +1,49 @@
+---
+- name: Install Docker
+  ansible.builtin.apt:
+    name:
+      - docker.io
+    state: present
+    update_cache: true
+    force_apt_get: true
+
+- name: Ensure Docker service is running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Copy jq runtime image archive to endpoint
+  ansible.builtin.copy:
+    src: jq-runtime.tar
+    dest: /tmp/jq-runtime.tar
+    mode: "0644"
+
+- name: Load jq runtime image
+  ansible.builtin.command: docker load -i /tmp/jq-runtime.tar
+  register: docker_load_result
+  changed_when: "'Loaded image' in docker_load_result.stdout or 'Loaded image' in docker_load_result.stderr"
+
+- name: Show loaded image output
+  ansible.builtin.debug:
+    var: docker_load_result.stdout_lines
+
+- name: Run jq smoke test in container
+  ansible.builtin.shell: |
+    echo '{"answer":42}' | docker run --rm -i jq-runtime:3 '.answer'
+  register: jq_smoke_test
+  changed_when: false
+
+- name: Show jq smoke test result
+  ansible.builtin.debug:
+    var: jq_smoke_test.stdout
+
+- name: Fail if jq smoke test is incorrect
+  ansible.builtin.fail:
+    msg: "jq runtime smoke test failed"
+  when: jq_smoke_test.stdout.strip() != "42"
+
+- name: Remove copied image archive
+  ansible.builtin.file:
+    path: /tmp/jq-runtime.tar
+    state: absent

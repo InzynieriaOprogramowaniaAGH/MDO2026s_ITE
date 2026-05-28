@@ -2,3 +2,4 @@ GCL1/
 ITE/
 Sprawozdanie1/
 demo-build/
+Ansible/lab08/roles/jq_deploy/files/*.tar
