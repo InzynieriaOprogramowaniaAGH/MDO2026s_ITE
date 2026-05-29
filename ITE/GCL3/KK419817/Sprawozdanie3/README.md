@@ -175,18 +175,19 @@ Uruchomiłem nowy playbook `deploy.yaml`:
 
 ![alt text](image-8.png)
 
-
-
 ---
+
 Pobrałem obraz fedory `Fedora-Everything-netinst-x86_64-44-1.7.iso`. Zainstalowałem system.
 
 Ustawiłem port forwarding 22:2224 oraz konfigurację `/etc/ssh/sshd` na:
-```bash 
+
+```bash
 PasswordAuthentication yes
 PermitRootLogin yes
 ```
 
 Przekopiowałem plik `anaconda-ks.cfg` z fedory na hosta za pomocą polecenia
+
 ```bash
 scp -P 2224 root@localhost:/root/anaconda-ks.cfg ./anaconda-ks.cfg
 ```
@@ -219,7 +220,8 @@ timezone Europe/Warsaw --utc
 rootpw --iscrypted --allow-ssh $y$j9T$uYIc/dnv0DogNnI9EUCYvG7Q$BOZtAIoDgM5ditiMn0jySkeeON2cjM4K5aCaXPdb8h4
 ```
 
-Skróciłem link do http://bit.ly/498SrR3 aby móc go łatwo przepisać i dopisałem argument do komendy uruchomieniowej (klikając 'e' na ekranie startowym po uruchomieniu obrazu). 
+Skróciłem link do http://bit.ly/498SrR3 aby móc go łatwo przepisać i dopisałem argument do komendy uruchomieniowej (klikając 'e' na ekranie startowym po uruchomieniu obrazu).
+
 ```bash
 inst.ks=https://raw.githubusercontent.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE/refs/heads/KK419817/ITE/GCL3/KK419817/Sprawozdanie3/anaconda-ks.cfg
 
@@ -230,19 +232,20 @@ inst.ks=http://bit.ly/498SrR3
 
 ![alt text](image-9.png)
 
-Następnie wystartowałem instalację nienadzorowaną (F10). Fedora zainstalowała się bez mojej ingerencji, został tylko ekran końcowy z monitem o restart (należy następnie odłączyć 'płytę' z obrazem .iso aby się na nowo maszyna z niego nie próbowała bootować). 
+Następnie wystartowałem instalację nienadzorowaną (F10). Fedora zainstalowała się bez mojej ingerencji, został tylko ekran końcowy z monitem o restart (należy następnie odłączyć 'płytę' z obrazem .iso aby się na nowo maszyna z niego nie próbowała bootować).
 W następnym etapie dodałem do pliku `reboot` aby samodzielnie restartować system.
 
 ![alt text](image-10.png)
 
 Zmodyfikowałem plik `anaconda-ks.cfg` aby automatycznie instalował i uruchamiał aplikację Express.js z poprzedniego sprawozdania.
 
+Zmieniłem środowisko z `@^custom-environment` na
 
-Zmieniłem środowisko z `@^custom-environment` na 
 ```bash
 @^server-product-environment
 @container-management
 ```
+
 Dodając `container-management` niezbędny do uruchomienia dockera.
 
 Utworzyłem sekcję %post która wykonuje się po zakończeniu instalacji systemu
@@ -252,7 +255,6 @@ Sekcja %post włącza Docker (`systemctl enable`), pobiera obraz kontenera z Doc
 Na końcu pliku dodałem reboot aby system automatycznie się zrestartował po instalacji. Po ponownym uruchomieniu aplikacja Express.js jest dostępna na porcie 3000.
 
 Instalacja nienadzorowana działa poprawnie, system instaluje się bez mojej interakcji, automatycznie pobiera i uruchamia kontener, a aplikacja się uruchamia.
-
 
 ## Kubernetes
 
@@ -270,17 +272,21 @@ sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-a
 Instalacja minikube używa Docker driver z uprawnieniami root, co jest akceptowalne w środowisku deweloperskim, ale stanowiłoby ryzyko w produkcji
 
 Ustawiłem alias
+
 ```sh
 alias kubectl="minikube kubectl --"
 ```
+
 Jak się okazało, nie działał on w nowych terminalach.
 Aby to naprawić, dodałem go do bashrc
+
 ```sh
 echo 'alias kubectl="minikube kubectl --"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
 Uruchomiłem minikube
+
 ```sh
 minikube start
 ```
@@ -297,6 +303,7 @@ Nie mam potrzeby dostosowywania ustawień pod kubernetesa, ponieważ od początk
 Całe środowisko działa płynnie i przekracza wymagania kubernetesa.
 
 Uruchomiłem panel kontrolny kubernetesa
+
 ```sh
 minikube dashboard
 ```
@@ -331,10 +338,10 @@ spec:
         app: express-app
     spec:
       containers:
-      - name: express-app
-        image: blackcaer/express-app:latest
-        ports:
-        - containerPort: 3000
+        - name: express-app
+          image: blackcaer/express-app:latest
+          ports:
+            - containerPort: 3000
 ---
 apiVersion: v1
 kind: Service
@@ -345,12 +352,13 @@ spec:
   selector:
     app: express-app
   ports:
-  - port: 3000
-    targetPort: 3000
-    nodePort: 30000
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30000
 ```
 
 Uruchomiłem:
+
 ```sh
 cd ITE/GCL3/KK419817/Sprawozdanie3
 kubectl apply -f deployment.yaml
@@ -372,6 +380,7 @@ Po `kubectl get pods` i sprawdzeniu nazwy poda, za pomocą komendy `kubectl logs
 ![alt text](image-20.png)
 
 Sprawdziłem również stronę po sforwardowaniu portu odpowiedzialnego za aplikację:
+
 ```sh
 kubectl port-forward service/express-app-service 3000:3000
 ```
@@ -399,6 +408,7 @@ Pod działa:
 kubectl logs express-app-pod
 kubectl get pods
 ```
+
 ![alt text](image-25.png)
 
 Wyprowadzam port:
@@ -413,6 +423,7 @@ Aplikacja działa
 ## Przekucie wdrożenia manualnego w plik wdrożenia
 
 Utworzyłem plik deploymentu [nginx-deployment.yaml](./nginx-deployment.yaml)
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -431,10 +442,10 @@ spec:
         app: nginx
     spec:
       containers:
-      - name: nginx
-        image: nginx:latest
-        ports:
-        - containerPort: 80
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
 ```
 
 Próbne wdrożenie
@@ -468,7 +479,6 @@ kubectl expose deployment nginx-deployment --type=NodePort --port=80
 kubectl port-forward service/nginx-deployment 8080:80
 ```
 
-
 Musiałem wcześniej wyłączyć dockera z poprzednich labów aby nie zajmował portu 8080 (i zasobów):
 
 ```sh
@@ -482,7 +492,7 @@ docker stop 436e727437f4
 
 ## Przygotowanie nowego obrazu
 
-Jako, że mam juz wiele wersji na  [dockerhubie](https://hub.docker.com/repository/docker/blackcaer/express-app/general), muszę stworzyć tylko failujący obraz. Do tego celu utworzyłem [Dockerfile.broken](./Dockerfile.broken).
+Jako, że mam juz wiele wersji na [dockerhubie](https://hub.docker.com/repository/docker/blackcaer/express-app/general), muszę stworzyć tylko failujący obraz. Do tego celu utworzyłem [Dockerfile.broken](./Dockerfile.broken).
 
 ```sh
 docker build -f Dockerfile.broken -t blackcaer/express-app:broken .
@@ -524,6 +534,7 @@ Aplikacja wróciła do poprawnego stanu:
 ![alt text](image-40.png)
 
 Cofam jeszcze dalej, do wersji 22 używając argumentu to-revision
+
 ```sh
 kubectl rollout undo deployment/express-app --to-revision=2
 ```
@@ -560,6 +571,7 @@ I wykonałem ponownie undo:
 Utworzyłem pliki [deployment-recreate.yaml](./deployment-recreate.yaml) i [deployment-rolling.yaml](./deployment-rolling.yaml).
 
 ### Recreate
+
 ```sh
 # wersja 21 w pliku yaml
 kubectl apply -f deployment-recreate.yaml
@@ -567,12 +579,15 @@ kubectl get pods -l app=express-recreate -w
 # Zmieniłem na 22 w pliku
 kubectl apply -f deployment-recreate.yaml
 ```
+
 Wszystkie pody wyłączają się jednocześnie, potem uruchamiają nowe. Wadą tego rozwiązania jest chwilowy downtime.
 
+![alt text](image-48.png)
 
-
+Wyłączam deployment poleceniem `kubectl delete -f deployment-recreate.yaml` aby nie zużywać zasobów (podobnie dla następnych wersji)
 
 ### Rolling Update (maxUnavailable: 2, maxSurge: 25%)
+
 ```sh
 # wersja 21 w pliku yaml
 kubectl apply -f deployment-rolling.yaml
@@ -580,14 +595,28 @@ kubectl get pods -l app=express-rolling -w
 # Zmieniłem wersje na 22
 kubectl apply -f deployment-rolling.yaml
 ```
-Rolling deploy to stopniowa wymiana podów, zużywamy więcej zasobów chwilowo ale mamy zerowy downtime.
+
+Rolling deploy to stopniowa wymiana podów, zużywamy chwilowo więcej zasobów ale mamy praktycznie zerowy downtime.
+
+Przetestowałem też zmianę na wersję broken:
+
+![alt text](image-49.png)
+![alt text](image-50.png)
+![alt text](image-51.png)
+
+Widać że łącznie mamy 10 podów (8 \* 1.25), najpierw zostało utworzone jak najwięcej dodatkowych podów wyłączając część obecnych i dopiero potem kubernetes by wprowadził resztę. Tak się jednak nie stało, bo okazało się że nowa wersja jest faulty.
 
 ### Canary
+
 Użyłem dwóch deploymentów z różnymi etykietami `version`:
+
 ```sh
 kubectl apply -f deployment-canary-stable.yaml  # 3 repliki v21, label version=stable
 kubectl apply -f deployment-canary-new.yaml     # 1 replika v22, label version=canary
 kubectl apply -f service-canary.yaml            # selector: app=express-canary
 kubectl get pods -l app=express-canary --show-labels
 ```
+
 Serwis kieruje ruch do obu wersji (w tym 25% do canary). Jeśli canary działa dobrze możemy skalować ten stosunek aż canary wejdzie całkowicie do użycia.
+
+![alt text](image-52.png)
