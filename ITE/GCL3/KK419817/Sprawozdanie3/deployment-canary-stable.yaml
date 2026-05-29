@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-stable
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: express-canary
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: express-canary
+        version: stable
+    spec:
+      containers:
+      - name: express-app
+        image: blackcaer/express-app:21
+        ports:
+        - containerPort: 3000

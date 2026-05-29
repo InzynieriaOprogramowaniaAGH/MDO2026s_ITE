@@ -554,3 +554,40 @@ I wykonałem ponownie undo:
 
 ![alt text](image-46.png)
 ![alt text](image-47.png)
+
+## Strategie wdrożenia
+
+Utworzyłem pliki [deployment-recreate.yaml](./deployment-recreate.yaml) i [deployment-rolling.yaml](./deployment-rolling.yaml).
+
+### Recreate
+```sh
+# wersja 21 w pliku yaml
+kubectl apply -f deployment-recreate.yaml
+kubectl get pods -l app=express-recreate -w
+# Zmieniłem na 22 w pliku
+kubectl apply -f deployment-recreate.yaml
+```
+Wszystkie pody wyłączają się jednocześnie, potem uruchamiają nowe. Wadą tego rozwiązania jest chwilowy downtime.
+
+
+
+
+### Rolling Update (maxUnavailable: 2, maxSurge: 25%)
+```sh
+# wersja 21 w pliku yaml
+kubectl apply -f deployment-rolling.yaml
+kubectl get pods -l app=express-rolling -w
+# Zmieniłem wersje na 22
+kubectl apply -f deployment-rolling.yaml
+```
+Rolling deploy to stopniowa wymiana podów, zużywamy więcej zasobów chwilowo ale mamy zerowy downtime.
+
+### Canary
+Użyłem dwóch deploymentów z różnymi etykietami `version`:
+```sh
+kubectl apply -f deployment-canary-stable.yaml  # 3 repliki v21, label version=stable
+kubectl apply -f deployment-canary-new.yaml     # 1 replika v22, label version=canary
+kubectl apply -f service-canary.yaml            # selector: app=express-canary
+kubectl get pods -l app=express-canary --show-labels
+```
+Serwis kieruje ruch do obu wersji (w tym 25% do canary). Jeśli canary działa dobrze możemy skalować ten stosunek aż canary wejdzie całkowicie do użycia.
