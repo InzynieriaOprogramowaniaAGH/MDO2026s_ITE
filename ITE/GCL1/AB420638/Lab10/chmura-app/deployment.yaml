@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apka-deployment
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: moja-apka
+  template:
+    metadata:
+      labels:
+        app: moja-apka
+    spec:
+      containers:
+      - name: web
+        image: moja-apka-webowa:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
