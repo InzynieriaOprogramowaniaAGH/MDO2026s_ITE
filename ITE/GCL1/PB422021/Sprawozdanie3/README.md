@@ -293,3 +293,110 @@ W związku z tym w sekcji %post napisałam skrypt, który od razu po instalacji 
 ![Błąd wyświetlania](lab9_ss/lab9ss8.png)
 
 Zrzuty ekranu potwierdzają sukces przeprowadzonej automatyzacji.
+
+
+### Lab 10
+
+### Instalacja klastra Kubernetes
+
+Najpierw pobrałam plik instalacyjny Minikube oraz plik z sumą kontrolną. Następnie użyłam komendy sha256sum --check, żeby udowodnić, że plik jest bezpieczny i nie został po drodze podmieniony, co potwierdził status "OK".
+
+![Błąd wyświetlania](lab10_ss/lab10ss1.png)
+![Błąd wyświetlania](lab10_ss/lab10ss2.png)
+
+Przy uruchamianiu Minikube ograniczyłam go, żeby nie przeciążyć mojej maszyny wirtualnej. Dodałam do komendy startowej flagi --cpus=2 oraz --memory=4096, co pomyślnie i bezpiecznie postawiło cały klaster.
+
+![Błąd wyświetlania](lab10_ss/lab10ss3.png)
+
+Żeby nie wpisywać za każdym razem długich poleceń, utworzyłam sobie wygodny alias minikubctl. Od razu po tym sprawdziłam stan klastra, a komenda pokazała mój działający węzeł ze statusem ready.
+
+![Błąd wyświetlania](lab10_ss/lab10ss4.png)
+
+Na koniec odpaliłam graficzny interfejs Kubernetesa poleceniem działającym w tle. Dzięki przekierowaniu portów w VS Code mogłam kliknąć wygenerowany w terminalu link i otworzyć działający panel klastra bezpośrednio w przeglądarce na moim Windowsie.
+
+![Błąd wyświetlania](lab10_ss/lab10ss5.png)
+![Błąd wyświetlania](lab10_ss/lab10ss6.png)
+
+
+### Analiza posiadanego kontenera
+
+Zdecydowałam się na wdrożenie mojej aplikacji bezpośrednio na kontener. Użyłam własnego programu i zbudowałam na jego bazie obraz. 
+
+W folderze z moją pobraną aplikacją napisałam plik [Dockerfile](Dockerfile). Jako bazę wykorzystałam w nim lekkie środowisko Node.js, kazałam rozpakować pliki z aplikacją i dodałam główną komendę, która po starcie utrzyma serwer przy życiu.
+
+Mając gotowy plik, zbudowałam swój obraz Dockera za pomocą polecenia docker build. Proces przeszedł pomyślnie.
+
+![Błąd wyświetlania](lab10_ss/lab10ss7.png)
+
+Kolejnym etapem było uruchomienie mojego zbudowanego obrazu poleceniem docker run. Dodałam do niego parametr -d, dzięki czemu kontener wystartował jako cicho działająca usługa w tle, wystawiając swój interfejs na zewnątrz.
+
+![Błąd wyświetlania](lab10_ss/lab10ss8.png)
+
+Na koniec użyłam komendy curl, a działająca w środku aplikacja poprawnie odpowiedziała komunikatem "Hello World!".
+
+
+### Uruchamianie oprogramowania
+
+Zanim uruchomiłam aplikację, musiałam przenieść mój lokalnie zbudowany obraz do wewnątrz zamkniętego środowiska Minikube. Zrobiłam to za pomocą polecenia minikube image load, dzięki czemu klaster miał dostęp do mojej paczki.
+
+![Błąd wyświetlania](lab10_ss/lab10ss9.png)
+
+Mając gotowy obraz w pamięci klastra, utworzyłam nowe wdrożenie poleceniem kubectl run. Użyłam w nim parametru --image-pull-policy=Never, żeby wymusić na systemie użycie mojego lokalnego obrazu zamiast szukania go w internecie.
+
+![Błąd wyświetlania](lab10_ss/lab10ss10.png)
+
+Zgodnie z poleceniem sprawdziłam, czy moja aplikacja faktycznie działa w klastrze. W terminalu użyłam komendy kubectl get pods, która pokazała status "Running". Zweryfikowałam to również wizualnie w panelu Dashboard.
+
+![Błąd wyświetlania](lab10_ss/lab10ss11.png)
+![Błąd wyświetlania](lab10_ss/lab10ss12.png)
+
+Ponieważ Kubernetes mocno izoluje uruchomione pody, musiałam przebić tunel sieciowy, żeby dostać się do interfejsu aplikacji. Użyłam komendy port-forward, przekierowując ruch na wolny port 8888. Na koniec przetestowałam ten tunel narzędziem curl.
+
+![Błąd wyświetlania](lab10_ss/lab10ss13.png)
+![Błąd wyświetlania](lab10_ss/lab10ss14.png)
+
+
+### Przekucie wdrożenia manualnego w plik wdrożenia
+
+Utworzyłam plik [deployment.yaml](deployment.yaml), w którym opisałam jak ma wyglądać moje wdrożenie z początkowo jedną próbną repliką aplikacji. Następnie wgrałam ten plik do klastra za pomocą komendy kubectl apply -f deployment.yaml.
+
+![Błąd wyświetlania](lab10_ss/lab10ss15.png)
+![Błąd wyświetlania](lab10_ss/lab10ss16.png)
+
+Następnie zwiększyłam ilość replik do 4 i użyłam polecenia kubectl apply.
+
+![Błąd wyświetlania](lab10_ss/lab10ss17.png)
+![Błąd wyświetlania](lab10_ss/lab10ss18.png)
+
+
+Aby się upewnić, że klaster poradził sobie z poprawnym uruchomieniem wszystkich czterech kopii naraz. Wpisałam polecenie kubectl rollout status, które potwierdziło, że proces powielania kontenerów zakończył się sukcesem.
+
+![Błąd wyświetlania](lab10_ss/lab10ss19.png)
+
+Ponieważ miałam teraz cztery działające Pody, musiałam połączyć je pod jednym spójnym adresem. Użyłam komendy kubectl expose deployment, co utworzyło w klastrze serwis, działający jako punkt wejścia dla mojej aplikacji.
+
+
+![Błąd wyświetlania](lab10_ss/lab10ss20.png)
+
+Następnie podobnie jak wcześniej przekeirowałam port do serwisu.
+
+![Błąd wyświetlania](lab10_ss/lab10ss21.png)
+![Błąd wyświetlania](lab10_ss/lab10ss22.png)
+
+
+### Przygotowanie nowego obrazu
+
+Aby udowodnić, że zarządzam wersjami, otworzyłam mój plik Dockerfile i wprowadziłam drobną modyfikację (dodałam zmienną środowiskową WERSJA=v2). Następnie poleceniem docker build wygenerowałam nową paczkę z tagiem v2 i załadowałam ją do klastra komendą minikube image load.
+
+![Błąd wyświetlania](lab10_ss/lab10ss23.png)
+![Błąd wyświetlania](lab10_ss/lab10ss24.png)
+
+Upewniłam się, że w moim systemie są dwie wersje aplikacji.
+
+![Błąd wyświetlania](lab10_ss/lab10ss25.png)
+
+Na potrzeby kolejnych testów celowo zmodyfikowałam plik Dockerfile, ustawiając komendę startową na nieistniejący skrypt (zepsuty-plik.js). Zbudowałam obraz z tagiem error i wgrałam do klastra. Sam proces budowy i ładowania przeszedł bez błędów, ponieważ Docker jedynie pakuje pliki - awaria ujawni się dopiero podczas próby uruchomienia, gdy serwer spróbuje wywołać nieprawidłową komendę.
+
+![Błąd wyświetlania](lab10_ss/lab10ss26.png)
+![Błąd wyświetlania](lab10_ss/lab10ss27.png)
+![Błąd wyświetlania](lab10_ss/lab10ss28.png)
