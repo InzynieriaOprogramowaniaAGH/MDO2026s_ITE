@@ -1,3 +1,5 @@
+Laboratorium 8:
+
 ansible-target:
 
 sudo apt update
@@ -37,3 +39,58 @@ ansible-playbook -i inventory.ini pbook_artifact.yml --ask-become-pass
 ansible-galaxy role init roles/artifact_manage
 code pbook_artifact_w_role.yml
 ansible-playbook -i inventory.ini pbook_artifact_w_role.yml --ask-become-pass
+
+
+
+Laboratorium 10:
+
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64.sha256
+echo "$(cat minikube-linux-amd64.sha256) minikube-linux-amd64" | sha256sum --check
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+minikube version
+minikube start --driver=docker --cpus=2 --memory=2048
+minikube status
+echo "alias minikubectl='minikube kubectl --'" >> ~/.bashrc
+source ~/.bashrc
+minikubectl get nodes -o wide
+minikubectl get pods -A
+minikube dashboard
+docker build -t starter:latest /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/images/starter
+minikube image load starter:latest
+minikubectl run starter --restart=Never --image=starter:latest --image-pull-policy=IfNotPresent --port=80 --labels app=web
+minikubectl get pod starter -o wide
+minikubectl get pods -A
+minikubectl port-forward pod/starter 8081:80
+minikubectl apply -f /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/nginx-deployment.yaml
+minikubectl rollout status deployment/web-deploy
+minikubectl get deploy web-deploy
+minikubectl get pods -l app=web -o wide
+minikubectl apply -f /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/nginx-service.yaml
+minikubectl get svc web-svc
+minikubectl port-forward service/web-svc 8082:80
+docker build -t web-custom:v1 /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/images/v1
+minikube image load web-custom:v1
+docker build -t web-custom:v2 /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/images/v2
+minikube image load web-custom:v2
+docker build -t web-custom:broken /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/images/broken
+minikube image load web-custom:broken
+minikube image list | grep web-custom
+minikubectl apply -f /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/nginx-deployment.yaml
+minikubectl rollout status deployment/web-deploy
+minikubectl rollout history deployment/web-deploy
+minikubectl rollout undo deployment/web-deploy
+minikubectl get events --sort-by=.metadata.creationTimestamp | tail -n 30
+bash /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/rollout_check.sh web-deploy default
+minikubectl get pods -l app=web -w
+minikubectl apply -f /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/strategies/deployment-rolling.yaml
+minikubectl rollout status deployment/web-deploy
+minikubectl get events --sort-by=.metadata.creationTimestamp | tail -n 20
+minikubectl get pods -l app=web -w
+minikubectl apply -f /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/strategies/deployment-recreate.yaml
+minikubectl rollout status deployment/web-deploy
+minikubectl get events --sort-by=.metadata.creationTimestamp | tail -n 20
+minikubectl scale deployment/web-deploy --replicas=0
+minikubectl apply -f /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/strategies/deployment-canary-stable.yaml
+minikubectl apply -f /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/strategies/deployment-canary.yaml
+minikubectl get pods -l app=web -o wide --show-labels
