@@ -620,3 +620,7 @@ kubectl get pods -l app=express-canary --show-labels
 Serwis kieruje ruch do obu wersji (w tym 25% do canary). Jeśli canary działa dobrze możemy skalować ten stosunek aż canary wejdzie całkowicie do użycia.
 
 ![alt text](image-52.png)
+
+### Różnice
+
+Recreate powoduje większy downtime ale zużywa mniej zasobó. Jest też mniej odporne na błędy (jeśli wersja nie zadziała, mamy wtedy jeszcze większy downtime). Rolling update zużywa chwilowo więcej zasobów ale za to mamy zerowy downtime i zawsze możemy się wycofać gdy zauważymy błędy w trakcie. Canary pozwala przetestować nową wersję na mniejszym ruchu i powoli skalować procent wersji canary na deploymencie.
