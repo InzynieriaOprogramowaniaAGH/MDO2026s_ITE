@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: kontener-nestjs
-        image: nestjs-projekt
+        image: nestjs-projekt:error
         imagePullPolicy: Never
         ports:
         - containerPort: 3000

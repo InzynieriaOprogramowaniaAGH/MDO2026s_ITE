@@ -400,3 +400,53 @@ Na potrzeby kolejnych testów celowo zmodyfikowałam plik Dockerfile, ustawiają
 ![Błąd wyświetlania](lab10_ss/lab10ss26.png)
 ![Błąd wyświetlania](lab10_ss/lab10ss27.png)
 ![Błąd wyświetlania](lab10_ss/lab10ss28.png)
+
+
+### Zmiany w deploymencie
+
+Przetestowałam Kubernetesa zgodnie z instrukcją:
+
+1) liczba replik: 8
+
+Kubernetes błyskawicznie utworzył brakujące pody i rozłożył ruch na więcej instancji.
+
+![Błąd wyświetlania](lab10_ss/lab10ss29.png)
+
+2) liczba replik: 1
+
+System bezpiecznie wygasił nadmiarowe kontenery nadał im status terminating.
+
+![Błąd wyświetlania](lab10_ss/lab10ss30.png)
+
+3) liczba replik: 0
+
+Ustawienie zera replik całkowicie uśpiło aplikację, ale sama definicja wdrożenia została zachowana w pamięci klastra.
+
+![Błąd wyświetlania](lab10_ss/lab10ss31.png)
+
+4) liczba replik: 4 (ponownie)
+
+Po przywróceniu 4 replik, klaster momentalnie dostawił brakujące pody.
+![Błąd wyświetlania](lab10_ss/lab10ss32.png)
+
+5) zastosowanie nowej wersji obrazu
+
+Aktualizacja do wersji v2 przeszła płynnie dzięki mechanizmowi rolling update. Nowe kontenery przejmowały ruch stopniowo, a stare były wyłączane dopiero wtedy, gdy nowe były w 100% gotowe.
+
+![Błąd wyświetlania](lab10_ss/lab10ss33.png)
+
+6) zastosowanie starszej wersji obrazu
+
+Powrót do starszej wersji zadziałał dokładnie tak samo sprawnie jak poprzednia aktualizacja.
+
+![Błąd wyświetlania](lab10_ss/lab10ss34.png)
+
+7) zastosowanie "wadliwego" obrazu 
+
+Wgranie uszkodzonego obrazu pokazało  mechanizmy bezpieczeństwa klastra. Kiedy Kubernetes wykrył, że nowe kontenery od razu zwracają błąd, natychmiast wstrzymał aktualizację. System zachował starsze, sprawne repliki, co zagwarantowało ciągłość działania aplikacji mimo błędu w nowej wersji.
+
+![Błąd wyświetlania](lab10_ss/lab10ss35.png)
+
+Aby posprzątać bałagan, użyłam najpierw polecenia kubectl rollout history, żeby podejrzeć listę poprzednich rewizji. Następnie wywołałam komendę kubectl rollout undo, która od razu cofnęła całe wdrożenie do ostatniej działającej wersji, przywracając moim podom czysty status "Running".
+
+![Błąd wyświetlania](lab10_ss/lab10ss36.png)
