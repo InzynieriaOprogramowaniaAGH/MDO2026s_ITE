@@ -450,3 +450,34 @@ Wgranie uszkodzonego obrazu pokazało  mechanizmy bezpieczeństwa klastra. Kiedy
 Aby posprzątać bałagan, użyłam najpierw polecenia kubectl rollout history, żeby podejrzeć listę poprzednich rewizji. Następnie wywołałam komendę kubectl rollout undo, która od razu cofnęła całe wdrożenie do ostatniej działającej wersji, przywracając moim podom czysty status "Running".
 
 ![Błąd wyświetlania](lab10_ss/lab10ss36.png)
+
+
+### Kontrola wdrożenia 
+
+Napisałam krótki skrypt, weryfikujący czy wdrożenie "zdążyło" się wdrożyć w czasie 60 sekund. 
+
+![Błąd wyświetlania](lab10_ss/lab10ss37.png)
+
+![Błąd wyświetlania](lab10_ss/lab10ss38.png)
+
+
+### Strategie wdrożenia
+
+Najpierw przetestowałam strategię Recreate. Zmodyfikowałam plik deployment.yaml i po jego zaaplikowaniu Kubernetes najpierw usunął wszystkie stare pody, a dopiero po ich zniknięciu zaczął tworzyć nowe.
+
+![Błąd wyświetlania](lab10_ss/lab10ss39.png)
+
+![Błąd wyświetlania](lab10_ss/lab10ss40.png)
+
+Następnie zmieniłam w pliku strategię na płynną aktualizację RollingUpdate, wymuszając parametry maxUnavailable: 2 oraz maxSurge: 25%. Dzięki temu system szybciej podmieniał po kilka kontenerów naraz, ale nadal utrzymywał aplikację przy życiu.
+
+![Błąd wyświetlania](lab10_ss/lab10ss41.png)
+
+![Błąd wyświetlania](lab10_ss/lab10ss42.png)
+
+
+Na koniec zastosowałam Canary Deployment. Najpierw użyłam komendy expose, aby utworzyć serwis o nazwie moj-serwis, który ma za zadanie rozdzielać ruch sieciowy. Następnie z przygotowanego wcześniej pliku canary.yaml zaaplikowałam pojedynczą, testową replikę. Wynik polecenia get pods potwierdza sukces - na liście wyraźnie widać, że obok moich czterech starszych, głównych podów, działa już jeden nowy, świeżo uruchomiony pod testowy z dopiskiem canary.
+
+![Błąd wyświetlania](lab10_ss/lab10ss43.png)
+
+Podsumowując wszystkie strategie wdrożenia Recreate całkowicie odcina użytkowników na czas aktualizacji, ale gwarantuje brak konfliktów - nigdy nie działają dwie wersje naraz. Z kolei RollingUpdate pozwala na aktualizację bez przerw w dostępie, a wdrożenie typu Canary to najbezpieczniejsza opcja na sprawdzenie nowej wersji kodu tylko na garstce użytkowników, bez ryzykowania globalnej awarii.
