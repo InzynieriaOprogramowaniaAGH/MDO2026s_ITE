@@ -1,0 +1,179 @@
+---
+# ==========================================
+# CZĘŚĆ 1: Przygotowanie środowiska i Sanity Check
+# ==========================================
+
+- name: Sanity check - Wyślij żądanie ping do maszyny
+  ansible.builtin.ping:
+
+- name: Upewnij się, że Docker oraz pip dla Pythona są zainstalowane
+  ansible.builtin.apt:
+    name: 
+      - docker.io
+      - python3-docker
+    state: present
+    update_cache: yes
+
+- name: Upewnij się, że usługa Docker działa
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Stwórz czysty katalog roboczy dla aplikacji Flask
+  ansible.builtin.file:
+    path: /tmp/flask_workspace
+    state: directory
+    mode: '0755'
+
+- name: Kopiuj pliki źródłowe i Dockerfile z lab3 na maszynę docelową
+  ansible.builtin.copy:
+    src: "../../lab3/"  # Ścieżka relatywna na Twoim komputerze (wychodzimy z lab8/ansible-project do folderu lab3)
+    dest: /tmp/flask_workspace/
+    mode: '0755'
+# UWAGA: W tym miejscu należy upewnić się, że pliki Dockerfile i kod źródłowy 
+# znajdują się w /tmp/flask_workspace (np. przez ansible.builtin.git lub ansible.builtin.copy)
+
+# ==========================================
+# CZĘŚĆ 2: Budowanie, testowanie i ekstrakcja (.whl)
+# ==========================================
+
+- name: Stage - Build Image & Wheel
+  community.docker.docker_image:
+    name: flask-builder
+    tag: latest
+    build:
+      path: /tmp/flask_workspace
+      dockerfile: Dockerfile.build  # Plik jest już bezpośrednio w /tmp/flask_workspace
+    source: build
+
+- name: Stage - Build Test Image
+  community.docker.docker_image:
+    name: flask-tester
+    tag: latest
+    build:
+      path: /tmp/flask_workspace
+      dockerfile: Dockerfile.test   # Plik jest już bezpośrednio w /tmp/flask_workspace
+    source: build
+
+- name: Stage - Run Tests
+  community.docker.docker_container:
+    name: flask-tester-container
+    image: flask-tester:latest
+    state: started
+    detach: false
+  ignore_errors: yes # Odpowiednik "|| true" z Jenkinsfile
+
+- name: Stage - Extract Artifact (Stworzenie tymczasowego kontenera)
+  community.docker.docker_container:
+    name: temp-container
+    image: flask-builder:latest
+    state: present # Tylko tworzy kontener, nie uruchamia go
+
+- name: Utwórz katalog na wyekstrahowany artefakt na hoście
+  ansible.builtin.file:
+    path: /tmp/flask_workspace/dist
+    state: directory
+    mode: '0755'
+
+- name: Stage - Extract Artifact (Kopiowanie plików z kontenera)
+  ansible.builtin.shell: |
+    docker cp temp-container:/app/dist /tmp/flask_workspace/
+  args:
+    executable: /bin/bash
+
+- name: Stage - Extract Artifact (Usunięcie tymczasowego kontenera)
+  community.docker.docker_container:
+    name: temp-container
+    state: absent
+
+# ==========================================
+# CZĘŚĆ 3: Wdrożenie aplikacji (Deploy)
+# ==========================================
+
+- name: UsuniExisting stary kontener produkcyjny, jeśli istnieje
+  community.docker.docker_container:
+    name: flask-prod-test
+    state: absent
+
+- name: Stwórz plik aplikacji my_app.py na hoście (Właściwe podejście)
+  ansible.builtin.copy:
+    dest: /tmp/flask_workspace/my_app.py
+    content: |
+      from flask import Flask
+      import os
+
+      app = Flask(__name__)
+
+      @app.route('/')
+      def hello():
+          return '<h1>Działa</h1>'
+
+      if __name__ == '__main__':
+          app.run(host='0.0.0.0', port=5000)
+    mode: '0644'
+
+- name: Stage - Deploy (Uruchomienie kontenera produkcyjnego z aplikacją Flask)
+  community.docker.docker_container:
+    name: flask-prod-test
+    image: python:3.12-slim
+    state: started
+    restart_policy: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - "/tmp/flask_workspace:/app"  # Montujemy cały katalog (zawiera dist/ oraz my_app.py)
+    working_dir: /app
+    # Użycie tablicy [json] dla command całkowicie eliminuje problemy z interpretacją znaków przez powłokę
+    command: ["bash", "-c", "pip install /app/dist/*.whl && python3 my_app.py"]
+- name: Odczekaj chwilę na uruchomienie aplikacji (Smoke Test Delay)
+  ansible.builtin.pause:
+    seconds: 5
+
+# ==========================================
+# CZĘŚĆ 4: Smoke Test & Publikacja
+# ==========================================
+
+- name: Stage - Smoke Test (Weryfikacja curl)
+  ansible.builtin.uri:
+    url: http://localhost:5000/
+    status_code: 200
+  register: flask_check
+  retries: 20
+  delay: 2
+  until: flask_check.status == 200
+
+- name: Wyświetl status weryfikacji sukcesu
+  ansible.builtin.debug:
+    msg: "Działa na porcie 5000"
+  when: flask_check.status == 200
+
+- name: Stage - Publish (Wysyłanie paczki do PyPI przez Twine)
+  community.docker.docker_container:
+    name: pypi-publisher
+    image: python:3.12-slim
+    state: started
+    detach: false
+    volumes:
+      - "/tmp/flask_workspace/dist:/app/dist"
+    working_dir: /app
+    entrypoint: /bin/bash
+    command: >
+      -c "pip install twine && twine upload -u __token__ -p {{ PYPI_TOKEN_VAR }} dist/olo_devopsowo_lab7-*.whl"
+  # Ta sekcja wykona się tylko jeśli zdefiniujesz zmienną PYPI_TOKEN_VAR
+  when: PYPI_TOKEN_VAR is defined 
+
+# ==========================================
+# CZĘŚĆ 5: Sprzątanie środowiska (Opcjonalne)
+# ==========================================
+
+# Odkomentuj poniższe zadania, jeśli po testach i publikacji chcesz usunąć kontener i pliki:
+# - name: Oczyszczanie - Usuń kontener aplikacyjny
+#   community.docker.docker_container:
+#     name: flask-prod-test
+#     state: absent
+
+# - name: Oczyszczanie - Usuń katalog roboczy
+#   ansible.builtin.file:
+#     path: /tmp/flask_workspace
+#     state: absent
