@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-custom
+  labels:
+    app: nginx-custom
+  annotations:
+    kubernetes.io/change-cause: "init 1.0"
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: nginx-custom
+  template:
+    metadata:
+      labels:
+        app: nginx-custom
+    spec:
+      containers:
+        - name: nginx-custom
+          image: evernever2000/nginx-custom:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
