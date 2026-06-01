@@ -276,4 +276,191 @@ Po wczytaniu pliku
 System zainstalował się samodzielnie
 
 
+---
+
+Lab 10
+
+Instaluję Minikube i definuję alias
+
+![scr1](./cw10/Screenshot_2.png)
+
+```
+echo 'alias minikubctl="minikube kubectl --"' >> ~/.bashrc
+```
+
+Uruchomiłem kubernetes komendą:
+
+```
+minikube start
+```
+
+![scr1](./cw10/Screenshot_3.png)
+
+
+Uruchomiłem dasboard komendą:
+
+```
+minikube dashboard
+```
+
+![scr1](./cw10/Screenshot_4.png)
+
+![scr1](./cw10/Screenshot_5.png)
+
+Napisany manifest deploymentu
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realworld-deployment
+  labels:
+    app: realworld
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: realworld
+  template:
+    metadata:
+      labels:
+        app: realworld
+    spec:
+      containers:
+      - name: realworld-container
+        image: realworld-app:latest
+        imagePullPolicy: Never # Zla wykorzystywania lokalnego obrazu
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SERVER_ADDRESS
+          value: "0.0.0.0"
+        - name: SERVER_PORT
+          value: "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: realworld-service
+spec:
+  selector:
+    app: realworld
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+```
+
+Przed zastosowaniem manifest wczytałem obraz programu do minikube
+
+```
+minikube image load realworld-app:latest
+```
+
+A potem zastosowaem go przy pomocy
+
+```
+minikubctl apply -f deployment.yaml
+```
+
+![scr1](./cw10/Screenshot_6.png)
+
+Włączyłem portforwarding dla sprawdzenia działania aplikacji
+
+```
+minikubctl port-forward service/realworld-service 8081:8080
+```
+
+Chociaż curl komenda nie działa poprawnie i zwraca błąd 401
+
+![scr1](./cw10/Screenshot_7.png)
+
+Ale przeglądarka działa poprawnie
+
+![scr1](./cw10/Screenshot_8.png)
+
+Utworzyłem plik do deployentu nginx
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+```
+
+I zastosowałem go
+
+```
+minikubctl apply -f nginx-deployment.yaml
+```
+
+![scr1](./cw10/Screenshot_9.png)
+
+Oraz eksponuję wdrożenie jako serwis i przekierowuję port
+
+```
+minikubctl port-forward service/nginx-deployment 8080:80
+minikubctl expose deployment nginx-deployment --type=NodePort --port=80
+```
+
+![scr1](./cw10/Screenshot_10.png)
+
+Buduję i wgrywam 2 wersję aplikacji zarówno z niedziałającą
+
+```
+docker build -t realworld-app:v1 .
+minikube image load realworld-app:v1
+
+docker build -t realworld-app:v2 .
+minikube image load realworld-app:v2
+
+docker build -f Dockerfile.broken -t realworld-app:broken .
+minikube image load realworld-app:broken
+```
+
+Zamieniłem wersję na v1 z 2 replikami
+
+![scr1](./cw10/Screenshot_11.png)
+
+Zamieniłem wersję na v2 z 6 replikami
+
+```
+minikubctl set image deployment/realworld-deployment realworld-container=realworld-app:v2
+```
+
+![scr1](./cw10/Screenshot_12.png)
+
+I na niedziałającą z 4 replikami
+
+```
+minikubctl set image deployment/realworld-deployment realworld-container=realworld-app:broken
+```
+
+![scr1](./cw10/Screenshot_13.png)
+
+Oraz przywróciłem deployment do poprzedniej wersji
+
+```
+minikubctl rollout undo deployment/realworld-deployment
+```
+
+![scr1](./cw10/Screenshot_14.png)
 
