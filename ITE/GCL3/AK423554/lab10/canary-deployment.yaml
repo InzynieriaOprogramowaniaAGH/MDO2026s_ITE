@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastify-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastify-canary-pod
+  template:
+    metadata:
+      labels:
+        app: fastify-canary-pod
+        role: frontend
+    spec:
+      containers:
+      - name: fastify-container
+        image: moja-aplikacja:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000

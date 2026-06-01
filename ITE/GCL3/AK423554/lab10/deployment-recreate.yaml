@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastify-recreate
+  labels:
+    app: fastify-app
+spec:
+  replicas: 4
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: fastify-app-recreate
+  template:
+    metadata:
+      labels:
+        app: fastify-app-recreate
+    spec:
+      containers:
+      - name: fastify-container
+        image: moja-aplikacja:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
