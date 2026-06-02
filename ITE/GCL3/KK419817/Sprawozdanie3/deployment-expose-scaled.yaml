@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-app-expose
+spec:
+  replicas: 20
+  selector:
+    matchLabels:
+      app: express-app-expose
+  template:
+    metadata:
+      labels:
+        app: express-app-expose
+    spec:
+      containers:
+        - name: express-app
+          image: blackcaer/express-app:latest
+          ports:
+            - containerPort: 3000

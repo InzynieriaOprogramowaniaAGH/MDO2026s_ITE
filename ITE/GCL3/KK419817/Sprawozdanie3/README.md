@@ -709,6 +709,26 @@ Potwierdzam poleceniem `kubectl get services` że serwis działa.
 Eksponuje port poleceniem `kubectl port-forward service/express-service-yaml 3000:3000`. Strona ponownie jest dostępna.
 
 
+### Skalowanie
 
+Przeskalowałem deplyoment poleceniem
+```bash
+ kubectl scale deployment express-app-expose --replicas=15
+```
 
+![alt text](image-64.png)
+![alt text](image-63.png)
+
+I za pomocą pliku [deployment-expose-scaled.yam](./deployment-expose-scaled.yam) i polecenia
+
+```bash
+kubectl apply -f deployment-expose-scaled.yaml
+```
+
+![alt text](image-65.png)
+
+![alt text](image-66.png)
+
+Pliki różnią się ilością replicasetów:
+![alt text](image-67.png)
 
