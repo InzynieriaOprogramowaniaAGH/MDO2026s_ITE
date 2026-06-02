@@ -55,3 +55,19 @@
 ![recreate](image-45.png)
 ![rolling](image-46.png)
 ![canary](image-47.png)
+
+# L8
+
+![error](image-48.png)
+![horde](image-49.png)
+![forward](image-51.png)
+![port](image-50.png)
+![zero](image-53.png)
+![curl](image-52.png)
+![expose](image-55.png)
+![shoot](image-54.png)
+![apply](image-57.png)
+![curly](image-56.png)
+![scale](image-58.png)
+![logs](image-59.png)
+![tail](image-60.png)
