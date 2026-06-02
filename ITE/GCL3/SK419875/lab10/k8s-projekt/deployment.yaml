@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moja-apka-deploy
+spec:
+  replicas: 4
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: moja-apka
+  template:
+    metadata:
+      labels:
+        app: moja-apka
+    spec:
+      containers:
+      - name: kontener-apki
+        image: moja-apka:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
