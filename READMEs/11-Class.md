@@ -19,4 +19,4 @@ Przeskaluj wdrożenie:
  * Za pomocą dyrektywy `scale`
  * Za pomocą zaaplikowania nowego pliku YAML (pokaż różnice między YAML-ami)
  
-Sprawdź, do którego poda łączysz się po przeskalowaniu. Jeżeli logi nie są czytelne, użyj `nginx`.
+✨ Bonus: Sprawdź, do którego poda łączysz się po przeskalowaniu. Jeżeli logi nie są czytelne, użyj `nginx`.
