@@ -391,3 +391,47 @@ nginx-canary-stable-5d6f45b8d7-xnkn9   1/1     Running   app=nginx-canary,track=
 
 Serwis `nginx-canary` dystrybuuje ruch: **75% → stable (nginx:1.25)**, **25% → canary (nginx:1.26)**.
 Gdy canary jest stabilny — można zwiększyć jego repliki i zmniejszyć stable, stopniowo przenosząc cały ruch.
+
+---
+
+## Zajęcia 11
+
+ubuntu@myserver:~/MDO2026s_ITE$ minikube start --force
+ubuntu@myserver:~/MDO2026s_ITE$ cd ITE/GCL3/YK424367/Sprawozdanie3
+ubuntu@myserver:~/MDO2026s_ITE/ITE/GCL3/YK424367/Sprawozdanie3$ minikube kubectl -- apply -f nginx-deployment-36.yaml
+deployment.apps/nginx-deployment configured
+ubuntu@myserver:~/MDO2026s_ITE/ITE/GCL3/YK424367/Sprawozdanie3$ minikube kubectl -- rollout status deployment/nginx-deployment
+deployment "nginx-deployment" successfully rolled out
+ubuntu@myserver:~/MDO2026s_ITE/ITE/GCL3/YK424367/Sprawozdanie3$ minikube kubectl -- get deployment nginx-deployment
+nginx-deployment   36/36   36           36
+
+ubuntu@myserver:~/MDO2026s_ITE$ minikube dashboard
+
+one pod:
+ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- get pods -l app=nginx
+ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- port-forward pod/nginx-deployment-8574879789-28zfz 9090:80
+Forwarding from 127.0.0.1:9090 -> 80
+ubuntu@myserver:~/MDO2026s_ITE$ curl -o /dev/null -w "%{http_code}\n" http://127.0.0.1:9090
+200
+
+deployment:
+ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- port-forward deployment/nginx-deployment 9092:80
+Forwarding from 127.0.0.1:9092 -> 80
+ubuntu@myserver:~/MDO2026s_ITE$ curl -o /dev/null -w "%{http_code}\n" http://127.0.0.1:9092
+200
+
+service:
+ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- expose deployment nginx-deployment --port=80
+Error from server (AlreadyExists): services "nginx-deployment" already exists
+ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- apply -f ITE/GCL3/YK424367/Sprawozdanie3/nginx-service.yaml
+service/nginx-deployment configured
+ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- port-forward service/nginx-deployment 9093:80
+Forwarding from 127.0.0.1:9093 -> 80
+ubuntu@myserver:~/MDO2026s_ITE$ curl -o /dev/null -w "%{http_code}\n" http://127.0.0.1:9093
+200
+
+Scale:
+ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- scale deployment/nginx-deployment --replicas=12
+deployment.apps/nginx-deployment scaled
+ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- scale deployment/nginx-deployment --replicas=20
+deployment.apps/nginx-deployment scaled
