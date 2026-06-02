@@ -630,7 +630,7 @@ Recreate powoduje większy downtime ale zużywa mniej zasobów. Jest też mniej 
 Utworzyłem [plik deploymentu](./deployment-expose.yaml)
 Wdrożyłem:
 
-```sh
+```bash
 kubectl apply -f deployment-expose.yaml
 ```
 
@@ -639,7 +639,7 @@ kubectl apply -f deployment-expose.yaml
 ![alt text](image-54.png)
 
 Przekierowałem port do jednego poda
-```sh
+```bash
 kubectl port-forward pod/express-app-expose-54f8bc4448-2g72q 3000:3000
 ```
 
@@ -648,4 +648,15 @@ kubectl port-forward pod/express-app-expose-54f8bc4448-2g72q 3000:3000
 ![alt text](image-56.png)
 
 ![alt text](image-57.png)
+
+Również wykesponowałem deployment:
+
+```bash
+kubectl port-forward deployment/express-app-expose 3000:3000
+```
+![alt text](image-58.png)
+
+![alt text](image-59.png)
+
+Strona również działa
 
