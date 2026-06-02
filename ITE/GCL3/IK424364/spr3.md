@@ -464,3 +464,86 @@ minikubctl rollout undo deployment/realworld-deployment
 
 ![scr1](./cw10/Screenshot_14.png)
 
+---
+
+Lab 11
+
+Najpierw zmieniłem plik manifestu: 
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 8
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-server-svc-yaml
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+```
+
+I zastosowałem go
+
+![scr1](./cw11/Screenshot_2.png)
+
+Najpierw włączyłem port-forwarding do podu
+
+![scr1](./cw11/Screenshot_3.png)
+
+Do deploymentu
+
+![scr1](./cw11/Screenshot_4.png)
+
+Do serwisu
+
+![scr1](./cw11/Screenshot_5.png)
+
+Przeskalowałem ilość podów do 2 za pomocą komendy
+
+```
+minikubctl scale deployment/nginx-deployment --replicas=2
+```
+
+![scr1](./cw11/Screenshot_6.png)
+
+* Pod z port-forwardingu po przeskalowaniu w dół nadal działa, ale mógł by być usunięty
+* Port-forwarding do deploymentu też działa, ale sytuacja jest podobna do sytuacji z podóm
+* Servis działa poprawnie i udostępnia dostęp do podów dynamicznie
+
+I potem przeskalowałem ilość podów do 16 już zmieniając liczbę replik w manifeście
+
+* Nic ni miało się stać i się nie stało, we wszystkich 3 przypadkach dostęp do podów nadal istnieje
+
+Używanie komendy pozwala na szybką i nietrwałą zmianę ilości podów, kiedy zmiana w pliku pozwala na trwałą zmianę
+
+
+
+
+
+
+

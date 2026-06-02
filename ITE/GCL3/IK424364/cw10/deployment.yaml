@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realworld-deployment
+  labels:
+    app: realworld
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: realworld
+  template:
+    metadata:
+      labels:
+        app: realworld
+    spec:
+      containers:
+      - name: realworld-container
+        image: realworld-app:broken
+        imagePullPolicy: Never # Zla wykorzystywania lokalnego obrazu
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SERVER_ADDRESS
+          value: "0.0.0.0"
+        - name: SERVER_PORT
+          value: "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: realworld-service
+spec:
+  selector:
+    app: realworld
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
