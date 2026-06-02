@@ -628,7 +628,10 @@ Recreate powoduje większy downtime ale zużywa mniej zasobów. Jest też mniej 
 ## Wdrażanie na zarządzalne kontenery: Kubernetes (2)
 
 Utworzyłem [plik deploymentu](./deployment-expose.yaml)
-Wdrożyłem:
+
+Wdrożyłem i wyeksponowałem dostęp:
+
+#### Do jednego poda
 
 ```bash
 kubectl apply -f deployment-expose.yaml
@@ -643,13 +646,17 @@ Przekierowałem port do jednego poda
 kubectl port-forward pod/express-app-expose-54f8bc4448-2g72q 3000:3000
 ```
 
+Widać że mamy dostęp z zewnątrz dla jednego poda
+
 ![alt text](image-55.png)
 
 ![alt text](image-56.png)
 
 ![alt text](image-57.png)
 
-Również wykesponowałem deployment:
+#### Do deploymentu
+
+Wykesponowałem deployment:
 
 ```bash
 kubectl port-forward deployment/express-app-expose 3000:3000
@@ -658,5 +665,50 @@ kubectl port-forward deployment/express-app-expose 3000:3000
 
 ![alt text](image-59.png)
 
-Strona również działa
+Strona działa, widać że mamy dostęp z zewnątrz dla deploymentu
+
+(zmniejszyłem w miedzyczasie ilość podów w pliku do 10 aby szybciej wszystko działało)
+
+#### Do serwisu za pomocą polecenia
+
+Usunąłem i postawiłem deployment na nowo (wyłączyłem od tego czasu maszynę wirtualną i chciałem mieć "czysty start")
+```bash
+kubectl delete -f deployment-expose.yaml
+kubectl apply -f deployment-expose.yaml
+```
+
+Wyeksponowałem dostęp za pomocą serwisu:
+```bash
+kubectl expose deployment express-app-expose --type=NodePort --port=3000 --name=express-service-cmd
+```
+
+![alt text](image-62.png)
+
+Sprawdziłem czy serwis się uruchomił (jak widać na screenie) a następnie wyświetliłem jego szczegóły 
+
+```bash
+kubectl get services
+kubectl describe service express-service-cmd
+```
+
+![alt text](image-61.png)
+
+Strona jest dostępna
+
+![alt text](image-60.png)
+
+#### Do serwisu za pomocą pliku YAML
+
+Utworzyłem plik [service-expose.yaml](./service-expose.yaml) i zaaplikowałem go poleceniem
+
+```bash
+kubectl apply -f service-expose.yaml
+```
+
+Potwierdzam poleceniem `kubectl get services` że serwis działa.
+Eksponuje port poleceniem `kubectl port-forward service/express-service-yaml 3000:3000`. Strona ponownie jest dostępna.
+
+
+
+
 

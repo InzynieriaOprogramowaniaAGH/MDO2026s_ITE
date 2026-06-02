@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: express-app-expose
 spec:
-  replicas: 36
+  replicas: 10
   selector:
     matchLabels:
       app: express-app-expose
