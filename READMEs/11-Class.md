@@ -8,7 +8,7 @@ Wdróż swój web-server za pomocą *deplymentu* w pliku YAML. Wdróż dużą li
 
  * Do jednego poda
  * Do deploymentu
- * Do serwisu (wyeksponuj deployment)
+ * Do serwisu ((wyeksponuj)[https://kubernetes.io/docs/reference/kubectl/generated/kubectl_expose/] deployment)
     * Dedykowanym poleceniem
 	* Dodatkowym plikiem YAML
  
