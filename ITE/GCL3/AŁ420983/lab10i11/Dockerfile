@@ -5,7 +5,6 @@ WORKDIR /opt/app
 RUN pip install --no-cache-dir olo-devopsowo-lab7
 
 RUN printf "from flask import Flask\n\
-raise Exception('Celowy blad aplikacji')\n\
 app = Flask(__name__)\n\
 @app.route('/')\n\
 def hello(): return '<h1>Działa ELO!</h1>'\n\

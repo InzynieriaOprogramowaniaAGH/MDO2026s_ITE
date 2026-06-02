@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-mass-deployment
+  labels:
+    app: flask-mass
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: flask-mass-pod
+  template:
+    metadata:
+      labels:
+        app: flask-mass-pod
+    spec:
+      containers:
+      - name: flask-container
+        image: moja-aplikacja:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
