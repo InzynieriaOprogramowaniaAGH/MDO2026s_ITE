@@ -494,6 +494,12 @@ docker stop 436e727437f4
 
 Jako, że mam juz wiele wersji na [dockerhubie](https://hub.docker.com/repository/docker/blackcaer/express-app/general), muszę stworzyć tylko failujący obraz. Do tego celu utworzyłem [Dockerfile.broken](./Dockerfile.broken).
 
+```bash
+FROM node:20-alpine
+WORKDIR /app
+CMD ["node", "inexistentfile.js"]
+```
+
 ```sh
 docker build -f Dockerfile.broken -t blackcaer/express-app:broken .
 docker push blackcaer/express-app:broken
@@ -570,6 +576,89 @@ I wykonałem ponownie undo:
 
 Utworzyłem pliki [deployment-recreate.yaml](./deployment-recreate.yaml) i [deployment-rolling.yaml](./deployment-rolling.yaml).
 
+deployment-recreate:
+```bash
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-recreate
+spec:
+  replicas: 8
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: express-recreate
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: express-recreate
+        version: stable
+    spec:
+      containers:
+      - name: express-app
+        image: blackcaer/express-app:22
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-recreate-service
+spec:
+  type: NodePort
+  selector:
+    app: express-recreate
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30001
+```
+
+deployment-rolling:
+```bash
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-rolling
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app: express-rolling
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: express-rolling
+        version: stable
+    spec:
+      containers:
+      - name: express-app
+        image: blackcaer/express-app:21
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-rolling-service
+spec:
+  type: NodePort
+  selector:
+    app: express-rolling
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30002
+```
+
 ### Recreate
 
 ```sh
@@ -610,6 +699,72 @@ Widać że łącznie mamy 10 podów (8 \* 1.25), najpierw zostało utworzone jak
 
 Użyłem dwóch deploymentów z różnymi etykietami `version`:
 
+Wersja 21:
+```bash
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-stable
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: express-canary
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: express-canary
+        version: stable
+    spec:
+      containers:
+      - name: express-app
+        image: blackcaer/express-app:21
+        ports:
+        - containerPort: 3000
+```
+
+Wersja 22:
+```bash
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: express-canary
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: express-canary
+        version: canary
+    spec:
+      containers:
+      - name: express-app
+        image: blackcaer/express-app:22
+        ports:
+        - containerPort: 3000
+```
+
+Canary service:
+```bash
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-canary-service
+spec:
+  type: NodePort
+  selector:
+    app: express-canary
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30003
+```
+
 ```sh
 kubectl apply -f deployment-canary-stable.yaml  # 3 repliki v21, label version=stable
 kubectl apply -f deployment-canary-new.yaml     # 1 replika v22, label version=canary
@@ -628,6 +783,28 @@ Recreate powoduje większy downtime ale zużywa mniej zasobów. Jest też mniej 
 ## Wdrażanie na zarządzalne kontenery: Kubernetes (2)
 
 Utworzyłem [plik deploymentu](./deployment-expose.yaml)
+
+```bash
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-app-expose
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: express-app-expose
+  template:
+    metadata:
+      labels:
+        app: express-app-expose
+    spec:
+      containers:
+        - name: express-app
+          image: blackcaer/express-app:latest
+          ports:
+            - containerPort: 3000
+```
 
 Wdrożyłem i wyeksponowałem dostęp:
 
@@ -702,6 +879,21 @@ Strona jest dostępna
 Utworzyłem plik [service-expose.yaml](./service-expose.yaml) i zaaplikowałem go poleceniem
 
 ```bash
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-service-yaml
+spec:
+  type: NodePort
+  selector:
+    app: express-app-expose
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30001
+```
+
+```bash
 kubectl apply -f service-expose.yaml
 ```
 
@@ -719,7 +911,29 @@ Przeskalowałem deplyoment poleceniem
 ![alt text](image-64.png)
 ![alt text](image-63.png)
 
-I za pomocą pliku [deployment-expose-scaled.yam](./deployment-expose-scaled.yam) i polecenia
+I za pomocą pliku [deployment-expose-scaled.yaml](./deployment-expose-scaled.yaml) i polecenia
+
+```bash
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-app-expose
+spec:
+  replicas: 20
+  selector:
+    matchLabels:
+      app: express-app-expose
+  template:
+    metadata:
+      labels:
+        app: express-app-expose
+    spec:
+      containers:
+        - name: express-app
+          image: blackcaer/express-app:latest
+          ports:
+            - containerPort: 3000
+```
 
 ```bash
 kubectl apply -f deployment-expose-scaled.yaml
