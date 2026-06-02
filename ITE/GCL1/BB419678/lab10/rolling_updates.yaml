@@ -4,6 +4,11 @@ metadata:
   name: lab-deployment
 spec:
   replicas: 4
+  strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 25%  # 1 kontener przy 4 replikach
   selector:
     matchLabels:
       app: web-app
@@ -14,7 +19,7 @@ spec:
     spec:
       containers:
       - name: kontener-aplikacji
-        image: moj-app:v1
+        image: moj-app:v2
         imagePullPolicy: Never
         ports:
         - containerPort: 80

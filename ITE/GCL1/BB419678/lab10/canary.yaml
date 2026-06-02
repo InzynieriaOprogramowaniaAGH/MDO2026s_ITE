@@ -1,0 +1,63 @@
+---
+# 1. SERWIS (Wspólny punkt wejścia)
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary-service
+spec:
+  selector:
+    app: aplikacja-lab  # Złapie wszystkie pody z tą etykietą
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+# 2. wdrozenie stabilne v1 - 75% ruchu
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-stable
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aplikacja-lab
+      track: stable       # Unikalna etykieta stabilna
+  template:
+    metadata:
+      labels:
+        app: aplikacja-lab
+        track: stable
+    spec:
+      containers:
+      - name: kontener
+        image: moj-app:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+
+---
+# 3. wdrozenie "canary" - 25% ruchu
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aplikacja-lab
+      track: canary       # Unikalna etykieta kanarka
+  template:
+    metadata:
+      labels:
+        app: aplikacja-lab
+        track: canary
+    spec:
+      containers:
+      - name: kontener
+        image: moj-app:v2
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
