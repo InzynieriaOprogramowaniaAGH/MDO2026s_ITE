@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lab11-svc-yaml
+spec:
+  selector:
+    app: lab11-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
