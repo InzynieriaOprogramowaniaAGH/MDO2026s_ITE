@@ -624,3 +624,28 @@ Serwis kieruje ruch do obu wersji (w tym 25% do canary). Jeśli canary działa d
 ### Różnice
 
 Recreate powoduje większy downtime ale zużywa mniej zasobów. Jest też mniej odporne na błędy (jeśli wersja nie zadziała, mamy wtedy jeszcze większy downtime). Rolling update zużywa chwilowo więcej zasobów ale za to mamy zerowy downtime i zawsze możemy się wycofać gdy zauważymy błędy w trakcie. Canary pozwala przetestować nową wersję na mniejszym ruchu i powoli skalować procent wersji canary na deploymencie.
+
+## Wdrażanie na zarządzalne kontenery: Kubernetes (2)
+
+Utworzyłem [plik deploymentu](./deployment-expose.yaml)
+Wdrożyłem:
+
+```sh
+kubectl apply -f deployment-expose.yaml
+```
+
+![alt text](image-53.png)
+
+![alt text](image-54.png)
+
+Przekierowałem port do jednego poda
+```sh
+kubectl port-forward pod/express-app-expose-54f8bc4448-2g72q 3000:3000
+```
+
+![alt text](image-55.png)
+
+![alt text](image-56.png)
+
+![alt text](image-57.png)
+
