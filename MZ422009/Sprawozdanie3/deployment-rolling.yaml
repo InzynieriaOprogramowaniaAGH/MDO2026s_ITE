@@ -9,8 +9,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 25%
-      maxSurge: 25%
+      maxUnavailable: 2
+      maxSurge: 30%
   selector:
     matchLabels:
       app: lab10-app
@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: lab10-nginx
-        image: lab10-nginx:v1
+        image: lab10-nginx:v2
         imagePullPolicy: Never
         ports:
         - containerPort: 80

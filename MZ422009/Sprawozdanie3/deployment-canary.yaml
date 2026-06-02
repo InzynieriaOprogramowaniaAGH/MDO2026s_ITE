@@ -1,27 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lab10-app
+  name: lab10-app-canary
   labels:
     app: lab10-app
+    version: canary
 spec:
-  replicas: 4
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 25%
-      maxSurge: 25%
+  replicas: 1
   selector:
     matchLabels:
       app: lab10-app
+      version: canary
   template:
     metadata:
       labels:
         app: lab10-app
+        version: canary
     spec:
       containers:
       - name: lab10-nginx
-        image: lab10-nginx:v1
+        image: lab10-nginx:v2
         imagePullPolicy: Never
         ports:
         - containerPort: 80

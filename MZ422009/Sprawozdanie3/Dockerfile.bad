@@ -1,0 +1,2 @@
+FROM alpine
+CMD ["sh", "-c", "echo 'blad aplikacji'; exit 1"]
