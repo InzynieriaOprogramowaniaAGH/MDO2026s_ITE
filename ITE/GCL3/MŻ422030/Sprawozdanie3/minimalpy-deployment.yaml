@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minimalpy-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: minimalpy
+  template:
+    metadata:
+      labels:
+        app: minimalpy
+    spec:
+      containers:
+      - name: minimalpy-container
+        image: mystackoverflown/minimalpy:lastest
+        ports:
+        - containerPort: 5000

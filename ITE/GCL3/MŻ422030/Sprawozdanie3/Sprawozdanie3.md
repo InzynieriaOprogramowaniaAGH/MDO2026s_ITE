@@ -71,3 +71,4 @@
 ![scale](image-58.png)
 ![logs](image-59.png)
 ![tail](image-60.png)
+![minimal](image-61.png)
