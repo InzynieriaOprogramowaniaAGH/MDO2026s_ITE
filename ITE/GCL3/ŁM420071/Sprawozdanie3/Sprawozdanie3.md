@@ -48,3 +48,13 @@ Dopiszano maszyne z fedora jako ansible target do listy hostow
 ![alt text](cofniecie_wersji.png)
 
 ![alt text](potwierdzenieSkryptu.png)
+
+![alt text](ForwardPod.png)
+
+![alt text](ForwardDeployment.png)
+
+![alt text](ForwardServicePolecenie.png)
+
+![alt text](Scale.png)
+
+![alt text](ApplyNewConfiguration.png)

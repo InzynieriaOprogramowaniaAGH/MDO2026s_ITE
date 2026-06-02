@@ -5,7 +5,7 @@ metadata:
   labels:
     app: express-app
 spec:
-  replicas: 4
+  replicas: 36
   selector:
     matchLabels:
       app: express-app
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: express-container
-        image: express-app:v1
+        image: express-app:v2
         imagePullPolicy: Never 
         ports:
         - containerPort: 3000 
