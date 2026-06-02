@@ -57,6 +57,103 @@ ssh ansible@ansible-target
 
 ![Zdjęcie 2](img/s2.png)
 
+# Wysłanie żądania ping do wszystkich maszyn
+
+Playbook `ping-all.yml`:
+
+```yaml
+---
+- name: My first play
+  hosts: all
+
+  tasks:
+   - name: Ping my hosts
+     ansible.builtin.ping:
+```
+
+Rezultat:
+
+![Zdjęcie 5](img/s5.png)
+
+# Skopiowanie pliku inwentaryzacji na maszynę `Endpoints`, ponowienie operacji i porównanie wyjścia
+
+Playbook `copy-inventory.yml`:
+
+```yaml
+---
+- name: Copy inventory
+  hosts: Endpoints
+
+  tasks:
+   - name: Copy inventory.ini file to ansible-target
+     ansible.builtin.copy:
+       src: inventory.ini
+       dest: /tmp/inventory.ini
+       mode: '0644' 
+```
+
+Rezultat:
+
+![Zdjęcie 6](img/s6.png)
+
+Ponowne uruchomienie:
+
+![Zdjęcie 7](img/s7.png)
+
+# Zaaktualizowanie pakietów w systemie
+
+Playbook `copy-inventory.yml`:
+
+```yaml
+---
+- name: Update packages
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Apply patches
+      ansible.builtin.command:
+        cmd: apt --fix-broken install -y
+
+    - name: Update packages - apt update + upgrade
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+      when: ansible_os_family == "Debian"
+```
+
+Prośba o podanie hasła (bez tego błąd braku dsotępu poprzez sudo). Opcja `become: true` oznacza wykonanie polecenia z sudo na początku. 
+
+```bash
+ansible-playbook -i inventory.ini update-packages.yml --ask-become-pass
+```
+
+Rezultat:
+
+![Zdjęcie 8](img/s8.png)
+
+# Rester usług `SSH` oraz `RNGD`
+
+---
+- name: Restart sshd and rngd
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+
+    - name: Restart rngd
+      ansible.builtin.service:
+        name: rng-tools-debian
+        state: restarted
+
+Rezultat:
+
+![Zdjęcie 9](img/s9.png)
+
 ## Class 09
 
 ## Class 10
