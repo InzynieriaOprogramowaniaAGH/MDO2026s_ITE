@@ -3,3 +3,5 @@ ITE/
 Sprawozdanie1/
 demo-build/
 Ansible/lab08/roles/jq_deploy/files/*.tar
+kickstart/lab09/*.tar
+
