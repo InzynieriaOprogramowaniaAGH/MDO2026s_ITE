@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 12  # Ogromna liczba podów!
+  selector:
+    matchLabels:
+      app: web-server
+  template:
+    metadata:
+      labels:
+        app: web-server
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:alpine
+        # Pod wpisuje swoją nazwę na stronę WWW
+        command: ["/bin/sh", "-c"]
+        args: ["echo \"<h1>Odpowiada Pod: $HOSTNAME</h1>\" > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"]
+        ports:
+        - containerPort: 80
