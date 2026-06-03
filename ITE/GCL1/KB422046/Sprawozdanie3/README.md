@@ -280,7 +280,7 @@ reboot
 ![](1.23.png)
 ![](1.24.png)
 
-#### Poszerzono plik odpowiedzi o szereg zadań *post* mających zapewnić działanie artefaktu na nowej maszynie:
+#### Poszerzono [plik odpowiedzi](ks-artifact.cfg) o szereg zadań *post* mających zapewnić działanie artefaktu na nowej maszynie:
 ```
 # Installation source
 url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-44&arch=x86_64
@@ -376,3 +376,439 @@ systemctl enable my-curl.service
 
 #### Logi serwera potwierdzają poprawne pobranie kickstarter'ów i artefaktu podczas instalacji:
 ![](1.26.png)
+
+## Laboratorium 10
+
+#### Pobrano implementację stosu k8s: minikube i wykazano poziom bezpieczeństwa instalacji:
+![](1.27.png)
+
+*hash pobranego pliku jest zgodny z tym opublikowanym przez dostawcę oprogramowania*
+
+#### Przeprowadzono instalację, zweryfikowano wersję oprogramowania i uruchomiono Kubernetes'a:
+![](1.28.png)
+
+#### Utworzono alias *minikubctl*:
+![](1.29.png)
+
+#### Wyświetlono informacje o worker'ze i pod'ach:
+![](1.30.png)
+
+#### Uruchomiono dashboard:
+![](1.31.1.png)
+![](1.31.2.png)
+
+#### Zbudowano obraz na bazie nginx z własną konfiguracją i załadowano go do minikube'a:
+
+[Dockerfile](images/starter/Dockerfile):
+```
+FROM nginx:1.30
+COPY index.html /usr/share/nginx/html/index.html
+```
+
+[index.html](images/starter/index.html):
+```
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Starter container</title></head>
+  <body><h1>Starter container</h1></body>
+</html>
+```
+
+![](1.32.1.png)
+
+*jako że wybrana aplikacja (curl) nie wyprowadza interfejsu funkcjonalnego przez sieć, projekt wymieniono na potrzeby tego laboratorium*
+
+#### Uruchomiono kontener na bazie własnego obrazu i wykazano poprawność działania:
+![](1.32.2.png)
+![](1.32.4.png)
+![](1.32.3.png)
+
+#### Zapisano wdrożenie jako [plik .yaml](nginx-deployment.yaml):
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+  labels:
+    app: web
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: web-custom:broken
+          ports:
+            - containerPort: 80
+```
+
+#### Rozpoczęto wdrożenie za pomocą *kubectl apply* i zbadano jego stan przy użyciu *kubectl rollout status*:
+![](1.33.png)
+
+#### Wyeksponowano [wdrożenie jako serwis](nginx-service.yaml) i przekierowano port:
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc
+spec:
+  selector:
+    app: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+```
+
+![](1.34.png)
+
+#### Utworzono trzy wersje obrazu z wybranym oprogramowaniem i załadowano je do minikube'a:
+
+[Dockerfile wersja starsza](images/v1/Dockerfile):
+```
+FROM nginx:1.29
+COPY index.html /usr/share/nginx/html/index.html
+```
+
+[index.html wersja starsza](images/v1/index.html):
+```
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web Custom v1</title>
+  </head>
+  <body>
+    <h1>Web Custom v1</h1>
+    <p>Served by nginx in K8s.</p>
+  </body>
+</html>
+```
+
+![](1.35.png)
+
+[Dockerfile wersja nowsza](images/v2/Dockerfile):
+```
+FROM nginx:1.31
+COPY index.html /usr/share/nginx/html/index.html
+```
+
+[index.html wersja nowsza](images/v2/index.html):
+```
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web Custom v2</title>
+  </head>
+  <body>
+    <h1>Web Custom v2</h1>
+    <p>Second version of the nginx page.</p>
+  </body>
+</html>
+```
+
+![](1.36.png)
+
+[Dockerfile wersja wadliwa](images/broken/Dockerfile):
+```
+FROM nginx:1.31
+COPY index.html /usr/share/nginx/html/index.html
+```
+
+![](1.37.png)
+
+#### Wykonano kolejne wdrożenia *pliku .yaml* po aktualizacjach ilości replik (4 -> 8 -> 1 -> 0 -> 4):
+![](1.38.1.png)
+
+#### Wykonano kolejne wdrożenia *pliku .yaml* po aktualizacjach wersji obrazu (nowsza -> starsza -> wadliwa):
+![](1.38.2.png)
+
+#### Cofnięto wadliwe wdrożenie:
+![](1.38.3.png)
+
+#### Wyświetlono historię wdrożenia:
+![](1.38.4.png)
+
+#### Napisano [skrypt weryfikujący wdrożenie](rollout_check.sh) i uruchomiono go:
+```
+#!/usr/bin/env bash
+set -euo pipefail
+
+DEPLOYMENT="${1:-web-deploy}"
+NAMESPACE="${2:-default}"
+
+minikube kubectl -- rollout status "deployment/${DEPLOYMENT}" -n "${NAMESPACE}" --timeout=60s
+```
+
+![](1.39.png)
+
+#### Przygotowano wersje wdrożeń stosujące różne strategie:
+
+* [Recreate](strategies/deployment-recreate.yaml):
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+  labels:
+    app: web
+    track: recreate
+spec:
+  replicas: 4
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+        track: recreate
+    spec:
+      containers:
+        - name: web
+          image: web-custom:v2
+          ports:
+            - containerPort: 80
+```
+
+* [Rolling](strategies/deployment-rolling.yaml):
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+  labels:
+    app: web
+    track: rolling
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 30%
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+        track: rolling
+    spec:
+      containers:
+        - name: web
+          image: web-custom:v2
+          ports:
+            - containerPort: 80
+```
+
+* [Canary](strategies/deployment-canary.yaml):
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-canary
+  labels:
+    app: web
+    track: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: web
+        track: canary
+    spec:
+      containers:
+        - name: web
+          image: web-custom:v2
+          ports:
+            - containerPort: 80
+```
+
+* [Canary stable](strategies/deployment-canary-stable.yaml):
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-stable
+  labels:
+    app: web
+    track: stable
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: web
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: web
+        track: stable
+    spec:
+      containers:
+        - name: web
+          image: web-custom:v2
+          ports:
+            - containerPort: 80
+```
+
+#### Wykorzystano każdy z wariantów wdrożenia, obserwując podgląd pod'ów i zdarzeń:
+
+* Recreate:
+
+![](1.40.3.png)
+![](1.40.1.png)
+![](1.40.2.png)
+
+* Rolling:
+
+![](1.41.3.png)
+![](1.41.1.png)
+![](1.41.2.png)
+
+* Canary:
+
+![](1.42.png)
+
+## Laboratorium 11
+
+#### Utworzono [plik .yaml](deployment.yaml) wdrażający web serwer:
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy-2
+spec:
+  replicas: 36
+  selector:
+    matchLabels:
+      app: web-2
+  template:
+    metadata:
+      labels:
+        app: web-2
+    spec:
+      containers:
+      - name: web-container
+        image: web-custom:v2
+        ports:
+        - containerPort: 80
+```
+
+![](1.43.png)
+
+#### Wyeksponowano dostęp do web serwera do:
+
+* pojedynczego pod'a:
+
+![](1.44.png)
+
+* deploymentu:
+
+![](1.45.png)
+
+* serwisu (poprzez dedykowane polecenie):
+
+![](1.46.png)
+
+* serwisu (poprzez dodatkowy [plik .yaml](service.yaml)):
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc-yaml
+spec:
+  type: LoadBalancer
+  selector:
+    app: web-2
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+```
+
+![](1.47.png)
+
+![](1.48.png)
+
+#### Przeskalowano wdrożenie:
+
+* za pomocą dyrektywy *scale*:
+
+![](1.49.png)
+
+* aplikując nowy [plik .yaml](deployment-scale.yaml):
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy-2
+spec:
+  replicas: 12
+  selector:
+    matchLabels:
+      app: web-2
+  template:
+    metadata:
+      labels:
+        app: web-2
+    spec:
+      containers:
+      - name: web-container
+        image: web-custom:v2
+        ports:
+        - containerPort: 80
+```
+
+![](1.50.png)
+
+#### Utworzono nowy [plik .yaml](deployment-pod-name.yaml) przekazujący dane pod'a obsługującego żądanie:
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy-2
+spec:
+  replicas: 36
+  selector:
+    matchLabels:
+      app: web-2
+  template:
+    metadata:
+      labels:
+        app: web-2
+    spec:
+      containers:
+      - name: web-container
+        image: web-custom:v2
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Pod: $(hostname)" > /usr/share/nginx/html/index.html
+          nginx -g 'daemon off;'
+        ports:
+        - containerPort: 80
+```
+
+![](1.51.png)
+
+*kolejne wywołania serwera pokazują, że żądania są rodzielane pomiędzy różne pody*

@@ -94,3 +94,40 @@ minikubectl scale deployment/web-deploy --replicas=0
 minikubectl apply -f /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/strategies/deployment-canary-stable.yaml
 minikubectl apply -f /home/user/MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/strategies/deployment-canary.yaml
 minikubectl get pods -l app=web -o wide --show-labels
+
+
+
+Laboratorium 11:
+
+minikube start --driver=docker --cpus=2 --memory=2048
+cd MDO2026s_ITE/ITE/GCL1/KB422046/Sprawozdanie3/
+code deployment.yaml
+minikubectl apply -f deployment.yaml
+minikubectl get deployments
+minikubectl get pods -l app=web-2 -o wide
+minikubectl port-forward pod/web-deploy-2-5f4c56b5fc-z6rqb 8081:80
+curl localhost:8081
+minikubectl port-forward deployment/web-deploy-2 8082:80
+curl localhost:8082
+minikubectl expose deployment web-deploy-2 --name=web-svc-2 --type=LoadBalancer --port=80 --target-port=80
+minikubectl get svc web-svc-2
+minikubectl port-forward service/web-svc-2 8083:80
+curl localhost:8083
+code service.yaml
+minikubectl apply -f service.yaml
+minikubectl get svc
+minikubectl port-forward service/web-svc-yaml 8084:80
+curl localhost:8084
+minikubectl get deployment web-deploy-2
+minikubectl scale deployment/web-deploy-2 --replicas=24
+minikubectl get deployment web-deploy-2
+minikubectl get pods -l app=web-2 -o wide
+code deployment-scale.yaml
+minikubectl apply -f deployment-scale.yaml
+minikubectl get deployment web-deploy-2
+diff deployment.yaml deployment-scale.yaml
+code deployment-pod-name.yaml
+minikubectl apply -f deployment-pod-name.yaml
+minikube tunnel
+kubectl get svc web-svc-2
+curl 10.99.30.47
