@@ -18,14 +18,17 @@ Mamy dwie maszyny. Pierwsza to „Dyrygent” (**Orchestrator**), a druga to „
 Zaczynamy od tego, aby maszyny mogły się „rozpoznać”. Zamiast operować na adresach IP (np. 192.168.1.2), nadajemy maszynom czytelne nazwy.
 
 ![Konfiguracja hostname na głównej maszynie](lab8/screenshots/glowna_maszyna_hostnamectl.png)
+
 *Nadanie nazwy "ansible-orchestrator" głównej maszynie.*
 
 ![Konfiguracja hostname na nowej maszynie](lab8/screenshots/nowa_maszyna_hostnamectl.png)
+
 *Przygotowanie maszyny docelowej "ansible-target".*
 
 Aby nazwy działały w sieci lokalnej, edytujemy plik `/etc/hosts`.
 
 ![Wpis w etc/hosts](lab8/screenshots/etc_hosts_ansible_target.png)
+
 *Powiązanie adresu IP z nazwą maszyny docelowej.*
 
 ---
@@ -36,12 +39,15 @@ Ansible steruje innymi komputerami przez protokół SSH. Aby proces był w pełn
 Generujemy „cyfrowy klucz”. Klucz publiczny wysyłamy na maszynę docelową. Od teraz Dyrygent może wejść na serwer Wykonawcy tak, jakby miał własne klucze do drzwi.
 
 ![Istniejące klucze SSH](lab8/screenshots/istniejace_klucze.png)
+
 *Sprawdzenie, czy na naszej maszynie są już wygenerowane klucze bezpieczeństwa.*
 
 ![Kopiowanie klucza SSH](lab8/screenshots/kopiowanie_klucza.png)
+
 *Przekazanie klucza publicznego na maszynę docelową.*
 
 ![Logowanie bezhasłowe](lab8/screenshots/potwierdzenie_bezhaslowego_logowania.png)
+
 *Test: Logujemy się na drugą maszynę i system nie pyta nas o hasło. Sukces.*
 
 ---
@@ -51,11 +57,13 @@ Generujemy „cyfrowy klucz”. Klucz publiczny wysyłamy na maszynę docelową.
 Musimy stworzyć listę maszyn, którymi Ansible ma zarządzać. Robi się to w pliku `hosts.ini`.
 
 ![Plik hosts.ini](lab8/screenshots/hosts_ini.png)
+
 *Podział maszyn na grupy: Orchestrators (sterujące) i Endpoints (docelowe).*
 
 Weryfikujemy, czy Ansible „widzi” te maszyny poleceniem `ping`.
 
 ![Test ping-pong](lab8/screenshots/ansible_all_hosts_ping_pong.png)
+
 *Jeśli widzimy "pong" na zielono, oznacza to, że komunikacja działa wzorowo.*
 
 ---
@@ -70,6 +78,7 @@ Zanim wgramy naszą aplikację, musimy przygotować serwer. Służy do tego play
 * Restartuje usługi bezpieczeństwa (SSH).
 
 ![Kod system_setup.yml](lab8/screenshots/system_setup.yml.png)
+
 *Playbook z listą zadań administracyjnych.*
 
 ---
@@ -79,11 +88,13 @@ Zanim wgramy naszą aplikację, musimy przygotować serwer. Służy do tego play
 Zgodnie z profesjonalnymi standardami, instrukcje wdrożenia zamknęliśmy w tzw. **Roli**. Pozwala to na łatwe powtarzanie tego samego procesu na wielu serwerach naraz.
 
 ![Inicjalizacja roli](lab8/screenshots/inicjalizacja_roli.png)
+
 *Tworzenie folderów dla roli "hiredis_deploy".*
 
 Aby wszystko działo się automatycznie, musieliśmy rozwiązać problem uprawnień. Niektóre zadania wymagają „konta administratora” (Root). Skonfigurowaliśmy serwer tak, by ufał komendom Ansible bez pytania o hasło administratora.
 
 ![Rozwiązanie problemu sudo](lab8/screenshots/rozwiazanie_problemu_sudo.png)
+
 *Konfiguracja uprawnień NOPASSWD*
 
 ### Co dzieje się podczas wdrożenia?
@@ -191,6 +202,7 @@ Podczas pracy Ansible przeszedł przez wszystkie zdefiniowane etapy. Warto zauwa
 Najważniejszym dowodem poprawności wdrożenia jest wynik zadania nr 14 (Sanity Check). Ansible połączył się z bazą danych uruchomioną w Dockerze i odebrał od niej sygnał zwrotny, co potwierdziło, że cała infrastruktura „rozmawia” ze sobą prawidłowo.
 
 ![Logi z wykonania playbooka](lab8/screenshots/ansible_logi.png)
+
 *Raport z terminala*
 
 **Interpretacja wyniku widocznego na zrzucie ekranu:**
