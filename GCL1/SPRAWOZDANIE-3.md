@@ -293,7 +293,7 @@ W folderze lab9/screenshots/ znajdują się następujące zrzuty ekranu:
 ---
 
 # Sprawozdanie z Laboratorium 10
-## Temat: Wdrażanie na zarządzalne kontenery – Kubernetes (Minikube)
+## Temat: Wdrażanie na zarządzalne kontenery – Kubernetes
 
 ---
 
@@ -307,7 +307,7 @@ kubectl get nodes
 ```
 Węzeł sterujący (control-plane) osiągnął status Ready, co potwierdza pełną gotowość środowiska do przyjmowania zadań.
 
-![Status węzła Minikube](lab10/screenshots/k8s_nodes_ready.png)
+![Status węzła Minikube](lab10/k8s_nodes_ready.png)
 
 Następnie uruchomiono systemowy panel graficzny Kubernetes Dashboard, służący do wizualizacji stanu aplikacji i zasobów klastra za pomocą komendy:
 ```bash
@@ -315,7 +315,7 @@ minikube dashboard --url
 ```
 Polecenie to wystawiło dedykowany proxy serwer API klastra, umożliwiając bezpieczną łączność z poziomu przeglądarki internetowej hosta.
 
-![Uruchomienie Dashboard](lab10/screenshots/minikube_dashboard--url.png)
+![Uruchomienie Dashboard](lab10/minikube_dashboard--url.png)
 
 ---
 
@@ -328,7 +328,7 @@ kubectl run moj-nginx-pod --image=nginx:1.25-alpine --port=80 --labels app=moj-n
 ```
 Służący do testów Pod został pomyślnie powołany do życia w przestrzeni klastra.
 
-![Status manualnego Poda](lab10/screenshots/pod_manualny.png)
+![Status manualnego Poda](lab10/pod_manualny.png)
 
 Ponieważ Pod domyślnie posiada adres IP dostępny tylko wewnątrz sieci klastra, zastosowano mechanizm przekierowania portów (port-forward), aby uzyskać dostęp do aplikacji z poziomu systemu operacyjnego hosta:
 ```bash
@@ -336,7 +336,7 @@ kubectl port-forward pod/moj-nginx-pod 8080:80 --address 0.0.0.0
 ```
 Weryfikacja działania serwera WWW została wykonana za pomocą narzędzia curl skierowanego na lokalny punkt końcowy. Wynik polecenia zwrócił poprawny nagłówek kodu HTML (Welcome to nginx!), co udowodniło komunikację sieciową.
 
-![Weryfikacja działania aplikacji via curl](lab10/screenshots/nginx_curl.png)
+![Weryfikacja działania aplikacji via curl](lab10/nginx_curl.png)
 
 ---
 
@@ -376,7 +376,7 @@ kubectl apply -f deployment.yaml
 
 Kontroler replikacji Kubernetesa wykrył różnicę stanu i natychmiastowo utworzył dokładnie 4 niezależne Pody, dbając o ich wysoką dostępność.
 
-![Wdrożenie 4 replik z pliku YAML](lab10/screenshots/wdrozenie_yaml_4.png)
+![Wdrożenie 4 replik z pliku YAML](lab10/wdrozenie_yaml_4.png)
 
 ---
 
@@ -396,7 +396,7 @@ kubectl scale deployment/nginx-deployment --replicas=0
 kubectl scale deployment/nginx-deployment --replicas=4
 ```
 
-![Logi operacji dynamicznego skalowania](lab10/screenshots/multiple_deployments.png)
+![Logi operacji dynamicznego skalowania](lab10/multiple_deployments.png)
 
 ---
 
@@ -410,7 +410,7 @@ kubectl set image deployment/nginx-deployment nginx=nginx:wersja-z-bledem-999
 
 Weryfikacja stanu podów natychmiast wykazała błąd krytyczny ImagePullBackOff oraz ErrImagePull. Cluster zidentyfikował brak możliwości pobrania oprogramowania i wstrzymał proces aktualizacji, chroniąc stare, działające pody przed usunięciem.
 
-![Błąd pobierania obrazu w klastrze](lab10/screenshots/image_error.png)
+![Błąd pobierania obrazu w klastrze](lab10/image_error.png)
 
 W celu natychmiastowego przywrócenia pełnej sprawności operacyjnej systemu, wykonano wycofanie ostatniej nieudanej transakcji (operacja Rollback):
 
@@ -420,7 +420,7 @@ kubectl rollout undo deployment/nginx-deployment
 
 System automatycznie powrócił do ostatniej zapamiętanej w historii, stabilnej konfiguracji, co przywróciło status wszystkich podów do flagi Running.
 
-![Stan systemu po wykonaniu operacji Rollback](lab10/screenshots/image_error_fixed.png)
+![Stan systemu po wykonaniu operacji Rollback](lab10/image_error_fixed.png)
 
 ---
 
@@ -438,7 +438,7 @@ kubectl rollout status deployment/nginx-deployment --timeout=60s
 
 Skrypt nadano uprawnienia wykonywalne (chmod +x verify.sh) i uruchomiono. Wynik działania skryptu jednoznacznie potwierdził sukces operacji wdrożeniowej (komunikat successfully rolled out).
 
-![Wynik wykonania skryptu weryfikacyjnego](lab10/screenshots/script_output.png)
+![Wynik wykonania skryptu weryfikacyjnego](lab10/script_output.png)
 
 ---
 
@@ -482,7 +482,7 @@ Wyjaśnienie parametrów strategii:
 
 Plik został pomyślnie zaaplikowany do systemu (deployment.apps/nginx-deployment configured), co stanowi końcowe, pełne wykonanie założeń projektowych laboratorium.
 
-![Zatwierdzenie zaawansowanej strategii wdrożenia](lab10/screenshots/final_confirmation.png)
+![Zatwierdzenie zaawansowanej strategii wdrożenia](lab10/final_confirmation.png)
 
 ---
 
