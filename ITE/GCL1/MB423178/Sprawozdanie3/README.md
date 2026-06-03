@@ -258,28 +258,41 @@ Następnie przetestowałem odpowiedź serwera narzędziem `curl`. Aplikacja praw
 
 ## 1. Przygotowanie obrazów (Docker Hub)
 W pierwszej części laboratorium odpowiednio zmodyfikowano plik `Dockerfile` aplikacji PetClinic. Zbudowano i wypchnięto do repozytorium na Docker Hubie trzy wersje obrazu (tagi: `v1`, `v2` oraz `broken`). Wersja `broken` została intencjonalnie uszkodzona poprzez podmianę pliku JAR na nieprawidłowy plik tekstowy, co posłużyło do późniejszych testów aktualizacji klastra.
+Pomyślnie uwierzytelniono sesję CLI z platformą Docker:
+![Logowanie do platformy Docker](screeny/Zrzut%20ekranu%202026-05-29%20081725.png)
 
 ## 2. Konfiguracja klastra i wdrożenie manualne
-Uruchomiono lokalny klaster Kubernetes przy użyciu narzędzia Minikube z wykorzystaniem sterownika Dockera (`--driver=docker`). 
-Zarządzanie klastrem zweryfikowano poprzez uruchomienie wbudowanego interfejsu graficznego (Kubernetes Dashboard) z wykorzystaniem polecenia `kubectl proxy`.
-Aplikację wdrożono początkowo w sposób imperatywny (manualny pod `petclinic-manual`), po czym przetestowano bezpośredni dostęp do niej z poziomu przeglądarki używając mechanizmu przekierowania portów (Port Forwarding).
+Uruchomiono lokalny klaster Kubernetes przy użyciu narzędzia Minikube z wykorzystaniem sterownika Dockera (`--driver=docker`). Zarządzanie klastrem zweryfikowano poprzez uruchomienie wbudowanego interfejsu graficznego (Kubernetes Dashboard) z wykorzystaniem polecenia `kubectl proxy`.
+![Uruchomienie serwera proxy dla Dashboardu](screeny/Zrzut%20ekranu%202026-05-29%20080605.png)
+
+Aplikację wdrożono początkowo w sposób imperatywny (manualny pod `petclinic-manual`), co zweryfikowano w panelu administracyjnym klastra:
+![Ręczne wdrożenie poda - widok w Dashboardzie](screeny/Zrzut%20ekranu%202026-05-29%20082617.png)
+
+Następnie przetestowano bezpośredni dostęp do niej z poziomu przeglądarki używając mechanizmu przekierowania portów (Port Forwarding):
+![Działająca aplikacja po wyeksponowaniu portów](screeny/Zrzut%20ekranu%202026-05-29%20082946.png)
 
 ## 3. Przekucie wdrożenia w plik YAML (Infrastructure as Code)
 Po usunięciu ręcznie wdrożonego Poda, zdefiniowano konfigurację środowiska w pliku deklaratywnym `deploy-kubernetes-app.yml`. 
 Plik zawierał konfigurację dwóch zasobów:
 * **Deployment:** zarządzający pożądanym stanem aplikacji (ustalono 4 repliki).
 * **Service (NodePort):** udostępniający aplikację na zewnątrz oraz pełniący rolę load balancera pomiędzy replikami.
-Poprawność wdrożenia zweryfikowano poleceniem `kubectl rollout status` oraz w podglądzie w Dashboardzie.
+
+Konfigurację zaaplikowano poprzez terminal:
+![Wdrożenie konfiguracji YAML](screeny/Zrzut%20ekranu%202026-05-29%20085955.png)
+
+Poprawność wdrożenia zweryfikowano w Dashboardzie, gdzie poprawnie wylegitymowano 4 działające pody kontrolowane przez nowy Deployment:
+![Wdrożenie 4 replik - widok w Kubernetes Dashboard](screeny/Zrzut%20ekranu%202026-05-29%20090117.png)
 
 ## 4. Skalowanie i mechanizm aktualizacji (Rolling Updates)
-Wdrożenie przetestowano pod kątem elastyczności i niezawodności operacyjnej:
-1.  **Skalowanie:** Użyto polecenia `kubectl scale`, by z powodzeniem zmienić liczbę działających replik z 4 do 8, następnie do 1, 0, i z powrotem do 4.
-2.  **Aktualizacja wersji:** Podmieniono w locie obraz wdrożenia na `v2` poleceniem `kubectl set image`. 
-3.  **Obsługa awarii i Rollback:** Spróbowano wdrożyć uszkodzony obraz `broken`. Kubernetes poprawnie zidentyfikował problem z uruchomieniem kontenera, nałożył na uszkodzone pody status `CrashLoopBackOff` i wstrzymał dalszą aktualizację, co ochroniło aplikację przed całkowitą awarią. Następnie wykonano udany rollback (`kubectl rollout undo`) do w pełni stabilnej i działającej wersji.
+Wdrożenie przetestowano pod kątem elastyczności i niezawodności operacyjnej.
+**Skalowanie:** Użyto polecenia `kubectl scale`, by z powodzeniem zmienić liczbę działających replik z 4 do 8 (udokumentowane na zrzucie), następnie do 1, 0, i z powrotem do 4.
+![Przeskalowanie wdrożenia do 8 replik](screeny/Zrzut%20ekranu%202026-05-29%20090402.png)
+
+**Aktualizacja wersji i obsługa awarii:** Podmieniono w locie obraz wdrożenia na `v2`. Następnie spróbowano wdrożyć uszkodzony obraz `broken`. Kubernetes poprawnie zidentyfikował problem z uruchomieniem kontenera, nałożył na uszkodzone pody status `CrashLoopBackOff` i wstrzymał dalszą aktualizację, co ochroniło aplikację przed całkowitą awarią. Wykonano udany rollback (`kubectl rollout undo`) do w pełni stabilnej i działającej wersji.
 
 ## 5. Strategie wdrożenia
 Na koniec przetestowano i porównano metody wdrażania aktualizacji:
-* **Rolling Update (Domyślna):** W tej strategii nowe pody są uruchamiane równolegle z wyłączaniem starych, co zapewnia brak przerw w dostępie do usługi (Zero-Downtime Deployment).
+* **Rolling Update (Domyślna):** Nowe pody są uruchamiane równolegle z wyłączaniem starych, co zapewnia brak przerw w dostępie do usługi (Zero-Downtime Deployment).
 * **Recreate:** Po dodaniu parametrów strategii `Recreate` do pliku YAML zaobserwowano, że Kubernetes podczas modyfikacji wersji najpierw bezwzględnie zatrzymuje i usuwa wszystkie dotychczasowe pody, a dopiero potem podnosi nowe. Strategia ta generuje krótkotrwałą niedostępność usługi, ale wyklucza sytuację jednoczesnego działania dwóch różnych wersji aplikacji.
 
 
