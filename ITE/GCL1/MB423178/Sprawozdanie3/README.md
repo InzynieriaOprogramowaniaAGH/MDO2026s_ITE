@@ -250,3 +250,43 @@ Po zautomatyzowanym restarcie systemu zalogowałem się na stworzone konto użyt
 Następnie przetestowałem odpowiedź serwera narzędziem `curl`. Aplikacja prawidłowo i natychmiastowo obsłużyła żądanie sieciowe (status `HTTP/1.1 200 OK`), udowadniając sukces pełnej automatyzacji.
 
 ![Test połączenia z aplikacją po instalacji](screeny/lab9_5.png)
+
+# Sprawozdanie: Laboratorium 11 - Wdrażanie na zarządzalne kontenery (Kubernetes cz. 2)
+
+**Autor:** MB423178
+
+## 1. Wdrożenie web-serwera za pomocą Deploymentu (YAML)
+Zgodnie z instrukcją, przygotowano plik konfiguracyjny `lab11-petclinic-deployment.yml` w oparciu o obraz z poprzednich zajęć (`13miki/petclinic:v1`). Aplikacja została wdrożona w dużej liczbie replik. 
+
+Początkowo klaster podjął próbę uruchomienia 36 podów, co z racji wysokiego zapotrzebowania aplikacji Spring Boot na zasoby (RAM), doprowadziło do testu granic wydajności środowiska Minikube. 
+![Lista 36 podów próbujących wystartować](screeny/lab11_2.png)
+
+## 2. Eksponowanie dostępu do aplikacji
+Przeprowadzono serię wdrożeń udowadniających możliwość zestawienia komunikacji z aplikacją na trzech różnych warstwach architektury Kubernetes za pomocą mechanizmu `port-forward`.
+
+* **Eksponowanie pojedynczego poda:** Ruch z portu lokalnego `8080` skierowano bezpośrednio do instancji kontenera.
+* **Eksponowanie do Deploymentu:** Ruch z portu lokalnego `8081` skierowano do kontrolera wdrożenia.
+* **Eksponowanie do Serwisu (CLI & YAML):** Utworzono Serwisy typu `LoadBalancer`. Pierwszy za pomocą polecenia `kubectl expose` (udostępniony na porcie lokalnym `8082`), a drugi deklaratywnie za pomocą przygotowanego pliku `lab11-petclinic-service.yml` (udostępniony na porcie lokalnym `8083`).
+
+Działanie równoległego przekierowania portów:
+![Równoległe przekierowanie portów 8080, 8081 i 8082 w terminalach](screeny/lab11_3.png)
+![Widok przeglądarek potwierdzający działanie 3 portów](screeny/lab11_6.png)
+![Utworzenie i przekierowanie Serwisu z pliku YAML na port 8083](screeny/lab11_7.png)
+
+## 3. Skalowanie wdrożenia
+Aby zweryfikować elastyczność klastra oraz odciążyć węzeł, zmniejszono i zwiększono liczbę replik na dwa zalecone sposoby:
+1.  **Za pomocą dyrektywy z linii poleceń:** Użycie `kubectl scale deployment ... --replicas=6` wymusiło natychmiastowe usunięcie nadmiarowych podów.
+    ![Skalowanie komendą scale](screeny/lab11_12.png)
+2.  **Za pomocą modyfikacji pliku YAML:** Zmodyfikowano wartość `replicas: 8` w pliku deklaratywnym i wdrożono zmiany poleceniem `kubectl apply`. Klaster dostosował pożądany stan, uruchamiając brakujące kontenery.
+    ![Skalowanie z wykorzystaniem pliku YAML](screeny/lab11_14.png)
+
+## 4. Zadanie z Bonusem: Weryfikacja działania LoadBalancera
+Ostatnim etapem było udowodnienie mechanizmu działania Serwisu. Po przekierowaniu ruchu wygenerowano zapytania HTTP do aplikacji. Za pomocą polecenia `kubectl logs -l app=petclinic-web -f --max-log-requests=10` nasłuchiwano logów ze wszystkich działających replik jednocześnie.
+
+Zgodnie z przewidywaniami, logi potwierdziły, że żądania przesyłane do głównego Serwisu są naprzemiennie rozdzielane pomiędzy różnymi instancjami aplikacji (podami), realizując tym samym funkcję równoważenia obciążenia (Load Balancing).
+![Logi napływające ze skalowanego środowiska](screeny/lab11_17.png)
+
+## 5. Troubleshooting (Rozwiązywanie problemów)
+W trakcie trwania laboratorium środowisko deweloperskie uległo całkowitemu wyczerpaniu zasobów pamięci (Out of Memory). Spowodowało to brak odpowiedzi API Servera (`TLS handshake timeout`) oraz błędy zestawiania połączeń do portów (`Connection refused`), wynikające ze wstrzymania inicjalizacji procesów Javy. Konieczny był restart wirtualnej maszyny z węzłem Kubernetes.
+![Logi demona Docker potwierdzające obciążenie zasobów i restart usługi](screeny/lab11_9.png)
+Powyższe problemy posłużyły jako studium przypadku do diagnostyki stanu aplikacji za pomocą kolumny statusu oraz analizy logów startowych podów, po czym środowisko pomyślnie ustabilizowano do założonego w poleceniu stanu (4-8 stabilnych replik).
