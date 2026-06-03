@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apka-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: moja-apka
+  template:
+    metadata:
+      labels:
+        app: moja-apka
+        track: canary
+    spec:
+      containers:
+      - name: web
+        image: moja-apka-webowa:v3-error
+        imagePullPolicy: Never

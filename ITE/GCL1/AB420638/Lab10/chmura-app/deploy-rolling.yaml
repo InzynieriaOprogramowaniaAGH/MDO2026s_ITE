@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apka-rolling
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app: moja-apka
+  template:
+    metadata:
+      labels:
+        app: moja-apka
+    spec:
+      containers:
+      - name: web
+        image: moja-apka-webowa:v2
+        imagePullPolicy: Never
