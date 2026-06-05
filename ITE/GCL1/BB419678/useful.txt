@@ -1,8 +1,8 @@
 ## regex do plików .png (ctrl-h)
 
-ITE/GCL1/BB4196../screenshots/lab1-4/Zrzut\s+ekranu\s+(.*?)\s+(.*)\.png
+ITE/GCL1/BB419678../screenshots/lab1-4/Zrzut\s+ekranu\s+(.*?)\s+(.*)\.png
 
-ITE/GCL1/BB4196../screenshots/lab5/Zrzut\s+ekranu\s+(.*?)\s+(.*)\.png
+ITE/GCL1/BB419678../screenshots/lab5/Zrzut\s+ekranu\s+(.*?)\s+(.*)\.png
 
 ![img](../screenshots/lab1-4/Zrzut%20ekranu%20$1%20$2.png)
 
@@ -13,4 +13,4 @@ ITE/GCL1/BB4196../screenshots/lab5/Zrzut\s+ekranu\s+(.*?)\s+(.*)\.png
 
 find ITE/GCL1/BB419678/screenshots -type f -name "*2026-03-26*.png" | sort
 
-find ITE/GCL1/BB419678/screenshots/lab{5..6} -type f | sort
+find ITE/GCL1/BB419678/screenshots/lab{8..11} -type f | sort
