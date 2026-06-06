@@ -42,24 +42,153 @@ rootpw --iscrypted --allow-ssh $y$j9T$6CsVoonZjNdD2MGrm4x4W2sC$UqWmSiLEoK3lJCsE6
 
 ```
 
-Mamy tutaj podstawowe parametry do konfiguracji systemu, takie jak kodowanie, język, paczki, rodzaj partycjowania pamięci, hash roota itp.
+Mamy tutaj podstawowe parametry do konfiguracji systemu, takie jak kodowanie, język, paczki, rodzaj partycjowania pamięci, hash hasła użytkownika root itp.
 
 
-Na podstawie tego pliku tworzę własny plik konfiguracyjny, który 
+Na podstawie tego pliku tworzę własny plik konfiguracyjny, który wystawiam na maszynie w postaci servera http za pomocą polecenia `python3 http.server`:
+
+``` 
+# === glowna konfiguracja ===
+text
+lang pl_PL.UTF-8
+keyboard pl
+timezone Europe/Warsaw
+
+# Źródło instalacji 
+url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-44&arch=x86_64
+repo --name=update --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f44&arch=x86_64
+
+# Formatowanie w kółko i automatyczne partycje
+clearpart --all --initlabel
+autopart
+
+# Nazwa hosta i użytkownicy (inne niż domyślne)
+network --bootproto=dhcp --hostname=fedora-devops-host
+rootpw --plaintext haslo123
+user --name=fedora --password=haslo123 --groups=wheel
+
+# restart po stworzeniu użytkownika
+reboot
+
+# Wybór pakietów do instalacji
+%packages
+@core
+docker
+wget
+%end
+
+# === (%post) ===
+%post
+# %post wypisze nam wszystkie informacje na ekran
+exec < /dev/tty3 > /dev/tty3 2>&1
+chvt 3
+echo "=== konfiguracja po instalacji danych ==="
+
+# docker po reboocie
+systemctl enable docker
+
+# Rozwiązanie problemu: Docker nie działa w instalatorze.
+# Tworzymy skrypt "First Boot", który wykona się przy pierwszym uruchomieniu
+cat << 'EOF' > /usr/local/bin/deploy-neovim.sh
+#!/bin/bash
+sleep 15 # Czekamy na sieć i Dockera
+
+# pobieramy artefakt z naszej maszyny ubuntu po adresie ip!
+wget http://172.25.32.137:8000/neovim-final.deb -O /tmp/neovim-final.deb
+
+# Tworzymy obraz Dockera
+cat << 'DOCKER' > /tmp/Dockerfile
+FROM ubuntu:24.04
+ARG DEBIAN_FRONTEND=noninteractive
+COPY neovim-final.deb /tmp/
+RUN apt-get update && apt-get install -y /tmp/neovim-final.deb && rm -rf /var/lib/apt/lists/*
+CMD ["nvim", "--headless", "-v"]
+DOCKER
+
+cd /tmp
+docker build -t neovim-app .
+# test czy dziala
+docker run --rm neovim-app > /root/neovim-dziala.txt
+EOF
+
+chmod +x /usr/local/bin/deploy-neovim.sh
+
+# Rejestrujemy skrypt jako jednorazową usługę startową
+cat << 'EOF' > /etc/systemd/system/neovim-deploy.service
+[Unit]
+Description=Deploy Neovim Container on First Boot
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/deploy-neovim.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable neovim-deploy.service
+echo "=== koniec konfiguracji ==="
+chvt 1
+%end
+```
+
+Ustawiamy strefę czasową systemu na Warszawę, konfigurujemy patrycjonowanie, sciągamy wszystkie potrzebne zależności z zdefiniowanych źródeł instalacji, dodatkowo przekierowujemy wszystkie do stdout, żeby widzieć wyniki wszystkich poleceń. Następnie pobieramy nasz artefakt z pipeline'u, tworzymy oddzielny obraz dockera, na którym włączamy oprogramowanie w celu sprawdzenia jego działania. Na koniec zapisujemy wyniki w pliku tekstowym, usuwamy obraz i pliki wykonawcze i sprzątamy system.
+
+Podczas instalacji ISO na kolejnej maszynie fedora trzeba ustawić parametr ints.ks na adres naszego serwera w pythonie, tak aby system pobrał ten plik i skonfigurował się zgodnie z naszymi oczekiwaniami:
+
+
 ![img](../screenshots/lab9/Zrzut%20ekranu%202026-05-22%20090549.png)
+
+Po ekranie GRUB system przystępuje do instalacji z podanym wcześniej plikiem konfiguracji.
+
+![img](../screenshots/lab9/Zrzut%20ekranu%202026-05-22%20091030.png)
+
+Jeżeli natomiast stracimy połączenie z serwem pliku konfiguracyjnego, dostaniemy taki komunikat, który informuje nas że plik kickstart nie został znaleziony! 
+
+![img](../screenshots/lab9/Zrzut%20ekranu%202026-05-22%20090711.png)
+
+Po zakończeniu poprawnej instalacji logujemy się na użytkownika fedora z hasłem haslo123 (tylko dla celi edukacyjnych, nie jest to bezpieczne! )
+
+![img](../screenshots/lab9/Zrzut%20ekranu%202026-05-22%20091601.png)
+
+Sprawdzamy, czy obraz sprawdził wersje naszego oprogramowania - należy pamiętać, żeby używać sudo w scieżce /root na fedorze.
 
 
 ![img](../screenshots/lab9/Zrzut%20ekranu%202026-05-22%20092406.png)
 
 
-![img](../screenshots/lab9/Zrzut%20ekranu%202026-05-22%20091601.png)
+
+Dodatkowo można jeszcze zautomatyzować cały proces tworzenia takiej maszyny. Dla hyperV możemy użyć skryptu, który bierze z predefiniowanych folderów obrazy, tworzy maszynę z zadaną ilością pamięci ram, miejsca na dysku itp. oraz konfiguruje zabezpieczenia. Przykładowy skrypt może wyglądać tak:
+
+```powershell
+# Ustawienia
+$VMName = "Fedora-Kickstart"
+$ISOPath = "E:\_Install\Inne\linux_iso\Fedora-Server-netinst-x86_64-44-1.7.iso"  # <--- zmienna sciezka
+$SwitchName = "Default Switch" # <--- mozemy także zmieniać switche do sieci
+
+# Utworzenie nowej maszyny Generacji 2 z 2GB RAM i dyskiem 20GB
+New-VM -Name $VMName -MemoryStartupBytes 2048MB -Generation 2 -NewVHDPath "C:\ProgramData\Microsoft\Windows\Hyper-V\Virtual Hard Disks\$VMName.vhdx" -NewVHDSizeBytes 20GB -SwitchName $SwitchName
+
+# Skonfigurowanie Secure Boot pod Linuksa 
+Set-VMFirmware -VMName $VMName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
+
+# ISO fedory do instalacji
+Add-VMDvdDrive -VMName $VMName -Path $ISOPath
+
+# Kolejność bootowania systemu
+$DVDDrive = Get-VMDvdDrive -VMName $VMName
+Set-VMFirmware -VMName $VMName -FirstBootDevice $DVDDrive
+
+# Uruchomienie maszny
+Start-VM -VMName $VMName
+```
 
 
-![img](../screenshots/lab9/Zrzut%20ekranu%202026-05-22%20091030.png)
+Skrypt ten można włączyć w środowisku Powershell jako adminstator - wynikiem jest maszyna wirtuala o takiej samej specyfikacji jak w skryptcie:
 
+![img](../screenshots/lab9/Zrzut%20ekranu%202026-06-06%20132435.png)
 
-![img](../screenshots/lab9/Zrzut%20ekranu%202026-05-22%20090711.png)
-
-
-
-
+![img](../screenshots/lab9/Zrzut%20ekranu%202026-06-06%20132418.png)
