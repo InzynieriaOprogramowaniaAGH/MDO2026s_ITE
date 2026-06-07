@@ -1,0 +1,6 @@
+---
+- name: Ostateczne wdrozenie potoku z uzyciem Roli
+  hosts: Endpoints
+  become: yes
+  roles:
+    - deploy_xz_app

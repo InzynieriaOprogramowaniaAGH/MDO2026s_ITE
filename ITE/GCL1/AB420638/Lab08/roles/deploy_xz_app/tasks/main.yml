@@ -1,0 +1,63 @@
+# 1. Sanity check (nie ulega awarii dzięki ignore_errors)
+- name: Sanity check - sprawdzenie dostepnego miejsca na dysku docelowym
+  ansible.builtin.command: df -h /
+  ignore_errors: yes
+
+# 2. Instalacja Dockera przez Ansible
+- name: Zainstaluj Dockera (wymaga sudo)
+  ansible.builtin.apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+
+- name: Upewnij sie, ze usluga Docker dziala
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: yes
+
+# 3. Przygotowanie srodowiska pod artefakt
+- name: Utworz katalog roboczy na serwerze
+  ansible.builtin.file:
+    path: /home/ansible/app_deploy
+    state: directory
+
+- name: Wyslij skompresowany artefakt (input.xz) na serwer
+  ansible.builtin.copy:
+    src: input.xz
+    dest: /home/ansible/app_deploy/input.xz
+
+# 4. Zarządzanie kontenerem
+- name: Pobierz obraz kontenera z Docker Hub
+  ansible.builtin.command: docker pull ubuntu:22.04
+
+- name: Uruchom kontener i zdekompresuj plik (bez flagi --rm, by go pozniej recznie usunac!)
+  ansible.builtin.command: >
+    docker run --name xz_processor_container 
+    -v /home/ansible/app_deploy:/app -w /app 
+    ubuntu:22.04 sh -c "apt-get update && apt-get install -y xz-utils && cat input.xz | xz -d > out.txt"
+
+# 5. Weryfikacja
+- name: Zweryfikuj, czy kontener poprawnie wygenerowal plik out.txt
+  ansible.builtin.stat:
+    path: /home/ansible/app_deploy/out.txt
+  register: result_file
+
+- name: Potwierdzenie weryfikacji
+  ansible.builtin.debug:
+    msg: "Weryfikacja zakonczona sukcesem! Plik out.txt istnieje na serwerze."
+  when: result_file.stat.exists
+
+# 6. Czyszczenie srodowiska (zatrzymanie i usunięcie)
+- name: Zatrzymaj kontener po pracy
+  ansible.builtin.command: docker stop xz_processor_container
+  ignore_errors: yes
+
+- name: Usun zatrzymany kontener
+  ansible.builtin.command: docker rm xz_processor_container
+  ignore_errors: yes
+
+- name: Oczysc katalog roboczy na serwerze docelowym
+  ansible.builtin.file:
+    path: /home/ansible/app_deploy
+    state: absent
