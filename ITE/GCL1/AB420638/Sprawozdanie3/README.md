@@ -493,5 +493,5 @@ Laboratorium 11 miało na celu dogłębne przetestowanie mechanizmów sieciowych
    * Metoda imperatywna (`minikubctl scale`) jest błyskawiczna i przydaje się w sytuacjach kryzysowych (np. nagły skok ruchu). Jej wadą jest tworzenie tzw. dryftu konfiguracji (Configuration Drift) – stan faktyczny klastra przestaje zgadzać się z tym, co mamy zapisane w repozytorium.
    * Metoda deklaratywna (edycja pliku `yaml` i `apply -f`) to wzorcowe podejście zgodne z GitOps (Infrastructure as Code). Narzędzie `diff` pozwala na audyt zmian przed ich wdrożeniem, a my mamy pełną historię tego, dlaczego i kiedy infrastruktura uległa powiększeniu.
 
-3. **Odpowiedź do zadania Bonusowego (Load Balancing w praktyce):**
+3. **Load Balancing w praktyce:**
    Zbadanie logów po przeskalowaniu udowodniło, że sieć w Kubernetesie działa w oparciu o algorytmy dystrybucji ruchu (domyślnie round-robin lub warianty randomizowane przez kube-proxy). Próba wywołania celowego błędu HTTP i przefiltrowanie złączonych strumieni logów za pomocą poleceń systemowych (`grep`) jasno wykazała, że żądania nie trafiają zawsze do pierwszego poda z listy, lecz są dynamicznie rozdzielane na całą pulę dostępnych instancji w ramach Serwisu/Deploymentu.
