@@ -282,7 +282,7 @@ Następnie przystąpiłam do próby instalacji nienadzorowanej.  W tym celu utwo
 ![Błąd wyświetlania](lab9_ss/lab9ss5.png)
 
 
-Następnie w pliku odpowiedzi dodałam niezbędne narzędzia, takie jak nodejs, wget i tar do sekcji z pakietami, żeby po instalacji system miał jak pobrać i uruchomić projekt. Początkowo proces miał opierać się na bezpośrednim pobieraniu artefaktu z Jenkinsa, jednak ze względu na problemy z zaporą sieciową, która blokowała ruch, zastosowałam sprytne obejście. Polegało ono na uruchomieniu prywatnego serwera HTTP za pomocą wbudowanego modułu Pythona bezpośrednio w środowisku VS Code.
+Następnie w pliku odpowiedzi dodałam niezbędne narzędzia, takie jak nodejs, wget i tar do sekcji z pakietami, żeby po instalacji system miał jak pobrać i uruchomić projekt. Początkowo proces miał opierać się na bezpośrednim pobieraniu artefaktu z Jenkinsa, jednak ze względu na problemy z zaporą sieciową, która blokowała ruch, zastosowałam obejście. Polegało ono na uruchomieniu prywatnego serwera HTTP za pomocą wbudowanego modułu Pythona bezpośrednio w środowisku VS Code.
 
 W związku z tym w sekcji %post napisałam skrypt, który od razu po instalacji systemu tworzy nowy folder w /usr/local/bin i pobiera do niego gotowy artefakt z aplikacją z mojego lokalnego serwera działającego w VS Code. Następnie skrypt rozpakowuje pliki i od razu kasuje zbędne archiwum. Żeby spełnić wymóg automatycznego uruchamiania programu, dopisałam konfigurację usługi systemd, która po cichu startuje aplikację w środowisku Node.js. Na sam koniec aktywowałam tę usługę poleceniem systemctl enable, dzięki czemu po restarcie maszyny system od razu podnosi aplikację i wszystko działa w pełni automatycznie.
 
@@ -481,3 +481,54 @@ Na koniec zastosowałam Canary Deployment. Najpierw użyłam komendy expose, aby
 ![Błąd wyświetlania](lab10_ss/lab10ss43.png)
 
 Podsumowując wszystkie strategie wdrożenia Recreate całkowicie odcina użytkowników na czas aktualizacji, ale gwarantuje brak konfliktów - nigdy nie działają dwie wersje naraz. Z kolei RollingUpdate pozwala na aktualizację bez przerw w dostępie, a wdrożenie typu Canary to najbezpieczniejsza opcja na sprawdzenie nowej wersji kodu tylko na garstce użytkowników, bez ryzykowania globalnej awarii.
+
+
+### Lab 11
+
+### Eksponowanie 
+
+Na początku przygotowałam plik [deployment.yaml](/Sprawozdanie3/lab11/deployment.yaml), w którym zdefiniowałam wdrożenie lekkiego serwera Nginx w liczbie aż 36 replik. Uruchomiłam go w klastrze i sprawdziłam listę podów, żeby upewnić się, że wszystkie poprawnie się tworzą.
+
+![Błąd wyświetlania](lab11_ss/lab11ss1.png)
+
+Następnie przetestowałam bezpośredni dostęp do pojedynczego kontenera. Wykorzystałam komendę port-forward wskazującą na wybranego poda i otworzyłam stronę w przeglądarce, korzystając z mechanizmu przekierowania portów w VS Code.
+
+![Błąd wyświetlania](lab11_ss/lab11ss2.png)
+![Błąd wyświetlania](lab11_ss/lab11ss3.png)
+
+W kolejnym kroku wyeksponowałam całe wdrożenie. Użyłam do tego komendy tunelującej, dzięki czemu to klaster sam decydował, do którego z 36 kontenerów trafi zapytanie z przeglądarki.
+
+![Błąd wyświetlania](lab11_ss/lab11ss4.png)
+![Błąd wyświetlania](lab11_ss/lab11ss5.png)
+
+Aby poprawnie i na stałe rozdzielać obciążenie, utworzyłam obiekt typu Service, używając do tego polecenia kubectl expose. Jego poprawne utworzenie zweryfikowałam, wyświetlając listę aktywnych usług w terminalu.
+
+![Błąd wyświetlania](lab11_ss/lab11ss6.png)
+![Błąd wyświetlania](lab11_ss/lab11ss7.png)
+![Błąd wyświetlania](lab11_ss/lab11ss8.png)
+![Błąd wyświetlania](lab11_ss/lab11ss9.png)
+![Błąd wyświetlania](lab11_ss/lab11ss10.png)
+
+Następnie wykonałam to samo zadanie, aleprzy użyciu pliku [service.yaml](/Sprawozdanie3/lab11/service.yaml).
+
+![Błąd wyświetlania](lab11_ss/lab11ss11.png)
+![Błąd wyświetlania](lab11_ss/lab11ss12.png)
+![Błąd wyświetlania](lab11_ss/lab11ss13.png)
+
+
+Następnie przeskalowałam wdrożenie dwoma metodami - za pomocą dyrektywy scale i za pomocą pliku yaml.
+
+Najpierw przetestowałam szybkie skalowanie z poziomu terminala. Użyłam komendy kubectl scale.
+
+![Błąd wyświetlania](lab11_ss/lab11ss14.png)
+
+Następnie przeszłam do skalowania za pomocą pliku YAML. Stworzyłam nowy plik o nazwie deployment-v2.yaml, w którym zmieniłam liczbę replik z 36 na 10. Aby udowodnić tę zmianę, użyłam polecenia diff, które pokazało różnicę w kodzie między dwoma plikami.
+
+![Błąd wyświetlania](lab11_ss/lab11ss15.png)
+
+Na sam koniec zaaplikowałam ten nowy plik w klastrze za pomocą komendy apply -f. Po ponownym wyświetleniu listy podów widać, jak system reaguje na nową konfigurację i tworzy brakujące kontenery, żeby osiągnąć docelową liczbę 10 sztuk.
+
+![Błąd wyświetlania](lab11_ss/lab11ss16.png)
+
+
+Skalowanie z komendą scale jest bardzo szybkie, co przydaje się w sytuacjach awaryjnych, ale powoduje, że rzeczywisty stan klastra przestaje zgadzać się z tym, co mamy zapisane w początkowym pliku YAML. Z kolei tworzenie i aplikowanie nowego pliku YAML trwa chwilę dłużej, ale jest dużo bezpieczniejsze.
