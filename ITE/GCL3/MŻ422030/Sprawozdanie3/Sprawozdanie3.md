@@ -115,6 +115,8 @@ Dzięki takiemu podejściu, główny plik projektu został  odchudzony, jego zad
 
 ![site](image-23.png)
 
+---
+
 ## Laboratorium 9: Pliki odpowiedzi dla wdrożeń nienadzorowanych
 
 Celem laboratorium było pełne zautomatyzowanie procesu instalacji Fedora Server przy użyciu pliku odpowiedzi Anaconda. Konfiguracja miała na celu stworzenie środowiska, które bezpośrednio po instalacji i rozruchu automatycznie uruchomi oraz zacznie hostować aplikację.
@@ -157,6 +159,8 @@ Ostatnim etapem było udowodnienie, że nowo postawiony system faktycznie hostuj
 ![curl](image-30.png)
 
 Aplikacja odpowiedziała prawidłowo, zwracając kod statusu. Proces od czystego dysku, przez automatyczną instalację systemu, aż po wdrożenie środowiska Docker i start kontenera został zautomatyzowany i działa poprawnie.
+
+---
 
 ## Laboratorium 10: Wdrażanie na zarządzalne kontenery, Kubernetes
 
@@ -249,6 +253,8 @@ Operacja zakończyła się pełnym sukcesem, wadliwe kontenery zostały usunięt
 
 ![canary](image-47.png)
 
+---
+
 ## Laboratorium 11: Wdrażanie na zarządzalne kontenery,Kubernetes
 
 Celem laboratorium było zarządzanie siecią wewnątrz Kubernetes, implementacja mechanizmów masowego skalowania wdrożeń oraz analiza ruchu sieciowego za pomocą obiektów typu Service.
@@ -333,3 +339,13 @@ Na zakończenie laboratorium powrócono do wdrażania aplikacji minimalpy, poprz
 ![minimal](image-61.png)
 
 W wyjściu polecenia kubectl get pods zaobserwowano pełny cykl życia obiektów. Stare pody zostały skierowane do usunięcia, podczas gdy nowe pody automatycznie przeszły przez fazę inicjalizacji, aż do osiągnięcia docelowego statusu.
+
+---
+
+## Podsumowanie i wnioski
+
+Ansible drastycznie ułatwia życie, pod warunkiem, że od razu podzieli się kod na mniejsze role za pomocą ansible galaxy, bez tego pliki szybko stają się zbyt skomplikowane i nieczytelne. Największym plusem tego narzędzia jest to, że nie nadpisuje bezsensownie konfiguracji, która działa już poprawnie. Dobrze izoluje awarie, jeśli jedna maszyna w sieci padnie, skrypt po prostu ją ignoruje i idzie dalej, zamiast przerywać pracę na reszcie sprawnych.
+
+Postawienie całego systemu od zera wraz z Dockerem i aplikacją w sposób automatyczny to zdecydowana oszczędność czasu i gwarancja, że system zawsze zadziała tak samo. Minusem jest tutaj zerowa tolerancja na błędy. Prosty błąd w formatowaniu tekstu  albo pomyłka w konfiguracji dysku sprawia, że instalator nie zadziała. Automatyzacja systemu wymagaprecyzji przy pisaniu pliku odpowiedzi, ale po jego dopracowaniu proces staje się w automatyczny.
+
+Pisanie manifestów YAML daje pełną kontrolę nad klastrem i pozwala łatwo odtworzyć środowisko. Kubernetes genialnie radzi sobie z błędami, jeśli wdroży się zepsuty obraz, istnieją funkcje które pozwalają natychmiast cofnąć zmiany do ostatniej działającej wersji, co pozwala unikać przestojów. Z kolei obiekty typu Service usuwa problem zmieniających się adresów IP podów, a logi z Nginxa pokazały, że ruch jest automatycznie i równo rozdzielany pomiędzy kontenery.
