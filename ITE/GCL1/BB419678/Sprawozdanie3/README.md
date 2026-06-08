@@ -438,3 +438,7 @@ Skrypt ten można włączyć w środowisku Powershell jako adminstator - wynikie
 
 ![img](../screenshots/lab9/Zrzut%20ekranu%202026-06-06%20132418.png)
 
+
+
+
+
