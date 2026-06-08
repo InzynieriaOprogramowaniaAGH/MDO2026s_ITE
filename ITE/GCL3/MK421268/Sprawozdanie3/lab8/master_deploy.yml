@@ -1,0 +1,6 @@
+---
+- name: Wdrazanie artefaktu przez role Ansible Galaxy
+  hosts: Endpoints
+  become: yes
+  roles:
+    - deploy-express
