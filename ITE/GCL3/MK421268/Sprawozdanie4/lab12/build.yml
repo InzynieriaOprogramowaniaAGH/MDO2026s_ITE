@@ -1,0 +1,37 @@
+name: InoDev Express.js CI
+
+on:
+  push:
+    branches:
+      - ino_dev
+
+jobs:
+  quality_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' 
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Linter (Code Quality)
+        run: npm run lint
+
+      - name: Run Unit Tests
+        run: npm test
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: express-source-validated
+          path: |
+            .
+            !node_modules/
+            !.git/
