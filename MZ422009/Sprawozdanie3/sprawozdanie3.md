@@ -161,3 +161,55 @@ Na koniec tych laboratorium, aby uporządkować playbooki utworzyłem szkielet r
 
 ![tree](SS-71.png)
 
+
+# Lab 9 #
+Celem ćwiczenia było przygotowanie instalacji nienadzorowanej systemu Fedora Server z wykorzystaniem pliku odpowiedzi Kickstart. W ramach zadania utworzono własny plik konfiguracyjny instalatora, przeprowadzono automatyczną instalację systemu oraz rozszerzono proces wdrożenia o automatyczną instalację środowiska Docker i konfigurację usługi uruchamiającej aplikację kontenerową po pierwszym uruchomieniu systemu.
+
+## 9.1. Przygotowanie pliku odpowiedzi Kickstart
+Po wykonaniu ręcznej instalacji Fedory pobrano wygenerowany przez instalator plik odpowiedzi `/root/anaconda-ks.cfg`. Plik ten zawiera konfigurację instalacji wykonaną wcześniej ręcznie i może zostać użyty jako baza do instalacji nienadzorowanej.
+
+![fedora install](SS-13.png)
+
+Następnie plik został przeanalizowany i zmodyfikowany pod wymagania zadania.
+
+![anaconda download](SS-14.png)
+
+## 9.2. Modyfikacja pliku Kickstart
+Na podstawie wygenerowanego pliku przygotowano własną konfigurację instalacji. W pliku ustawiono między innymi język systemu, źródła pakietów, konfigurację sieci, nazwę hosta oraz użytkownika systemowego. Zastosowano także automatyczne partycjonowanie dysku oraz czyszczenie wcześniejszych danych, dzięki czemu instalacja mogła zostać wykonana bez ręcznego wybierania partycji. Dodano również instalację Dockera oraz konfigurację pozwalającą uruchomić aplikację kontenerową po starcie systemu.
+Finalnie treść pliku prezentuje się następująco: [anaconda-ks.cfg](anaconda-ks.cfg).
+
+## 9.3. Uruchomienie instalacji nienadzorowanej
+Przygotowany plik odpowiedzi został udostępniony przez prosty serwer HTTP, a następnie wskazany instalatorowi Fedory w parametrze startowym `inst.ks`.
+
+![parametr GRUB](SS-16.png)
+
+Po dopisaniu adresu pliku Kickstart instalator został uruchomiony. Od tego momentu instalacja przebiegała automatycznie, bez konieczności ręcznego wybierania ustawień w instalatorze.
+*WAŻNE:*Na zrzucie ekranu widać przy komendzie nazwe lab9-ks.cfg, jest to nazwa mojego początkowego pliku, jednak później wykonanłem tą instalację na nowo już z nowego uzupełnionego pliku z nazwą anaconda-ks.cfg.
+
+### Postęp instalacji - Ukończone: ###
+
+![installation done](SS-17.png)
+
+## 9.4. Weryfikacja zainstalowanego systemu
+Po pierwszym uruchomieniu systemu zalogowano się na utworzonego użytkownika milosz i sprawdzono podstawową konfigurację systemu. Polecenia `hostname`, `whoami`, `docker --version` oraz `lsblk` potwierdziły, że:
+
+1) nazwa hosta została ustawiona jako fedora-lab9-auto,
+2) użytkownik milosz został utworzony poprawnie,
+3) Docker został zainstalowany,
+4) dysk został automatycznie podzielony na partycje.
+
+![weryfikacja](SS-18.png)
+
+## 9.5. Weryfikacja usługi Docker
+Następnie dokonałem sprawdzenia statusu usługi Docker za pomocą polecenia `systemctl status docker` :
+
+![weryfikacja docker](SS-72.png)
+
+Status `active (running)` potwierdza, że usługa Docker została poprawnie uruchomiona i jest włączona po starcie systemu.
+
+## 9.6. Weryfikacja automatycznego uruchomienia aplikacji
+Ostatnim etapem tych laboratoriów była weryfikacja usługi `express-app`, utworzonej w pliku Kickstart. Usługa ta odpowiada za pobranie obrazu aplikacji z Docker Hub oraz uruchomienie kontenera.
+
+![weryfikacja express-app](SS-73.png)
+
+Ponownie widoczny status `active` oraz wpisy związane z poleceniami Dockera potwierdzają, że aplikacja kontenerowa została uruchomiona automatycznie po starcie systemu.
