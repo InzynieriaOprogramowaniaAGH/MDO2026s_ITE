@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oskar-web-canary
+  labels:
+    app: oskar-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oskar-web
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: oskar-web
+        track: canary
+    spec:
+      containers:
+      - name: nginx-container
+        image: oskar-nginx:v2
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8888

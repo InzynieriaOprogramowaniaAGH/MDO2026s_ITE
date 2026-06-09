@@ -1,0 +1,4 @@
+FROM oskar-nginx:v1
+
+# Celowe zepsucie kontenera: wypisze komunikat i natychmiast "umrze" z bledem
+CMD ["/bin/sh", "-c", "echo 'KRYTYCZNY BLAD: Aplikacja zepsuta!' && exit 1"]

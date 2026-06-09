@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oskar-web-deployment
+  labels:
+    app: oskar-web
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app: oskar-web
+  template:
+    metadata:
+      labels:
+        app: oskar-web
+    spec:
+      containers:
+      - name: nginx-container
+        image: oskar-nginx:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8888
