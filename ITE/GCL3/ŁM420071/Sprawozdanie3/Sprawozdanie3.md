@@ -1,64 +1,70 @@
-# Sprawozdanie Lab 5-7
+# Sprawozdanie Lab 8–11
 
 ## Łukasz Maciejny
 
 ## Środowisko
 
-Wszystkie ćwiczenia zostały przeprowadzone w systemie operacyjnym Ubuntu Server 24.04.4 LTS, pracującym jako maszyna wirtualna w środowisku Oracle VM VirtualBox. Interakcja z serwerem oraz edycja plików odbywały się zdalnie z wykorzystaniem rozszerzenia Remote - SSH w edytorze Visual Studio Code.
+Wszystkie ćwiczenia zostały przeprowadzone na systemie Ubuntu Server 24.04.4 LTS uruchomionym jako maszyna wirtualna w Oracle VM VirtualBox. Praca z serwerem i edycja plików odbywały się zdalnie za pomocą rozszerzenia Remote - SSH w Visual Studio Code.
 
-Do wykonania zadan z lab 8 i 9 uzyto maszyny z zainstalowanym systemrm Fedora.
+Do wykonania zadań z laboratoriów 8 i 9 użyto również maszyny z systemem Fedora.
 
-## 1.Ansible
+---
 
-Ansible to otwartoźródłowe narzędzie do automatyzacji IT, które służy do zarządzania konfiguracją, wdrażania aplikacji oraz orkiestracji systemów. W przeciwieństwie do wielu innych narzędzi, Ansible jest agentless – nie wymaga instalowania dodatkowego oprogramowania (agentów) na zarządzanych maszynach. Komunikuje się z nimi poprzez protokół SSH
+## 1. Ansible
 
-Przygotowano maszyne wirtualna o minimalnym zestawie oprogramowania, po czym 
-rozeslano klucz ssh do maszyny z fedora
-<pre>ssh-copy-id user@192.168.1.11</pre>
+Ansible to otwartoźródłowe narzędzie do automatyzacji IT służące do zarządzania konfiguracją, wdrażania aplikacji oraz orkiestracji. Ansible jest agentless — komunikuje się ze zdalnymi hostami za pomocą SSH, bez konieczności instalacji dodatkowych agentów.
 
-Dopiszano maszyne z fedora jako ansible target do listy hostow
+Przygotowano maszynę wirtualną z minimalnym zestawem oprogramowania, a następnie przesłano klucz SSH do tej maszyny:
 
-![alt text](hosts.png)
+```bash
+ssh-copy-id user@192.168.1.11
+```
 
-Utworzono strukturę pliku inwentaryzacji(inventory.ini) podzieloną na sekcje:
+Maszyna z Fedory została dodana do listy hostów Ansible (inventory).
 
-![alt text](init.png)
+![Hosts](hosts.png)
 
-![alt text](inventory.png)
+Utworzono strukturę pliku inwentaryzacji (inventory.ini) podzieloną na sekcje:
 
-Wykonano testowe wywołanie ping przy użyciu modułu Ansible:
+![Inventory structure](init.png)
 
-![alt text](ping.png)
+![Inventory example](inventory.png)
 
-Przygotowano playbook, który realizuje zadania:
+Przeprowadzono testowe wywołanie modułu `ping`:
 
-Aktualizacja pakietów (apt update && apt upgrade).
+![Ansible ping](ping.png)
 
-Restart usług sshd oraz rngd.
+Przygotowano playbook realizujący zadane operacje, m.in.:
+- aktualizację pakietów (np. `dnf update -y` dla Fedory),
+- restart usług `sshd` i `rngd`,
+- skopiowanie pliku `inventory.ini` na hosty z grupy `Endpoints`.
 
-Playbook zapobiega błędom w momencie gdy ssh zostanie zrestartowane, co chwilowo powoduje zerwanie polaczenia.
 
-<pre>---
+```yaml
+---
 - name: Task 1
   hosts: all
   become: yes
   tasks:
     - name: "1. Ping"
       ping:
-    - name: "2. Kopiowanie pliku inwentory.ini"
+
+    - name: "2. Kopiowanie pliku inventory.ini"
       copy:
         src: ./inventory.ini
         dest: /home/ansible/inventory.ini
         owner: ansible
         group: ansible
-        mode: '0644' 
+        mode: '0644'
       when: "'Endpoints' in group_names"
-    - name: "3. Aktualizacja pakietow"
+
+    - name: "3. Aktualizacja pakietów (Fedora)"
       command: dnf update -y
       when: ansible_distribution == "Fedora"
       register: update_result
       changed_when: "'Nothing to do' not in update_result.stdout"
-    - name: "4. Restart uslug sshd i rngd"
+
+    - name: "4. Restart usług sshd i rngd"
       systemd:
         name: "{{ item }}"
         state: restarted
@@ -66,37 +72,33 @@ Playbook zapobiega błędom w momencie gdy ssh zostanie zrestartowane, co chwilo
         - sshd
         - rngd
       ignore_errors: yes
-      when: "'Endpoints' in group_names"</pre>
-
-![alt text](playbook1.png)
-
-Zastosowano standardowe szkieletowanie Ansible, które gwarantuje czytelność i zgodność ze standardami społeczności:
-
-```bash 
-ansible-galaxy role init deploy_app 
+      when: "'Endpoints' in group_names"
 ```
 
-W pliku meta/main.yml zdefiniowano metadane roli, co pozwala na jej łatwą identyfikację oraz określenie wymagań systemowych:
+![Playbook example](playbook1.png)
 
-Opis procesu wdrożeniowego (Playbook)
-Wdrożenie aplikacji zostało zaimplementowane w oparciu o następujące etapy:
+Szkielet roli został utworzony poleceniem:
 
-Sanity Check (Wstępna weryfikacja): Przed przystąpieniem do prac, playbook sprawdza dostępność zasobów dyskowych oraz status portów. Dzięki zastosowaniu ignore_errors: yes oraz rejestracji wyników (register), proces jest odporny na błędy, które nie uniemożliwiają kontynuacji wdrożenia.
+```bash
+ansible-galaxy role init deploy_app
+```
 
-Zapewnienie środowiska: Rola automatycznie instaluje wymagane zależności oraz weryfikuje status usługi docker.
+W pliku `meta/main.yml` zdefiniowano metadane roli, co ułatwia jej identyfikację i określenie zależności.
 
-Transfer i przygotowanie: Artefakty aplikacji (kod źródłowy Express.js) są przesyłane na maszynę docelową, a struktura katalogów jest automatycznie tworzona z odpowiednimi uprawnieniami.
+Opis procesu wdrożeniowego:
 
-Orkiestracja kontenera: Wdrożenie jest w pełni idempotentne – każdorazowe uruchomienie playbooka usuwa poprzednią instancję kontenera przed uruchomieniem nowej, co eliminuje ryzyko konfliktów nazw (docker rm -f).
+- Sanity check: weryfikacja dostępności zasobów dyskowych i portów.
+- Zapewnienie środowiska: instalacja zależności oraz weryfikacja działania Dockera.
+- Transfer artefaktów: przesłanie kodu aplikacji (Express.js) i ustawienie uprawnień.
+- Orkiestracja kontenera: idempotentne uruchomienie kontenera (usunięcie poprzedniej instancji przed uruchomieniem nowej).
+- Weryfikacja: zapytania HTTP z pętlą `until/retries/delay` oczekujące statusu 200.
+- Cleanup: usunięcie kontenera i plików tymczasowych.
 
-Weryfikacja (Post-deployment): Kluczowym elementem jest pętla sprawdzająca (until, retries, delay), która weryfikuje poprawne działanie aplikacji poprzez zapytanie HTTP GET. Playbook oczekuje na pełną gotowość aplikacji (status 200), co zapewnia, że wdrożenie kończy się sukcesem tylko wtedy, gdy usługa jest faktycznie osiągalna.
+Poniżej główny plik `tasks/main.yml`:
 
-Cleanup (Oczyszczanie): Ostatni etap roli realizuje czyszczenie środowiska – usuwany jest kontener oraz tymczasowe pliki aplikacji, co zapewnia, że maszyna pozostaje w czystym stanie po zakończeniu testów.
-
-Ponizej glowny plik tasks/main.yml:
-
-<pre>---
-- name: "Sanity Check: Zasoby i Porty"
+```yaml
+---
+- name: "Sanity Check: zasoby i porty"
   block:
     - name: "Sprawdzenie miejsca na dysku"
       command: df -h /opt
@@ -117,7 +119,7 @@ Ponizej glowny plik tasks/main.yml:
       register: dnf_out
       changed_when: "'Nothing to do' not in dnf_out.stdout"
 
-    - name: "Start i Enable usługi Docker"
+    - name: "Start i enable usługi Docker"
       systemd:
         name: docker
         state: started
@@ -131,7 +133,7 @@ Ponizej glowny plik tasks/main.yml:
         state: directory
         mode: '0777'
 
-    - name: "Kopiowanie plików aplikacji (Zestaw plików)"
+    - name: "Kopiowanie plików aplikacji"
       copy:
         src: "build_artifact/"
         dest: "{{ remote_app_path }}/"
@@ -149,7 +151,7 @@ Ponizej glowny plik tasks/main.yml:
       sh -c "npm install && node app.js"
   register: docker_run
 
-- name: "Weryfikacja: Sanity Check działania aplikacji"
+- name: "Weryfikacja: sanity check działania aplikacji"
   uri:
     url: "http://localhost:{{ app_port }}"
     status_code: 200
@@ -158,81 +160,73 @@ Ponizej glowny plik tasks/main.yml:
   retries: 20
   delay: 5
 
-- name: "Procedura czyszczenia (Cleanup)"
+- name: "Cleanup: usunięcie zasobów"
   block:
     - name: "Usunięcie kontenera"
       shell: "docker rm -f {{ app_name }}"
+
     - name: "Usunięcie plików aplikacji"
       file:
         path: "{{ remote_app_path }}"
-        state: absent</pre>
+        state: absent
+```
 
-![alt text](role1.png)
+![Role example](role1.png)
 
-## 2.Instalacja nienadzorowana
+---
 
-Przygotowano bazowy plik anaconda.
-![alt text](anaconda-conf1.png)
+## 2. Instalacja nienadzorowana (Anaconda)
 
-Utworzono VM, podczas startu z ISO, w menu wyboru, zedytowano opcje bootowania (klawisz e), dopisując skad pobrac plik konfiguracyjny.
+Przygotowano plik odpowiedzi Anaconda (`anaconda-ks.cfg`) oraz zmodyfikowano opcje bootowania przy uruchamianiu instalatora (klawisz `e` w menu GRUB), aby wskazać lokalizację pliku konfiguracyjnego.
 
-![alt text](instaler1.png)
-
-![alt text](startinstall.png)
-
-Zmodyfikowano plik odpowiedzi anaconda-ks.cfg.
-
-Wymóg przeprowadzenia instalacji bez żadnych pytań został osiągnięty przez usunięcie wszelkich interaktywnych opcji i zdefiniowanie jasnej ścieżki partycjonowania.
-
-clearpart --all --initlabel usuwa wszystkie istniejące dane, a autopart automatycznie tworzy strukturę partycji. Dzięki temu instalator nie oczekuje akceptacji użytkownika.
-
-npm install -g ...: pobiera  artefakt 
-
-Jako ze aplikacja którą uruchamiam to express.js(aplikacja po uruchomieniu odrazu sie wylacza), automatycznie tworzony jest prosty plik startowy ktory umozliwia uruchomienie jej.
-
-Utworzenie pliku .service w katalogu /etc/systemd/system/. sprawia ze aplikacja uruchamia sie po starcie systemu 
-
-![alt text](anaconda1.png)
-
-![alt text](anaconda-post.png)
-
-Aplikacja działa po uruchomieniu systemu.
+![Anaconda config](anaconda-conf1.png)
 
 
-![alt text](potwierdzenie_dzialania.png)
+![Installer edit](instaler1.png)
 
-## 3.Kubernetes
+![Start instalacji](startinstall.png)
 
-Kubernetes to otwartoźródłowa platforma do orkiestracji kontenerów, która automatyzuje wdrażanie, skalowanie i zarządzanie aplikacjami skonteneryzowanymi.
+W pliku odpowiedzi wyeliminowano opcje interaktywne i zdefiniowano automatyczne partycjonowanie:
 
-Minikube to narzędzie pozwalające uruchomić lokalny klaster Kubernetes wewnątrz maszyny wirtualnej lub kontenera.
-Po przeprowadzeniu instalacji sprawdzono poprawnosc dzialania:
+`clearpart --all --initlabel` usuwa wszystkie istniejące dane, a `autopart` tworzy strukturę partycji automatycznie.
 
-![alt text](statusy_bezpieczenstwa.png)
+Polecenia instalacyjne (przykład):
 
-![alt text](worker_ready.png)
+W przypadku aplikacji Express.js przygotowano prosty skrypt startowy, który zapobiega natychmiastowemu zamknięciu procesu po uruchomieniu. Dodatkowo utworzono plik jednostki systemd w `/etc/systemd/system/` aby aplikacja uruchamiała się przy starcie systemu.
 
-![alt text](testpod.png)
+![Anaconda postinstall](anaconda-post.png)
 
-Przygotowano obraz Docker z aplikacją Express.js. Obraz został tak zaprojektowany, aby proces główny (Node.js) działał w trybie ciągłym (nie kończył pracy).
+Po restarcie systemu aplikacja uruchamia się automatycznie.
 
-Uruchomienie:
-```bash 
+![Potwierdzenie działania](potwierdzenie_dzialania.png)
+
+---
+
+## 3. Kubernetes
+
+Kubernetes to platforma do orkiestracji kontenerów automatyzująca wdrażanie, skalowanie i zarządzanie aplikacjami konteneryzowanymi. Do testów lokalnych użyto Minikube.
+
+Po instalacji sprawdzono status klastra i gotowość węzłów:
+
+![Statusy bezpieczeństwa](statusy_bezpieczenstwa.png)
+![Worker ready](worker_ready.png)
+![Test pod](testpod.png)
+
+Przygotowano obraz Dockera z aplikacją Express.js tak, aby proces Node.js działał jako proces główny (nie kończył się natychmiast).
+
+Przykładowe uruchomienie:
+
+```bash
 minikubctl -- run express-app --image=express-app:v1 --port=8070
 ```
-![alt text](expresspod.png)
 
-![alt text](curl1.png)
+![Express pod](expresspod.png)
+![CURL test](curl1.png)
 
-Wdrożenia manualne przeniesiono do pliku deployment.yaml.
+Wdrożenia przeniesiono do pliku `deployment.yaml`. Plik skonfigurowano na 4 repliki (`replicas: 4`). Przykład deploymentu:
 
-Skalowanie: Plik został skonfigurowany na 4 repliki (replicas: 4).
-
-Wdrożenie: kubectl apply -f deployment.yaml.
-
-Sprawdzenie statusu: kubectl rollout status deployment/express-deployment.
-
-<pre>apiVersion: apps/v1
+```yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: express-deployment
@@ -251,35 +245,28 @@ spec:
       containers:
       - name: express-container
         image: express-app:v2
-        imagePullPolicy: Never 
+        imagePullPolicy: Never
         ports:
-        - containerPort: 3000 </pre>
+        - containerPort: 3000
+```
 
-![alt text](deploy1.png)
+Wdrożenie i jego weryfikacja:
 
-Wyeksponowano wdrozenie jako serwis, wyeksponowano rowniez port serwisu
+![Deploy check](deploy1.png)
+![Connection test](connectiontest.png)
+![Dashboard replicas](dashboardreplica.png)
 
-![alt text](connectiontest.png)
+Skalowanie replik wykonano zarówno poleceniem `scale`, jak i przez zastosowanie zmodyfikowanego pliku YAML:
 
-Potwierdzenie dzialania z czterema replikami:
+![Scale 1-8](replicas1-8.png)
+![Scale 0-4](replicas0-4.png)
 
-![alt text](dashboardreplica.png)
+Przeprowadzono aktualizację obrazu a następnie przywrócono poprzednią, działającą wersję.
 
-Uzyto polecenia scale w celu zmienienia liczby replik
+![Image change](imagechange.png)
+![Rollback](cofniecie_wersji.png)
 
-![alt text](replicas1-8.png)
-
-![alt text](replicas0-4.png)
-
-Wykonano aktualizację obrazu 
-
-![alt text](imagechange.png)
-
-Po załadowaniu obrazu generującego błąd sprawodzono historie a następnie cofnięto obraz do poprzedniej działającej wersji
-
-![alt text](cofniecie_wersji.png)
-
-Napisano i przetestowano skrypt testujacy poprawność wdrożenia
+Skrypt weryfikujący wdrożenie:
 
 ```bash
 #!/bin/bash
@@ -291,19 +278,21 @@ else
 fi
 ```
 
-![alt text](potwierdzenieSkryptu.png)
+![Potwierdzenie skryptu](potwierdzenieSkryptu.png)
 
-Porownanie strategii wdrożenia:
+Strategie wdrożeniowe — porównanie:
 
-Recreate: Wszystkie stare Pody są zabijane przed stworzeniem nowych (przerwa w dostępności).
-<pre>apiVersion: apps/v1
+- Recreate: wszystkie stare pody są usuwane przed utworzeniem nowych (możliwa przerwa w dostępności).
+
+```yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: express-recreate
 spec:
   replicas: 4
   strategy:
-    type: Recreate 
+    type: Recreate
   selector:
     matchLabels:
       app: express-recreate
@@ -317,10 +306,12 @@ spec:
         image: express-app:v2
         imagePullPolicy: Never
         ports:
-        - containerPort: 3000</pre>
+        - containerPort: 3000
+```
 
-Rolling Update: Nowe Pody są tworzone, a stare usuwane stopniowo. 
-<pre>
+- RollingUpdate: nowe pody są tworzone stopniowo, a stare usuwane bez jednoczesnego dużego przestoju.
+
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -330,8 +321,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 2   
-      maxSurge: 25%       
+      maxUnavailable: 2
+      maxSurge: 25%
   selector:
     matchLabels:
       app: express-rolling
@@ -345,11 +336,13 @@ spec:
         image: express-app:v2
         imagePullPolicy: Never
         ports:
-        - containerPort: 3000</pre>
+        - containerPort: 3000
+```
 
-Canary Deployment: Wdrożono jedną replikę nowej wersji, aby przetestować ją przed pełnym przełączeniem.
+- Canary: wdrożenie częściowe (np. 1 replika nowej wersji) w celu przetestowania przed pełnym przełączeniem.
 
-<pre>
+```yaml
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -405,24 +398,14 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 3000</pre>
+      targetPort: 3000
+```
 
-Przeprowadzono bezpośrednie przekierowanie portu do konkretnej instancji poda.
+Przeprowadzono przekierowanie portu do konkretnego poda oraz do obiektu Deployment. Utworzono serwis typu `ClusterIP`, a następnie wyeksponowano usługę na zewnątrz (np. NodePort/port forwarding) na porcie 8081.
 
-![alt text](ForwardPod.png)
+![Forward Pod](ForwardPod.png)
+![Forward Deployment](ForwardDeployment.png)
+![Forward Service command](ForwardServicePolecenie.png)
 
-Zastosowano mechanizm przekierowania bezpośrednio na obiekt typu Deployment. W tym przypadku Kubernetes automatycznie kieruje ruch do jednego z dostępnych podów zarządzanych przez dany deployment:
-
-![alt text](ForwardDeployment.png)
-
-Utworzono serwis typu ClusterIP, który trwale przypisuje usługę do portu 80 wewnątrz klastra:
-
-Wyeksponowano utworzony serwis na zewnątrz klastra poprzez port 8081:
-
-![alt text](ForwardServicePolecenie.png)
-
-Zmieniono liczbe replik dwoma sposobami(polecenie scale oraz zaaplikowanie nowego pliku YAML)
-
-![alt text](Scale.png)
-
-![alt text](ApplyNewConfiguration.png)
+![Scale](Scale.png)
+![Apply new configuration](ApplyNewConfiguration.png)
