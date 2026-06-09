@@ -1,8 +1,6 @@
 # Sprawozdanie z laboratoriów 8–11
 
-## Lab 8: Automatyzacja i zdalne wykonywanie poleceń za pomocą Ansible
-
-### Wykonanie
+## Lab 8
 
 **Przygotowanie środowiska i inwentaryzacja**
 
@@ -118,7 +116,7 @@ Wypełniono strukturę roli zadaniami i meta/main.yml.
 
 ---
 
-## Lab 9: Pliki odpowiedzi dla wdrożeń nienadzorowanych (Kickstart)
+## Lab 9
 
 **Przygotowanie pliku Kickstart**
 
@@ -203,7 +201,7 @@ Instalacja przebiegła w pełni automatycznie. Po zakończeniu system uruchomił
 
 ---
 
-## Sprawozdanie z laboratorium 10: Wdrażanie na zarządzalne kontenery – Kubernetes
+## Sprawozdanie z laboratorium 10
 
 #### Krok 1: Weryfikacja konfiguracji sieciowej i SSH 
 
@@ -667,7 +665,7 @@ Po ich wdrożeniu uruchomiono polecenie `kubectl get pods --show-labels`, aby po
 ![image](Sprawozdanie3/61.png)
 Zauważamy załadowane czściowe wersji v2. Jest to dowód działania kanarkowej metody.
 
-## Sprawozdanie z laboratorium 11: Wdrażanie na zarządzalne kontenery – Kubernetes (2)
+## Lab 11
 
 #### Krok 1: Wdrożenie masywnego deploymentu (36 replik)
 
