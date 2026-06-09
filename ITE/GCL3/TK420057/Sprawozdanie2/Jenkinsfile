@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                sh 'docker build -t flask-build -f Dockerfile.build .'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'docker build -t flask-test -f Dockerfile.test .'
+                sh 'docker run --name flask-test-container flask-test || true'
+            }
+        }
+        stage('Publish - Artifact') {
+            steps {
+                sh 'mkdir -p dist'
+                sh 'docker run --rm -v $(pwd)/dist:/app/dist flask-build python -m build'
+                sh 'docker run --rm -v $(pwd):/data alpine chown -R 1000:1000 /data/dist'
+                archiveArtifacts artifacts: 'dist/*.whl', allowEmptyArchive: false
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'docker build -t flask-production -f Dockerfile.deploy .'
+                sh 'docker rm -f flask-app-prod || true'
+                sh 'docker run -d --name flask-app-prod -p 5000:5000 flask-production'
+            }
+        }
+        stage('Smoke Test') {
+            steps {
+                echo 'Weryfikacja wdrożenia...'
+                script {
+                    sleep 20
+                    sh '''
+                        for i in {1..20}; do
+                                if curl -s -f http://jenkins-docker:5000/; then
+                                    echo "Works"
+                                    exit 0
+                                fi
+                                echo "Czekam... (próba $i/20)"
+                                sleep 2
+                            done
+                            
+                            echo "Błąd"
+                            exit 1
+                        '''
+                }
+            }
+        }
+    }
+    post {
+        always {
+            sh 'docker rm -f flask-test-container || true'
+        }
+        success {
+            echo 'Sukces Wszystkie testy przeszły pomyślnie.'
+        }
+        failure {
+            echo 'Uwaga Pipeline zakończony błędem.'
+        }
+    }
+}

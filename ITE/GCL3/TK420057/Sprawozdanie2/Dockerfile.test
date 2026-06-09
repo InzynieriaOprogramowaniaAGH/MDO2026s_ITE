@@ -1,0 +1,7 @@
+FROM flask-build:latest
+
+WORKDIR /app
+
+RUN pip install pytest
+
+CMD ["python", "-m", "pytest"]
