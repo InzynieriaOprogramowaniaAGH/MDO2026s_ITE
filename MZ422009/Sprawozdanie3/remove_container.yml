@@ -1,0 +1,10 @@
+---
+- name: Remove Docker container
+  hosts: Endpoints
+  become: yes
+
+  tasks:
+    - name: Stop and remove express container
+      community.docker.docker_container:
+        name: express-app
+        state: absent

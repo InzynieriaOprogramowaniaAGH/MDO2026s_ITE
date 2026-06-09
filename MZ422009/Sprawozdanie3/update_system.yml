@@ -1,0 +1,13 @@
+---
+- name: Update packages
+  hosts: Endpoints
+  become: yes
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Upgrade packages
+      ansible.builtin.apt:
+        upgrade: dist

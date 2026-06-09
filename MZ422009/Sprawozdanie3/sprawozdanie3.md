@@ -51,7 +51,7 @@ Następnie sprawdzono tego efekt, czyli możliwość logowania bez użycia hasł
 Udało się nawiązać połączenie poprawnie, co potwierdza prawidłową konfigurację kluczy SSH.
 
 ## 8.5. Utworzenie pliku inwentaryzacji
-Kolejnym krokiem było utworzenie pliku `inventory.ini`, zawierającego definicje grup zarządzanych hostów.
+Kolejnym krokiem było utworzenie pliku [inventory.ini](inventory.ini), zawierającego definicje grup zarządzanych hostów.
 
 ![inventory.ini](SS-9.png)
 
@@ -70,7 +70,7 @@ Obie maszyny zwróciły odpowiedź `pong`, co potwierdza poprawną komunikację 
 
 ## 8.7. Utworzenie pierwszego playbooka
 
-Przygotowano prosty playbook o nazwie `ping.yml`, którego zadaniem było wykonanie testu połączenia dla wszystkich hostów.
+Przygotowano prosty playbook o nazwie [ping.yml](ping.yml), którego zadaniem było wykonanie testu połączenia dla wszystkich hostów.
 
 ### Kod playbooka: ###
 
@@ -80,10 +80,84 @@ Treść playbooka wykorzystuje moduł `ansible.builtin.ping`, który służy do 
 
 ## 8.8. Uruchomienie playbooka
 
-Playbook został wykonany za pomocą polecenia `ansible-playbook -i inventory.ini ping.yml`.
+Playbook został uruchomiony za pomocą polecenia `ansible-playbook -i inventory.ini ping.yml`.
 
 ![playbook wynik](SS-12.png)
 
 Wszystkie zadania zakończyły się statusem ok, a raport końcowy nie wykazał błędów ani niedostępnych hostów, więc wszystko wykonało się jak należy.
 
+
+## 8.9. Kopiowanie pliku inwentaryzacji na maszynę docelową
+Przygotowano playbook o nazwie [copy_inventory.yml](copy_inventory.yml), którego zadaniem było skopiowanie pliku `inventory.ini` na maszynę z grupy `Endpoints`.
+
+![playbook copy](SS-59.png)
+
+Do wykonania zadania użyto modułu `ansible.builtin.copy`, który umożliwia kopiowanie plików z maszyny zarządzającej na hosty zdalne. Wynik changed=1 oznacza, że plik został utworzony lub zmodyfikowany na maszynie docelowej.
+
+Następnie ten sam playbook został uruchomiony ponownie, bez zmiany pliku źródłowego, jednak wynik był już inny. `changed=0` oznacza, że Ansible wykrył zgodność stanu docelowego z oczekiwanym i nie wykonał niepotrzebnej zmiany. Pokazuje to stabilne działanie playbooków.
+
+![playbook copy again](SS-60.png)
+
+## 8.10. Aktualizacja pakietów systemowych
+W tym podpunkcie przygotowano playbook [update_system.yml](update_system.yml), który aktualizuje listę pakietów oraz wykonuje aktualizację zainstalowanego oprogramowania na maszynie docelowej. 
+
+![playbook update](SS-61.png)
+
+Tym razem do wykonania operacji użyto modułu `ansible.builtin.apt`, przeznaczonego do zarządzania pakietami w systemach Ubuntu. Playbook został wykonany z uprawnieniami administratora przez `become: yes`.
+
+## 8.11. Restart usług sshd i rngd
+Podobnie jak we wcześniejszych przypadkach utworzono nowy playbook [restart_ssh.yml](restart_ssh.yml), którego zadaniem jest wykonanie restartu usługi SSH na maszynie docelowej. Wykorzystano kolejny moduł, tym razem `ansible.builtin.service`. 
+
+![playbook restart](SS-62.png)
+
+Adekwatnie wykonano polecenie dla usługi rngd. Playbook [restart_rngd.yml](restart_rngd.yml). 
+
+![playbook restart rngd](SS-63.png)
+
+Po tym etapie zostało sprawdzone jeszcze działanie przy niedostępnym hoście. Aby to przetestować wstrzymano usługę SSH na maszynie `ansible-target`, a nastepnie wykonano test połączenia Ansible, który oznaczył maszynę docelową jako `UNREACHABLE`, co potwierdza brak możliwości połączenia.
+
+## 8.12. Instalacja Dockera na maszynie docelowej
+Znowu przygotowano playbook, tym razem taki który instaluje pakiety `docker.io` oraz `python3-docker` na maszynie docelowej, a następnie uruchomiono go. Playbook [install_docker.yml](install_docker.yml).
+
+![playbook docker install](SS-64.png)
+
+Poprawność wykonania zweryfikowałem wykonując na maszynie docelowej polecenia, `docker --version` i `systemctl status docker`.
+
+## 8.13. Pobranie obrazu z Docker Hub
+Za pomocą playbooka [pull_image.yml](pull_image.yml) pobrano obraz aplikacji opublikowany wcześniej w Docker Hub. 
+Do pobrania obrazu wykorzystano moduł `community.docker.docker_image`, który pozwala zarządzać obrazami Docker z poziomu Ansible.
+
+![playbook pullimage](SS-65.png)
+
+## 8.14. Uruchomienie kontenera na maszynie docelowej
+Następnie przygotowano playbook [run_container.yml](run_container.yml), który uruchamia kontener z obrazem `zucho/express-deploy:latest`.
+
+![playbook run](SS-66.png)
+
+Po wykonaniu playbooka sprawdzono listę działających kontenerów na maszynie docelowej poleceniem `docker ps`.
+
+![docker ps](SS-67.png)
+
+
+## 8.15. Zatrzymanie i usunięcie kontenera
+Przygotowano playbook [remove_container.yml](remove_container.yml), którego miał zatrzymać oraz usunąć kontener `express-app`.
+
+![playbook remove](SS-68.png)
+
+Po wykonaniu tego na maszynie docelowej kontener nie był już widoczny jak wcześniej.
+
+![docker ps -a](SS-69.png)
+
+
+## 8.16. Sanity check maszyny docelowej
+Na końcu przygotowano prosty playbook [sanity_check.yml](sanity_check.yml), którego zadaniem było sprawdzenie podstawowego stanu maszyny docelowej przed lub po wdrożeniu.
+Playbook sprawdza dostępność usługi SSH, działanie Dockera oraz wyświetla jego wersję. Pozwala to szybko potwierdzić, że środowisko docelowe jest gotowe do dalszych operacji.
+
+![playbook sanity](SS-70.png)
+
+
+## 8.17. Utworzenie roli Ansible
+Na koniec tych laboratorium, aby uporządkować playbooki utworzyłem szkielet roli Ansible za pomocą polecenia `ansible-galaxy role init`. Polecenie utworzyło strukturę katalogów roli docker_deploy, zawierającą między innymi katalogi `tasks`, `handlers`, `defaults`, `vars` oraz plik `meta/main.yml`. Taka struktura umożliwia późniejsze przeniesienie zadań z playbooków do roli i wielokrotne wykorzystanie ich w innych projektach.
+
+![tree](SS-71.png)
 

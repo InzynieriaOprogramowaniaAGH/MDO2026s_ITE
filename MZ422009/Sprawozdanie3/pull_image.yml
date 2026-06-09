@@ -1,0 +1,11 @@
+---
+- name: Pull Docker image
+  hosts: Endpoints
+  become: yes
+
+  tasks:
+    - name: Pull express image
+      community.docker.docker_image:
+        name: zucho/express-deploy
+        tag: latest
+        source: pull

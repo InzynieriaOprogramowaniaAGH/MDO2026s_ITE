@@ -1,0 +1,12 @@
+---
+- name: Run Docker container
+  hosts: Endpoints
+  become: yes
+
+  tasks:
+    - name: Start express container
+      community.docker.docker_container:
+        name: express-app
+        image: zucho/express-deploy:latest
+        state: started
+        restart_policy: unless-stopped

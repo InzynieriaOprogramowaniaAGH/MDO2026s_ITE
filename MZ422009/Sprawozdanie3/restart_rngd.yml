@@ -1,0 +1,10 @@
+---
+- name: Restart rng-tools service
+  hosts: Endpoints
+  become: yes
+
+  tasks:
+    - name: Restart rng-tools
+      ansible.builtin.service:
+        name: rng-tools
+        state: restarted

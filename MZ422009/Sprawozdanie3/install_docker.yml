@@ -1,0 +1,19 @@
+---
+- name: Install Docker
+  hosts: Endpoints
+  become: yes
+
+  tasks:
+    - name: Install docker package
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - python3-docker
+        state: present
+        update_cache: yes
+
+    - name: Enable docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
