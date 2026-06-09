@@ -1,0 +1,48 @@
+name: Commander.js CI/CD Pipeline
+
+# Triggery
+on:
+  push:
+    branches: [ "ino_dev" ]
+  pull_request:
+    branches: [ "ino_dev" ]
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Test tags'
+
+# Odtworzenie pipeline'a
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Pobranie kodu z repozytorium
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2. Konfiguracja Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    # 3. Instalacja zależności
+    - name: Install dependencies
+      run: npm ci
+
+    # 4. Wykonanie testów
+    - name: Run tests
+      run: npm test
+
+    # 5. Budowa artefaktu (.tgz)
+    - name: Build artifact
+      run: npm pack
+    
+    # 6. Przesłanie artefaktu do GitHub Actions
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: commander-package
+        path: "*.tgz"
+        retention-days: 1
