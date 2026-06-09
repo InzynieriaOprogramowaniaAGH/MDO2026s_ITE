@@ -314,6 +314,10 @@ kubectl scale deployment petclinic-deployment --replicas=8
 
 **Aktualizacja wersji i obsługa awarii:** Podmieniłem w locie obraz wdrożenia na `v2`. Następnie spróbowałem wdrożyć uszkodzony obraz `broken`. Kubernetes poprawnie zidentyfikował problem z uruchomieniem kontenera, nałożył na uszkodzone pody status `CrashLoopBackOff` i wstrzymał dalszą aktualizację, co ochroniło aplikację przed całkowitą awarią. Wykonałem udany rollback poleceniem `kubectl rollout undo`) do w pełni stabilnej i działającej wersji.
 
+### Kontrola wdrożenia (Skrypt weryfikacyjny)
+Zgodnie z dobrymi praktykami CI/CD oraz wytycznymi z instrukcji, przygotowałem dedykowany skrypt powłoki `check-rollout.sh`. Służy on do automatycznej weryfikacji, czy proces aktualizacji replik zdążył zakończyć się w zakładanym czasie (Time-to-Live). 
+Skrypt wykorzystuje komendę `kubectl rollout status` z flagą `--timeout=60s`. Dzięki odpowiednim kodom wyjścia (`exit 0` dla sukcesu i `exit 1` dla błędu), skrypt ten jest w pełni przystosowany do wpięcia w przyszłości jako bramka (stage) w potoku Jenkins.
+
 ## 5. Strategie wdrożenia
 Na koniec przetestowałem i porównałem metody wdrażania aktualizacji:
 * **Rolling Update (Domyślna):** Nowe pody są uruchamiane równolegle z wyłączaniem starych, co zapewnia brak przerw w dostępie do usługi (Zero-Downtime Deployment).
