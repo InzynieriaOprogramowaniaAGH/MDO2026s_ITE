@@ -3,38 +3,35 @@
 
 ## 1. Architektura i przygotowanie bazowego środowiska
 
-Zajęcia rozpocząłem od zaprojektowania i wdrożenia bazowej architektury środowiska składającego się z węzła kontrolnego (Control Node) oraz maszyny zarządzanej (Managed Node). Zgodnie z dobrymi praktykami bezpieczeństwa i minimalizacji wektorów ataku, drugą maszynę wirtualną zainstalowałem z jak najmniejszym zbiorem oprogramowania bazowego. 
+Zajęcia rozpocząłem od zaprojektowania i wdrożenia bazowej architektury środowiska składającego się z węzła kontrolnego oraz maszyny zarządzanej. Zgodnie z dobrymi praktykami bezpieczeństwa, drugą maszynę wirtualną zainstalowałem z jak najmniejszym zbiorem oprogramowania bazowego. 
 
-Podczas procesu instalacji systemu operacyjnego (zgodnego dystrybucyjnie z maszyną główną) nadałem jej jednoznaczny hostname `ansible-target` oraz utworzyłem dedykowanego użytkownika `ansible`. Upewniłem się również, że w docelowym systemie obecne są pakiety absolutnie krytyczne do działania Ansible: serwer `openssh-server` (odpowiedzialny za nasłuchiwanie na porcie 22) oraz program `tar` (wykorzystywany przez Ansible do rozpakowywania przesyłanych modułów). W tym celu na maszynie docelowej zaktualizowałem pakiety i doinstalowałem niezbędne oprogramowanie.
+Podczas procesu instalacji systemu operacyjnego zgodnego dystrybucyjnie z maszyną główną, nadałem jej hostname `ansible-target` oraz utworzyłem dedykowanego użytkownika `ansible`. Upewniłem się również, że w docelowym systemie obecne są pakiety wymagane do działania Ansible: serwer `openssh-server` (odpowiedzialny za nasłuchiwanie na porcie 22) oraz program `tar` (wykorzystywany przez Ansible do rozpakowywania przesyłanych modułów). W tym celu na maszynie docelowej zaktualizowałem pakiety i doinstalowałem niezbędne oprogramowanie.
 
 ![Instalacja narzędzi na hoście docelowym](./screenshoty/8.1.1_apt_install.png)
 
-W hypervisorze upewniłem się, że struktura maszyn jest poprawna i wykonałem punkt kontrolny (migawkę) czystej maszyny docelowej, aby móc do niej wrócić w razie krytycznego błędu konfiguracji.
+W hyper-v upewniłem się, że struktura maszyn jest poprawna i wykonałem punkt kontrolny (migawkę) czystej maszyny docelowej, aby móc do niej wrócić w razie krytycznego błędu konfiguracji.
 
 ![Widok w menedżerze maszyn wirtualnych](./screenshoty/8.1.2_control.png)
 
-Następnie przełączyłem się na główną maszynę (węzeł kontrolny) i przeszedłem do instalacji samego silnika Ansible, korzystając z oficjalnych repozytoriów dystrybucji i menedżera `apt`.
+Następnie przełączyłem się na główną maszynę i przeszedłem do instalacji Ansible:
 
 ![Instalacja Ansible na węźle kontrolnym](./screenshoty/8.1.3_ansible_install.png)
-
-### Zapewnienie bezagentowej łączności (SSH)
-Siłą Ansible jest jego bezagentowa architektura (agentless) – nie musimy instalować żadnych dodatkowych demonów na maszynach docelowych, gdyż wykorzystywany jest standardowy protokół SSH. Posiadałem już wygenerowany wcześniej domyślny klucz asymetryczny `id_ed25519`, co zweryfikowałem wyświetlając zawartość klucza publicznego.
-
-![Weryfikacja domyślnego klucza SSH](./screenshoty/8.1.4_ssh_key.png)
 
 Kolejnym krokiem było ustabilizowanie warstwy sieciowej na maszynie docelowej. Zaaplikowałem przygotowaną konfigurację `netplan` i upewniłem się komendą `ip a`, że maszynie poprawnie przypisano statyczny adres IP (`10.0.0.20`) na interfejsie `eth0`. 
 
 ![Zatwierdzenie konfiguracji sieciowej i weryfikacja IP](./screenshoty/8.1.5_change_netplan.png)
 
-Aby uniezależnić konfigurację od suchych adresów IP, na węźle kontrolnym wyedytowałem plik lokalnej konfiguracji DNS (`/etc/hosts`), mapując przypisany adres `10.0.0.20` na czytelną nazwę `ansible-target`.
+Aby uniezależnić konfigurację od adresów IP, na węźle kontrolnym zedytowałem plik lokalnej konfiguracji DNS (`/etc/hosts`), mapując przypisany adres `10.0.0.20` na nazwę `ansible-target`.
 
 ![Mapowanie DNS w /etc/hosts](./screenshoty/8.1.6_new_host.png)
 
+### Zapewnienie bezagentowej łączności (SSH)
+Siłą Ansible jest jego bezagentowa architektura – nie musimy instalować żadnych dodatkowych demonów na maszynach docelowych, gdyż wykorzystywany jest standardowy protokół SSH.
 W celu zwiększenia bezpieczeństwa i organizacji, postanowiłem wygenerować nową, dedykowaną parę kluczy SSH (o nazwie `ansible_key`) specjalnie do komunikacji w ramach tego laboratorium.
 
 ![Generowanie dedykowanego klucza SSH](./screenshoty/8.1.7_new_ssh.png)
 
-Poprawność łączności sieciowej pomiędzy węzłami zweryfikowałem z pełnym sukcesem za pomocą komendy ping (protokół ICMP).
+Poprawność łączności sieciowej pomiędzy węzłami zweryfikowałem z pełnym sukcesem za pomocą komendy ping -protokół ICMP.
 
 ![Ping działa](./screenshoty/8.1.8_ping_working.png)
 
@@ -42,7 +39,7 @@ Mimo sprawnej warstwy sieciowej, przy próbie przesłania wygenerowanego klucza 
 
 ![Odmowa dostępu przy kopiowaniu klucza](./screenshoty/8.1.9_permission_denied.png)
 
-Problem wynikał z faktu, że demon SSH na maszynie docelowej miał domyślnie wyłączoną opcję logowania się za pomocą hasła, przez co `ssh-copy-id` nie miało jak autoryzować się przy pierwszym połączeniu w celu wgrania klucza. Zalogowałem się lokalnie na maszynę `ansible-target` i wyedytowałem plik konfiguracyjny `/etc/ssh/sshd_config`, odkomentowując dyrektywę `PasswordAuthentication yes`. Po ponownym uruchomieniu usługi SSH mogłem pomyślnie skopiować klucz.
+Problem wynikał z faktu, że demon SSH na maszynie docelowej miał domyślnie wyłączoną opcję logowania się za pomocą hasła, przez co `ssh-copy-id` nie miało jak autoryzować się przy pierwszym połączeniu w celu wgrania klucza. Zalogowałem się lokalnie na maszynę `ansible-target` i zedytowałem plik konfiguracyjny `/etc/ssh/sshd_config`, odkomentowując dyrektywę `PasswordAuthentication yes`. Po ponownym uruchomieniu usługi SSH mogłem pomyślnie skopiować klucz.
 
 ![Poprawka autoryzacji w sshd_config](./screenshoty/8.1.10_fix.png)
 
@@ -58,12 +55,12 @@ Problem ten rozwiązałem zgodnie ze sztuką, usuwając zapamiętany, stary kluc
 
 Po tych zabiegach infrastrukturalnych poprawnie zalogowałem się na maszynę docelową po SSH, potwierdzając ostatecznie stabilne działanie komunikacji.
 
-![Komunikacja działa](./screenshoty/8.11.13_working.png)
+![Komunikacja działa](./screenshoty/8.1.13_working.png)
 
 
 ## 2. Inwentaryzacja środowiska i warstwa abstrakcji DNS
 
-Zarządzanie infrastrukturą opartą wyłącznie na zmiennych adresach IP jest antywzorcem, który drastycznie utrudnia utrzymanie środowiska. Przeszedłem zatem do logicznej inwentaryzacji. Za pomocą polecenia `hostnamectl set-hostname` trwale wyeliminowałem domyślne nazwy maszyn, nadając im czytelne identyfikatory: `devops-main` dla węzła kontrolnego oraz `ansible-target` dla węzła docelowego.
+Zarządzanie infrastrukturą opartą wyłącznie na zmiennych adresach IP jest antywzorcem, który drastycznie utrudnia utrzymanie środowiska. Przeszedłem zatem do inwentaryzacji. Za pomocą polecenia `hostnamectl set-hostname` trwale wyeliminowałem domyślne nazwy maszyn, nadając im czytelne identyfikatory: `devops-main` dla węzła kontrolnego oraz `ansible-target` dla węzła docelowego.
 
 ![Zmiana nazwy hosta](./screenshoty/8.2.1_hostnamectl.png)
 
@@ -73,7 +70,7 @@ Następnie zaimplementowałem lokalne rozwiązywanie nazw. Zaktualizowałem mapo
 
 ![Konfiguracja DNS](./screenshoty/8.2.3_dns.png)
 
-Mając przygotowaną spójną warstwę sieciową, przystąpiłem do napisania pliku inwentaryzacji (Inventory) o nazwie `inventory.ini`. Podzieliłem architekturę na dwie logiczne grupy: `[Orchestrators]`, gdzie zdefiniowałem maszynę główną nakazując jej połączenie lokalne (`ansible_connection=local`), oraz `[Endpoints]` reprezentującą węzły wykonawcze.
+Mając przygotowaną spójną warstwę sieciową, przystąpiłem do napisania pliku inwentaryzacji o nazwie `inventory.ini`. Podzieliłem architekturę na dwie logiczne grupy: `[Orchestrators]`, gdzie zdefiniowałem maszynę główną nakazując jej połączenie lokalne (`ansible_connection=local`), oraz `[Endpoints]` reprezentującą węzły wykonawcze.
 
 ![Plik inventory](./screenshoty/8.2.4_inventoryini.png)
 
@@ -88,7 +85,7 @@ Aby potwierdzić operacyjność tak zdefiniowanego klastra, wywołałem poleceni
 
 ## 3. Zdalne wywoływanie procedur: Playbooki i analiza idempotencji
 
-Odchodząc od jednorazowych komend wywoływanych z terminala (ad-hoc), przystąpiłem do tworzenia deklaratywnych Playbooków zapisanych w formacie YAML. Pierwszy playbook został podzielony na dwa bloki zadań (plays). Pierwszy z nich ma za zadanie wysłać kontrolny sygnał ping do wszystkich maszyn w inwentarzu (`hosts: all`). Drugi blok wykorzystuje moduł `ansible.builtin.copy`, wymuszając przesłanie lokalnego pliku `inventory.ini` bezpośrednio na maszyny przynależące wyłącznie do grupy docelowej `Endpoints`.
+Odchodząc od jednorazowych komend wywoływanych z terminala, przystąpiłem do tworzenia deklaratywnych Playbooków zapisanych w formacie YAML. Pierwszy playbook został podzielony na dwa bloki zadań. Pierwszy z nich ma za zadanie wysłać kontrolny sygnał ping do wszystkich maszyn w inwentarzu (`hosts: all`). Drugi blok wykorzystuje moduł `ansible.builtin.copy`, wymuszając przesłanie lokalnego pliku `inventory.ini` bezpośrednio na maszyny przynależące wyłącznie do grupy docelowej `Endpoints`.
 
 ![Zadanie 1](./screenshoty/8.3.1_zadanie_1.png)
 
@@ -100,18 +97,18 @@ Kluczowym konceptem w podejściu Infrastructure as Code jest **idempotencja** �
 
 ![Drugie uruchomienie playbooka](./screenshoty/8.3.3_run_second_time.png)
 
-W dalszej części laboratorium rozbudowałem playbook o drugie zadanie konfiguracyjne (Administracja systemem). Wykorzystałem moduł `apt` do aktualizacji pamięci podręcznej i pełnej aktualizacji pakietów (`upgrade: dist`). Następnie użyłem modułu `service` w pętli (`loop`), aby wymusić restart kluczowych usług: `ssh` oraz `rngd`. Ponieważ na maszynie o minimalnej instalacji (jak mój `ansible-target`) usługa generatora liczb losowych `rngd` mogła nie być w ogóle zainstalowana, prewencyjnie zastosowałem dyrektywę `ignore_errors: yes`, co zapobiega przerwaniu całego potoku w razie błędu.
+W dalszej części laboratorium rozbudowałem playbook o drugie zadanie konfiguracyjne - administrację systemem. Wykorzystałem moduł `apt` do aktualizacji pamięci podręcznej i pełnej aktualizacji pakietów `upgrade: dist`. Następnie użyłem modułu `service` w pętli `loop`, aby wymusić restart kluczowych usług: `ssh` oraz `rngd`. Ponieważ na maszynie o minimalnej instalacji, jak `ansible-target`, usługa generatora liczb losowych `rngd` mogła nie być w ogóle zainstalowana, prewencyjnie zastosowałem dyrektywę `ignore_errors: yes`, co zapobiega przerwaniu całego potoku w razie błędu.
 
 ![Zadanie 2](./screenshoty/8.3.4_zadanie_2.png)
 
-Uruchomienie tego playbooka idealnie potwierdziło założenia. Aktualizacja pakietów APT oraz restart demona SSH powiodły się (status `changed`). Przy próbie restartu `rngd` Ansible zgłosiło spodziewany błąd (`Could not find the requested service rngd`). Dzięki zastosowanej klauzuli ignorowania błędów, potok operacji nie uległ awarii (komunikat `...ignoring`) i zakończył się poprawnym podsumowaniem z flagą `ignored=1`.
+Uruchomienie tego playbooka idealnie potwierdziło założenia. Aktualizacja pakietów APT oraz restart demona SSH powiodły się - status `changed`. Przy próbie restartu `rngd` Ansible zgłosiło spodziewany błąd `Could not find the requested service rngd`. Dzięki zastosowanej klauzuli ignorowania błędów, potok operacji nie uległ awarii - komunikat `...ignoring`, i zakończył się poprawnym podsumowaniem z flagą `ignored=1`.
 
 ![Połowiczny sukces operacji](./screenshoty/8.3.5_half_success_OK.png)
 
 
 ## 4. Zarządzanie cyklem życia artefaktu: Role i integracja z Dockerem
 
-Utrzymywanie wszystkich zadań w jednym gigantycznym pliku YAML to znany antywzorzec. Aby przygotować zautomatyzowane wdrożenie, rozpocząłem od stworzenia testowego artefaktu – skompresowanego pliku tekstowego `input.xz`. Następnie zrefaktoryzowałem projekt, wykorzystując wbudowane polecenie `ansible-galaxy role init deploy_xz_app`. Generuje to ustandaryzowaną strukturę podfolderów (m.in. `tasks`, `vars`, `handlers`, `meta`), która ułatwia reużywalność kodu. 
+Utrzymywanie wszystkich zadań w jednym pliku YAML to antywzorzec. Aby przygotować zautomatyzowane wdrożenie, rozpocząłem od stworzenia testowego artefaktu – skompresowanego pliku tekstowego `input.xz`. Następnie zrefaktoryzowałem projekt, wykorzystując wbudowane polecenie `ansible-galaxy role init deploy_xz_app`. Generuje to ustandaryzowaną strukturę podfolderów m.in. `tasks`, `vars`, `handlers`, `meta`, która ułatwia reużywalność kodu. 
 
 ![Tworzenie artefaktu i struktury ról](./screenshoty/8.4.1_create_structure.png)
 
@@ -120,18 +117,18 @@ W pliku `meta/main.yml` uzupełniłem podstawowe metadane, takie jak autor i opi
 ![Edycja main.yml](./screenshoty/8.4.2_edit_main.png)
 
 Główną logikę wdrożeniową zdefiniowałem w pliku `tasks/main.yml`. Zaprojektowałem w nim proces składający się z 6 precyzyjnych kroków:
-1. **Sanity Check:** Sprawdzenie dostępnego miejsca na dysku docelowym poleceniem `df -h /` (z klauzulą `ignore_errors`).
-2. **Instalacja Dockera:** Zapewnienie środowiska uruchomieniowego poprzez instalację pakietu `docker.io` oraz upewnienie się, że usługa działa (`state: started`).
-3. **Przygotowanie środowiska:** Utworzenie docelowego katalogu roboczego (`/home/ansible/app_deploy`) i skopiowanie do niego artefaktu `input.xz`.
+1. **Sanity Check:** Sprawdzenie dostępnego miejsca na dysku docelowym poleceniem `df -h /` z klauzulą `ignore_errors`.
+2. **Instalacja Dockera:** Zapewnienie środowiska uruchomieniowego poprzez instalację pakietu `docker.io` oraz upewnienie się, że usługa działa - `state: started`.
+3. **Przygotowanie środowiska:** Utworzenie docelowego katalogu roboczego `/home/ansible/app_deploy` i skopiowanie do niego artefaktu `input.xz`.
 4. **Zarządzanie kontenerem:** Pobranie bazowego obrazu `ubuntu:22.04` i uruchomienie w nim potoku komend. Kontener mapuje przygotowany wcześniej wolumen, instaluje program `xz-utils` za pomocą wewnętrznego menedżera `apt`, a następnie dekompresuje artefakt do pliku `out.txt`.
 5. **Weryfikacja:** Użycie modułu `stat` do sprawdzenia, czy plik `out.txt` faktycznie pojawił się na serwerze docelowym. Zarejestrowana zmienna warunkuje wywołanie modułu `debug`, który wypisuje komunikat o sukcesie.
-6. **Czyszczenie (Teardown):** Zatrzymanie kontenera, jego usunięcie oraz całkowite skasowanie katalogu roboczego na serwerze docelowym (`state: absent`).
+6. **Czyszczenie (Teardown):** Zatrzymanie kontenera, jego usunięcie oraz całkowite skasowanie katalogu roboczego na serwerze docelowym - `state: absent`.
 
 ![Plik z zadaniami A](./screenshoty/8.4.3a_task.png)
 
 ![Plik z zadaniami B](./screenshoty/8.4.3b_task.png)
 
-Mając gotową Rolę, utworzyłem zwięzły plik wdrożeniowy (Master Deploy), który instruował Ansible do uruchomienia roli `deploy_xz_app` na wszystkich hostach w grupie `Endpoints`.
+Mając gotową Rolę, utworzyłem zwięzły plik wdrożeniowy, który instruował Ansible do uruchomienia roli `deploy_xz_app` na wszystkich hostach w grupie `Endpoints`.
 
 ![Wdrożenie master](./screenshoty/8.4.4_master_deploy.png)
 
@@ -140,16 +137,15 @@ Wykonanie głównego playbooka zakończyło się fenomenalnym rezultatem. Ansibl
 ![Wszystko działa LGTM](./screenshoty/8.4.5_LGTM!.png)
 
 ### Wnioski
-Wykonane laboratorium ukazuje radykalną przewagę systematycznego podejścia Infrastructure as Code nad ręcznym logowaniem się na maszyny. Główne wnioski z przeprowadzonych prac to:
-* **Idempotencyjność i obsługa błędów:** Narzędzie pozwala nie tylko powtarzać te same wdrożenia bez obawy o awarię systemu, ale także bezpiecznie radzić sobie z brakiem oczekiwanych zależności (np. wykorzystując `ignore_errors` przy brakującej usłudze systemowej).
+Wykonane laboratorium ukazuje przewagę systematycznego podejścia Infrastructure as Code nad ręcznym logowaniem się na maszyny. Główne wnioski z przeprowadzonych prac to:
+* **Idempotencyjność i obsługa błędów:** Narzędzie pozwala nie tylko powtarzać te same wdrożenia bez obawy o awarię systemu, ale także bezpiecznie radzić sobie z brakiem oczekiwanych zależności, np. wykorzystując `ignore_errors` przy brakującej usłudze systemowej.
 * **Bezagentowość:** Wszystkie te zaawansowane konfiguracje, łącznie z budowaniem struktury Dockera, wykonują się w pełni po protokole SSH, bez instalacji dodatkowych programów szpiegujących/agentów na serwerach docelowych.
 * **Modularyzacja z Ansible Galaxy:** Rozbicie płaskiego pliku YAML na ustrukturyzowaną Rolę drastycznie zwiększa czytelność logiki wdrożeniowej, pozwala na jej proste wersjonowanie w systemach Git i bezproblemowe użycie w potokach Continuous Deployment (CI/CD).
 
 ## Lab 09: Pliki odpowiedzi dla wdrożeń nienadzorowanych (Kickstart)
-
 ## 1. Wstęp i pozyskanie bazowego pliku odpowiedzi
 
-Celem laboratorium było zautomatyzowanie procesu instalacji (provisioningu) systemu operacyjnego dla maszyny docelowej, w tym przypadku Fedory 44 (Server Edition). Wdrożenia nienadzorowane (unattended installations) eliminują konieczność ręcznego "klikania" w instalatorze, co jest fundamentem w środowiskach chmurowych i potokach CI/CD.
+Celem laboratorium było zautomatyzowanie procesu instalacji systemu operacyjnego dla maszyny docelowej, w tym przypadku Fedory 44 Server Edition. Wdrożenia nienadzorowane eliminują konieczność ręcznego "klikania" w instalatorze, co jest fundamentem w środowiskach chmurowych i potokach CI/CD.
 
 Instalator systemu z rodziny Red Hat (Anaconda) po każdej udanej ręcznej instalacji generuje plik `anaconda-ks.cfg` w katalogu domowym użytkownika `root`. Postanowiłem wykorzystać ten mechanizm. W pierwszej kolejności zainstalowałem system referencyjny, a następnie, korzystając z protokołu SCP, pobrałem wygenerowany plik na moją maszynę kontrolną (hosta) w celu jego dalszej modyfikacji.
 
@@ -160,11 +156,11 @@ Instalator systemu z rodziny Red Hat (Anaconda) po każdej udanej ręcznej insta
 
 ## 2. Przygotowanie infrastruktury wirtualnej i hostingu pliku
 
-Aby nowa maszyna mogła pobrać plik odpowiedzi z sieci podczas rozruchu instalatora, musiałem udostępnić zmodyfikowany plik Kickstart (`ks.cfg`) oraz zbudowany artefakt w sieci lokalnej. Wykorzystałem do tego wbudowany w język Python moduł serwera HTTP. Będąc w katalogu z plikami, uruchomiłem serwer na porcie 8000 komendą `python3 -m http.server 8000`.
+Aby nowa maszyna mogła pobrać plik odpowiedzi z sieci podczas rozruchu instalatora, musiałem udostępnić zmodyfikowany plik Kickstart `ks.cfg` oraz zbudowany artefakt w sieci lokalnej. Wykorzystałem do tego wbudowany w język Python moduł serwera HTTP. Będąc w katalogu z plikami, uruchomiłem serwer na porcie 8000 komendą `python3 -m http.server 8000`.
 
 ![Serwer Python HTTP](./screenshoty/9.2.1_prepare_for_python_host.png)
 
-Następnie skonfigurowałem docelową maszynę wirtualną w menedżerze Hyper-V. Zgodnie z dobrymi praktykami i wymaganiami środowiskowymi, upewniłem się, że jest to maszyna generacji 2 (UEFI). Wyłączyłem funkcję bezpiecznego rozruchu (Secure Boot), przydzieliłem 6 procesorów wirtualnych oraz 2048 MB pamięci RAM. Jako nośnik rozruchowy wskazałem sieciowy obraz instalacyjny (Netinst ISO) Fedory.
+Następnie skonfigurowałem docelową maszynę wirtualną w menedżerze Hyper-V. Wyłączyłem funkcję bezpiecznego rozruchu (Secure Boot), przydzieliłem 6 procesorów wirtualnych oraz 2048 MB pamięci RAM. Jako nośnik rozruchowy wskazałem sieciowy obraz instalacyjny (Netinst ISO) Fedory.
 
 ![Konfiguracja maszyny](./screenshoty/9.1.3_ks_config.png)
 
@@ -175,7 +171,7 @@ Następnie skonfigurowałem docelową maszynę wirtualną w menedżerze Hyper-V.
 
 Aby instalacja przebiegła w trybie całkowicie "bezdotykowym" i pozwalała na wielokrotne reinstalacje bez zawieszania się na prośbach o potwierdzenie, dokonałem szeregu modyfikacji w pliku `ks.cfg`:
 
-1. **Źródła sieciowe i język:** Wskazałem bezpośrednie adresy URL do repozytoriów lustrzanych Fedory (`url --mirrorlist=...`) oraz ustawiłem polski układ klawiatury i strefę czasową `Europe/Warsaw`.
+1. **Źródła sieciowe i język:** Wskazałem bezpośrednie adresy URL do repozytoriów lustrzanych Fedory - `url --mirrorlist=...` - oraz ustawiłem polski układ klawiatury i strefę czasową na `Europe/Warsaw`.
 2. **Partycjonowanie:** To krytyczny punkt wdrożeń nienadzorowanych. Użyłem dyrektyw `zerombr` (czyszczenie Master Boot Record), `clearpart --all --initlabel` (usunięcie wszystkich istniejących partycji) oraz `ignoredisk --only-use=sda`. Dzięki temu instalator nigdy nie zapyta, czy sformatować dysk przy kolejnych próbach instalacji. Automatyczny podział dysku zapewniła dyrektywa `autopart`.
 3. **Użytkownicy i Sieć:** Skonfigurowałem sieć do pobierania adresu z serwera DHCP oraz wymusiłem niestandardowy hostname `fedora-devops`. Utworzyłem również zwykłego użytkownika z uprawnieniami administratora (grupa `wheel`) o nazwie `arkbacz3`.
 4. **Zakończenie:** Dodanie flagi `eula --agreed` i `reboot` zapewniło, że maszyna nie zawiśnie na ekranie podsumowania, lecz od razu po instalacji uruchomi się ponownie.
@@ -189,21 +185,21 @@ Aby instalacja przebiegła w trybie całkowicie "bezdotykowym" i pozwalała na w
 
 Zgodnie z poleceniem, musiałem nie tylko zainstalować system, ale także automatycznie wdrożyć moją aplikację opartą o konteneryzację.
 
-W sekcji `%packages` nakazałem instalatorowi pobranie środowiska `server-product-environment` oraz zainstalowanie narzędzi Dockerowych (`moby-engine`, `docker`). 
+W sekcji `%packages` nakazałem instalatorowi pobranie środowiska `server-product-environment` oraz zainstalowanie narzędzi Dockerowych -`moby-engine`, `docker`. 
 
-Największym wyzwaniem inżynieryjnym była sekcja `%post`. Skrypty w tej sekcji wykonują się w środowisku `chroot` pod koniec instalacji. **Kluczowy problem polega na tym, że demon Dockera nie działa w trakcie działania instalatora Anaconda.** Oznacza to, że bezpośrednie wpisanie `docker run` w sekcji `%post` zakończyłoby się fatalnym błędem braku łączności z socketem Dockera.
+Największym wyzwaniem była sekcja `%post`. Skrypty w tej sekcji wykonują się w środowisku `chroot` pod koniec instalacji. **Kluczowy problem polega na tym, że demon Dockera nie działa w trakcie działania instalatora Anaconda.** Oznacza to, że bezpośrednie wpisanie `docker run` w sekcji `%post` zakończyłoby się fatalnym błędem braku łączności z socketem Dockera.
 
 Aby to obejść, zastosowałem mechanizm usług `systemd`:
 1. Włączyłem demona dockera poleceniem `systemctl enable docker` (co jest dozwolone w chroot, gdyż jedynie tworzy symlinki na przyszłość).
-2. Za pomocą komendy `wget` pobrałem mój artefakt (`input.xz` - skompresowany plik tekstowy z Jenkinsa) z serwera HTTP hosta do katalogu `/opt/projekt/`.
-3. Wygenerowałem w locie (przy użyciu `cat << EOF`) własną jednostkę systemd (`uruchom-moj-projekt.service`). Usługa ta ma dyrektywę `After=docker.service`, co gwarantuje, że uruchomi się *dopiero*, gdy system wstanie i demon Dockera będzie gotowy do pracy.
-4. Zdefiniowany w usłudze kontener (na bazie obrazu Ubuntu 22.04) mapuje wolumen, instaluje narzędzia dekompresyjne i rozpakowuje podany artefakt (`input.xz | xz -d > out.txt`).
+2. Za pomocą komendy `wget` pobrałem mój artefakt - `input.xz` - skompresowany plik tekstowy z Jenkinsa, z serwera HTTP hosta do katalogu `/opt/projekt/`.
+3. Wygenerowałem w locie, przy użyciu `cat << EOF`, własną jednostkę systemd - `uruchom-moj-projekt.service`. Usługa ta ma dyrektywę `After=docker.service`, co gwarantuje, że uruchomi się dopiero, gdy system wstanie i demon Dockera będzie gotowy do pracy.
+4. Zdefiniowany w usłudze kontener na bazie obrazu Ubuntu 22.04 mapuje wolumen, instaluje narzędzia dekompresyjne i rozpakowuje podany artefakt - `input.xz | xz -d > out.txt`.
 5. Na koniec aktywowałem nową usługę komendą `systemctl enable uruchom-moj-projekt.service`.
 
 
 ## 5. Wykonanie instalacji nienadzorowanej i weryfikacja
 
-Po uruchomieniu maszyny wirtualnej z podpiętym obrazem ISO, w menu bootloadera GRUB przerwałem domyślny proces naciskając klawisz `e` (edycja parametrów jądra). Na końcu linii inicjującej jądro (`vmlinuz`) dopisałem parametr wskazujący na mój serwer HTTP: `inst.ks=http://192.168.1.4:8000/ks.cfg`.
+Po uruchomieniu maszyny wirtualnej z podpiętym obrazem ISO, w menu bootloadera GRUB przerwałem domyślny proces naciskając klawisz `e` - edycja parametrów jądra. Na końcu linii inicjującej jądro (`vmlinuz`) dopisałem parametr wskazujący na mój serwer HTTP: `inst.ks=http://192.168.1.4:8000/ks.cfg`.
 
 ![Parametry GRUB 1](./screenshoty/9.1.6_params.png)
 
@@ -224,8 +220,8 @@ Przeszedłem do katalogu `/opt/projekt/` i wylistowałem jego zawartość. Obok 
 ## Wnioski
 Laboratorium udowodniło potęgę plików odpowiedzi w automatyzacji tworzenia infrastruktury (Infrastructure Provisioning). 
 Najważniejsze wnioski techniczne:
-* **Przewidywalność:** Posiadając plik `ks.cfg`, możemy w kilka minut odtworzyć identyczny serwer od zera, bez obawy o błąd ludzki (tzw. "literówki" podczas wpisywania haseł czy złe sformatowanie partycji).
-* **Niezmienna Infrastruktura (Immutable Infrastructure):** Koncepcja łączenia Kickstartu (konfiguracja systemu) z Ansible i Dockerem pozwala traktować same maszyny wirtualne jako "bydło, a nie zwierzęta domowe" (cattle vs pets). W razie awarii systemu operacyjnego nie naprawiamy go, lecz wdrażamy nową, czystą maszynę w sposób nienadzorowany.
+* **Przewidywalność:** Posiadając plik `ks.cfg`, możemy w kilka minut odtworzyć identyczny serwer od zera, bez obawy o błąd ludzki - tzw. "literówki" podczas wpisywania haseł czy złe sformatowanie partycji.
+* **Niezmienna Infrastruktura (Immutable Infrastructure):** Koncepcja łączenia Kickstartu (konfiguracja systemu) z Ansible i Dockerem pozwala nam w razie awarii systemu operacyjnego odrazu wdrożyć nową, czystą maszynę w sposób nienadzorowany zamiast naprawiać poprzedniej.
 * **Ograniczenia środowiska chroot:** Zrozumienie, że skrypty `%post` instalatora wykonują się w fałszywym środowisku bez włączonego menedżera PID 1 (systemd) i usług (jak Docker), jest kluczowe w projektowaniu takich wdrożeń. Tworzenie jednostek `.service` ładujących się przy pierwszym rzeczywistym rozruchu (First-boot configuration) to poprawny i jedyny bezpieczny wzorzec projektowy w tym przypadku.
 
 # Lab 10: Wdrażanie na zarządzalne kontenery: Kubernetes
@@ -234,11 +230,11 @@ Najważniejsze wnioski techniczne:
 
 Zajęcia rozpocząłem od przygotowania środowiska uruchomieniowego Kubernetes w postaci klastra `minikube`. Jest to implementacja przeznaczona do lokalnego testowania aplikacji, tworząca środowisko klastrowe wewnątrz maszyny wirtualnej bądź kontenera.
 
-Przed samą instalacją pobrałem pliki binarne za pomocą narzędzia `curl`, a następnie zweryfikowałem ich sumy kontrolne komendą `sha256sum --check`. Wynik `OK` potwierdził integralność pobranych plików, co jest kluczowym krokiem z perspektywy bezpieczeństwa (zapobiega uruchomieniu zmodyfikowanego, złośliwego kodu).
+Przed samą instalacją pobrałem pliki binarne za pomocą narzędzia `curl`, a następnie zweryfikowałem ich sumy kontrolne komendą `sha256sum --check`. Wynik `OK` potwierdził integralność pobranych plików, co jest kluczowym krokiem z perspektywy bezpieczeństwa - zapobiega uruchomieniu zmodyfikowanego, złośliwego kodu.
 
 ![Bezpieczeństwo instalacji](./screenshoty/10.1.2_installation_safety.png)
 
-Aby środowisko działało płynnie, zmitygowałem ewentualne problemy z wymaganiami sprzętowymi, wymuszając w ustawieniach maszyny wirtualnej odpowiednią ilość przydzielonej pamięci RAM (4096 MB) oraz zasobów procesora (6 wirtualnych rdzeni). Dodatkowo podczas startu klastra zadeklarowałem sterownik Docker (`--driver=docker`).
+Aby środowisko działało płynnie, zmitygowałem ewentualne problemy z wymaganiami sprzętowymi, wymuszając w ustawieniach maszyny wirtualnej odpowiednią ilość przydzielonej pamięci RAM (4096 MB) oraz zasobów procesora (6 wirtualnych rdzeni). 
 
 ![Mitygacja wymagań](./screenshoty/10.1.1_mitigate_requirements.png)
 
@@ -246,7 +242,7 @@ Dla wygody pracy w terminalu utworzyłem alias dla głównego narzędzia adminis
 
 ![Alias kubectl](./screenshoty/10.1.3_alias.png)
 
-Następnie uruchomiłem środowisko i zweryfikowałem jego status. Polecenie `minikubctl get nodes` potwierdziło, że węzeł pracuje poprawnie w statusie `Ready` jako `control-plane`. Dodatkowo polecenie `minikubctl get pods -A` wylistowało pracujące w tle fundamentalne komponenty klastra (m.in. `kube-apiserver` czy `etcd`).
+Następnie uruchomiłem środowisko i zweryfikowałem jego status. Polecenie `minikubctl get nodes` potwierdziło, że węzeł pracuje poprawnie w statusie `Ready` jako `control-plane`. Dodatkowo polecenie `minikubctl get pods -A` wylistowało pracujące w tle fundamentalne komponenty klastra, m.in. `kube-apiserver` czy `etcd`.
 
 ![Weryfikacja węzła](./screenshoty/10.1.4_running_verification.png)
 
@@ -257,7 +253,7 @@ Na koniec tej sekcji uruchomiłem i wyeksponowałem wbudowany, graficzny panel z
 
 ## 2. Analiza kontenera i ręczne uruchomienie (Pod)
 
-Kolejnym krokiem było zdefiniowanie i przetestowanie kroku "Deploy" na platformę chmurową. Aby upewnić się, że aplikacja nie ulegnie natychmiastowemu zamknięciu po starcie, przygotowałem własny, zmodyfikowany obraz oparty na lekkim serwerze `nginx:alpine`.
+Kolejnym krokiem było zdefiniowanie i przetestowanie kroku "Deploy" na platformę chmurową. Z racji, że wybrana aplikacja nie nadawała się do pracy w kontenerze, przygotowałem własny, zmodyfikowany obraz oparty na lekkim serwerze `nginx:alpine`.
 
 Utworzyłem plik `Dockerfile`, który kopiował niestandardową stronę w formacie HTML do domyślnego katalogu serwera oraz eksponował port 80. Pozwoliło mi to w prosty sposób udowodnić na późniejszym etapie, że uruchomiony kontener to rzeczywiście mój zadeklarowany artefakt.
 
@@ -278,13 +274,13 @@ Pody w Kubernetesie otrzymują adresy IP dostępne wyłącznie wewnątrz wirtual
 
 ## 3. Przekucie wdrożenia w plik YAML (Deployment i Service)
 
-Zarządzanie imperatywne (z wiersza poleceń) jest antywzorcem w środowiskach produkcyjnych. Przeszedłem na zarządzanie deklaratywne (Infrastructure as Code), tworząc plik wdrożenia `deployment.yaml`. 
+Zarządzanie z wiersza poleceń jest antywzorcem w środowiskach produkcyjnych. Przeszedłem na zarządzanie deklaratywne (IaC), tworząc plik wdrożenia `deployment.yaml`. 
 
 W pliku zdefiniowałem m.in. oczekiwaną liczbę replik (`replicas: 4`), co instruuje kontroler Kubernetesa, aby za pomocą obiektu `ReplicaSet` zawsze utrzymywał przy życiu dokładnie cztery kopie mojego Poda, używając obrazu `moja-apka-webowa:v1` z polityką `imagePullPolicy: Never` (aby zapobiec pobieraniu z zewnętrznych rejestrów).
 
 ![Plik deployment.yaml](./screenshoty/10.1.10_deploymentyaml.png)
 
-Zastosowałem konfigurację poleceniem `minikubctl apply -f deployment.yaml`. System natychmiast utworzył żądane repliki, co zweryfikowałem odpytując klaster o dostępne Pody (`minikubctl get pods`), widząc proces ich powoływania do życia (`ContainerCreating`).
+Zastosowałem konfigurację poleceniem `minikubctl apply -f deployment.yaml`. System natychmiast utworzył żądane repliki, co zweryfikowałem odpytując klaster o dostępne Pody (`minikubctl get pods`).
 
 ![Zaaplikowany Deployment](./screenshoty/10.1.11_deploymentyaml_working.png)
 
@@ -324,13 +320,14 @@ Wykonałem szereg operacji modyfikujących plik YAML w celu przetestowania kontr
 Po zaaplikowaniu nowego pliku kontroler ReplicaSet natychmiastowo rozszerzył flotę podów. Odpytanie klastra wykazało 8 działających kontenerów z prefiksem `apka-deployment`.
 
 ![Zastosowane 8 replik](./screenshoty/10.3.2_replicas_8_applied.png)
+
 **Zmiana liczby replik na 1:** Zmodyfikowałem plik konfiguracyjny, zmniejszając wartość `replicas` do 1. Po zaaplikowaniu zmian poleceniem `minikubctl apply -f`, klaster natychmiastowo zredukował zasoby, bezpiecznie wyłączając 7 nadmiarowych kontenerów i pozostawiając przy życiu dokładnie jedną instancję usługi.
 
 ![Konfiguracja 1 replika](./screenshoty/10.3.3_replicas_1.png)
 
 ![Zastosowana 1 replika](./screenshoty/10.3.4_replicas_1_applied.png)
 
-**Zmiana liczby replik na 0 (skalowanie do zera):** Przetestowałem funkcjonalność całkowitego wygaszenia usługi (często stosowaną do optymalizacji kosztów utrzymania środowisk testowych w chmurze), ustawiając wartość `replicas: 0`. Kontroler poprawnie i płynnie zamknął wszystkie Pody przypisane do tego Deploymentu, co potwierdziło polecenie `get pods`.
+**Zmiana liczby replik na 0 (skalowanie do zera):** Przetestowałem funkcjonalność całkowitego wygaszenia usługi ustawiając wartość `replicas: 0`. Kontroler poprawnie i płynnie zamknął wszystkie Pody przypisane do tego Deploymentu, co potwierdziło polecenie `get pods`.
 
 ![Konfiguracja 0 replik](./screenshoty/10.3.5_replicas_0.png)
 
@@ -391,7 +388,7 @@ Zdefiniowałem strategię `Recreate` w dedykowanym pliku `deploy-recreate.yaml`.
 ![Recreate w Akcji](./screenshoty/10.4.5_recreate_in_action.png)
 
 2. **Rolling Update (Aktualizacja Kaskadowa)**:
-Najlepsza i domyślna strategia, którą zadeklarowałem jawnie w pliku `deploy-rolling.yaml`. Skonfigurowałem w niej dwa kluczowe parametry: `maxUnavailable: 2` (maksymalnie dwie repliki mogą być niedostępne w trakcie podmiany) oraz `maxSurge: 25%` (limit nadmiarowych podów tworzonych w trakcie aktualizacji). Obserwacja procesu wdrożenia potwierdziła, że Pody były wymieniane płynnie i kaskadowo – część przetwarzała ruch jako `Running`, podczas gdy inne przechodziły w stan `Terminating` lub `ContainerCreating`. Umożliwia to proces aktualizacji typu "Zero-Downtime".
+Domyślna strategia, którą zadeklarowałem jawnie w pliku `deploy-rolling.yaml`. Skonfigurowałem w niej dwa kluczowe parametry: `maxUnavailable: 2` (maksymalnie dwie repliki mogą być niedostępne w trakcie podmiany) oraz `maxSurge: 25%` (limit nadmiarowych podów tworzonych w trakcie aktualizacji). Obserwacja procesu wdrożenia potwierdziła, że Pody były wymieniane płynnie i kaskadowo – część przetwarzała ruch jako `Running`, podczas gdy inne przechodziły w stan `Terminating` lub `ContainerCreating`. Umożliwia to proces aktualizacji typu "Zero-Downtime".
 
 ![Rolling Config](./screenshoty/10.4.6_rolling.png)
 
@@ -402,7 +399,7 @@ Wykorzystałem etykiety (Labels) i wspólny obiekt Serwisu, aby wypuścić nową
 
 ![Canary Config](./screenshoty/10.4.8_canary.png)
 
-Wynik polecenia `get pods` pokazał obok siebie cztery pracujące stabilne instancje oraz jedną instancję kanarkową. Serwis z odpowiednim selektorem będzie równoważył ruch między wszystkie Pody, co daje ułamek ruchu dla kanarka. Gdy wersja kanarkowa okazuje się stabilna, pełne wdrożenie jest aplikowane do wariantu głównego.
+Wynik polecenia `get pods` pokazał obok siebie cztery pracujące stabilne instancje oraz jedną instancję Canary. Serwis z odpowiednim selektorem będzie równoważył ruch między wszystkie Pody, co daje ułamek ruchu dla Canary. Gdy wersja Canary okazuje się stabilna, pełne wdrożenie jest aplikowane do wariantu głównego.
 
 ![Canary w Akcji](./screenshoty/10.4.9_canary_in_action.png)
 
@@ -422,7 +419,7 @@ Wynik polecenia `get pods` pokazał obok siebie cztery pracujące stabilne insta
 
 ## 1. Wdrożenie web-serwera w dużej skali
 
-Laboratorium rozpocząłem od zmodyfikowania pliku wdrożeniowego YAML dla mojego serwera WWW. Zgodnie z wytycznymi, aby przetestować wydajność klastra oraz mechanizmy równoważenia obciążenia (Load Balancing), zdefiniowałem w pliku `deployment.yaml` początkową wielkość wdrożenia na 36 replik (`replicas: 36`). Do testu wykorzystałem mój własny, zbudowany wcześniej obraz `moja-apka-webowa:v1`.
+Laboratorium rozpocząłem od zmodyfikowania pliku wdrożeniowego YAML dla mojego serwera WWW. Zgodnie z wytycznymi, aby przetestować wydajność klastra oraz mechanizmy równoważenia obciążenia (Load Balancing), zdefiniowałem w pliku `deployment.yaml` początkową wielkość wdrożenia na 36 replik (`replicas: 36`).
 
 ![Wdrożenie 36 replik - konfiguracja](./screenshoty/11.1.1_deploy_36.png)
 
@@ -435,13 +432,13 @@ Po uruchomieniu polecenia `minikubctl apply -f deployment.yaml`, kontroler natyc
 Środowiska chmurowe oferują różnorodne poziomy abstrakcji sieciowej. W celu ich weryfikacji, przetestowałem cztery różne sposoby na dotarcie do mojej aplikacji.
 
 ### A. Eksponowanie pojedynczego poda
-Najniższym poziomem dostępu jest wpięcie się w sieć konkretnego kontenera, pomijając całkowicie Load Balancer. Wykorzystałem polecenie `minikubctl port-forward pod/apka-deployment-644ddc9c87-8l8f6 8082:80`. Operacja zakończyła się sukcesem – powłoka przekierowała ruch, a komenda `curl localhost:8082` poprawnie zwróciła kod HTML ze zmodyfikowanym nagłówkiem "Witaj w chmurze! wersja 2.0!".
+Najniższym poziomem dostępu jest wpięcie się w sieć konkretnego kontenera, pomijając całkowicie Load Balancer. Wykorzystałem polecenie `minikubctl port-forward pod/apka-deployment-644ddc9c87-8l8f6 8082:80`. Operacja zakończyła się sukcesem – powłoka przekierowała ruch, a komenda `curl localhost:8082` poprawnie zwróciła kod HTML.
 
 ![Eksponowanie Poda](./screenshoty/11.1.3_eksponowanie_pod.png)
 
 ### B. Eksponowanie Deploymentu i weryfikacja routingu (Zadanie Bonusowe)
 Kolejnym krokiem było udostępnienie poziomu wyżej – całego wdrożenia (Deploymentu) na porcie 8083. W tym wariancie to klaster decyduje, do którego z pracujących podów trafi moje zapytanie.
-Aby wykonać **zadanie bonusowe** i sprawdzić, który dokładnie pod obsłużył mój ruch, zastosowałem następujący trik inżynieryjny:
+Aby sprawdzić, który dokładnie pod obsłużył mój ruch, zastosowałem następujący trik:
 1. Wykonałem celowo zapytanie do nieistniejącej ścieżki: `curl http://localhost:8083/moj-test`.
 2. Zamiast przeglądać ręcznie logi wszystkich kontenerów, wywołałem polecenie zrzucające logi całego wdrożenia z włączonym prefiksem nazwy poda (`minikubctl logs deployment/apka-deployment --prefix`) i przefiltrowałem je poleceniem `grep "moj-test"`.
 3. System bezbłędnie wskazał, że zapytanie zostało obsłużone i odrzucone statusem HTTP 404 przez poda o identyfikatorze `apka-deployment-644ddc9c87-bczd7`.
@@ -449,7 +446,7 @@ Aby wykonać **zadanie bonusowe** i sprawdzić, który dokładnie pod obsłuży�
 ![Sprawdzenie podziału ruchu z logów](./screenshoty/11.1.4_eksponowanie_deploy_check_ktory.png)
 
 ### C. Wyeksponowanie imperatywne jako Serwis
-Eksponowanie za pomocą `port-forward` działa tylko dopóki terminal jest otwarty, co czyni to narzędziem wyłącznie debuggowym. Wdrożyłem dedykowany zasób sieciowy używając imperatywnej komendy `minikubctl expose deployment apka-deployment --name=serwis-z-komendy --port=80 --target-port=80`. 
+Eksponowanie za pomocą `port-forward` działa tylko dopóki terminal jest otwarty, co czyni to narzędziem wyłącznie debuggowym. Wdrożyłem dedykowany zasób sieciowy używając komendy `minikubctl expose deployment apka-deployment --name=serwis-z-komendy --port=80 --target-port=80`. 
 Następnie wystawiłem ten serwis na porcie 8084, dopisując flagę `--address 0.0.0.0`, co pozwoliło mi połączyć się z serwerem i podejrzeć stronę graficznie z poziomu przeglądarki mojego systemu Windows.
 
 ![Eksponowanie Serwisu z komendy](./screenshoty/11.1.4_eksponowanie_serwis.png)
@@ -485,12 +482,12 @@ Po wywołaniu `minikubctl apply -f deployment.yaml`, środowisko pobrało nową 
 Laboratorium 11 miało na celu dogłębne przetestowanie mechanizmów sieciowych (eksponowania) oraz zarządzania stanem klastra (skalowania). Na podstawie zrealizowanych punktów polecenia wyciągnąłem następujące wnioski techniczne:
 
 1. **Różnice w metodach eksponowania dostępu:**
-   * **Do jednego poda:** Użycie `port-forward` na konkretnym podzie ukazało kruchość tego rozwiązania. W klastrze pody są bytami ulotnymi (ephemeral). Jeśli ten konkretny pod ulegnie awarii, cała nasza komunikacja zostaje zerwana, mimo że obok działa 35 innych, zdrowych instancji aplikacji.
+   * **Do jednego poda:** Użycie `port-forward` na konkretnym podzie ukazało kruchość tego rozwiązania. W klastrze pody są bytami ulotnymi. Jeśli ten konkretny pod ulegnie awarii, cała nasza komunikacja zostaje zerwana, mimo że obok działa 35 innych, zdrowych instancji aplikacji.
    * **Do Deploymentu:** Przekierowanie ruchu na cały Deployment włącza wbudowany mechanizm load balancingu. Środowisko udostępnia jeden punkt wejścia, a ruch jest rozdzielany na dostępne repliki. Wciąż jest to jednak rozwiązanie doraźne (wymaga otwartego terminala z procesem tunelowania).
    * **Do Serwisu (imperatywnie vs deklaratywnie):** Serwisy to jedyny stabilny i produkcyjny sposób eksponowania aplikacji w Kubernetesie. Niezależnie od tego, czy użyjemy komendy `expose` czy pliku `service.yaml`, klaster tworzy trwały punkt styku (NodePort/ClusterIP), który dynamicznie śledzi adresy IP wszystkich naszych 36 podów za pomocą selektorów etykiet (`labels`). 
 
 2. **Zarządzanie skalą (Scale vs YAML):**
-   * Metoda imperatywna (`minikubctl scale`) jest błyskawiczna i przydaje się w sytuacjach kryzysowych (np. nagły skok ruchu). Jej wadą jest tworzenie tzw. dryftu konfiguracji (Configuration Drift) – stan faktyczny klastra przestaje zgadzać się z tym, co mamy zapisane w repozytorium.
+   * Metoda imperatywna (`minikubctl scale`) jest błyskawiczna i przydaje się w sytuacjach kryzysowychm np. nagły skok ruchu. Jej wadą jest tworzenie tzw. dryftu konfiguracji (Configuration Drift) – stan faktyczny klastra przestaje zgadzać się z tym, co mamy zapisane w repozytorium.
    * Metoda deklaratywna (edycja pliku `yaml` i `apply -f`) to wzorcowe podejście zgodne z GitOps (Infrastructure as Code). Narzędzie `diff` pozwala na audyt zmian przed ich wdrożeniem, a my mamy pełną historię tego, dlaczego i kiedy infrastruktura uległa powiększeniu.
 
 3. **Load Balancing w praktyce:**
