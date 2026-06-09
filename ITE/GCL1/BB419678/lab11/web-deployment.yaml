@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: web-deployment
 spec:
-  replicas: 12  # Ogromna liczba podów!
+  replicas: 8  # liczba podow zmieniona na 8
   selector:
     matchLabels:
       app: web-server

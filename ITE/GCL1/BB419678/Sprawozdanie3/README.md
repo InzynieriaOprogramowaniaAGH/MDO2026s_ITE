@@ -242,6 +242,9 @@ dependencies: []
 
 ```
 
+### Wnioski
+Narzędzia takie jak Ansible pozwalają na bezagentowe i deklaratywne zarządzanie konfiguracją wielu maszyn jednocześnie. Wykorzystanie plików inwentaryzacji (Inventory) oraz playbooków znacząco automatyzuje powtarzalne procesy operacyjne, takie jak aktualizacje pakietów czy wdrażanie aplikacji (np. paczek DEB w kontenerach). Z kolei mechanizm ról (Ansible Galaxy) pozwala na modularną organizację kodu, ułatwiając jego wielokrotne użycie.
+
 
 ## Temat 9
 
@@ -439,6 +442,503 @@ Skrypt ten można włączyć w środowisku Powershell jako adminstator - wynikie
 ![img](../screenshots/lab9/Zrzut%20ekranu%202026-06-06%20132418.png)
 
 
+### Wnioski
+
+Użycie plików odpowiedzi (takich jak ks.cfg) umożliwia całkowicie zautomatyzowaną, nienadzorowaną instalację systemu operacyjnego, co drastycznie skraca czas wdrażania nowych węzłów. Kluczowym wyzwaniem jest fakt, że podczas fazy instalacyjnej (w sekcji %post) usługi takie jak Docker nie są jeszcze uruchomione. Wymusza to stosowanie mechanizmów opóźnionych, takich jak skrypty "First Boot" wdrażane jako usługi systemd.  
+
+## Temat 10
+
+#### Cel zajęć - Wdrażanie oprogramowania na zarządzalne kontenery za pomocą oprogramowania Kubernetes
+
+
+W ramach ćwiczenia wykorzystałem obraz `nginx:alpine` zamiast wcześniej zbudowanego oprogramowania, gdyż pozwoli to na lepsze zobrazowanie różnych scenariuszy zmiany konfiguracji wdrożeń nowszych wersji.
+
+Na początku instaluje minikube oraz kubectl zgodnie z dokumentacją:
+
+```sh
+curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+```
+```sh
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+```
+Włączam klaster na 2 CPU i 2GB RAM:
+```sh
+minikube start --cpus=2 --memory=2048 --driver=docker
+```
+Sprawdzam dashboard (narazie jest pusty):
+```sh
+minikube dashboard &
+```
+Dodatkowo tworze prosty dockerfile dla mojej aplikacji, który zostaje później użyty do deploymentu jej różnych wersji:
+
+```dockerfile
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+```
+Na podstawie tych faktów przystępuje do czynów. Na początku ładuje wcześniej utworzony obraz do minikube, "modyfikuje" wersję programu, buduje wersje nr. 2, ładuje ją do minikube, dodaktowo tworzę trzecią "zepsutą" wersje aplikacji i ponownie ładuję ją do klastra.
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20090134.png)
+Na początku sprawdzam działanie pojedyńczego poda, gdzie przekierowuje nginx na port 8081 i sprawdzam działanie narzędziem curl:
+
+```bash
+kubectl run moj-pod --image=moj-app:v1 --port=80 --image-pull-policy=Never --labels app=moj-pod
+
+kubectl port-forward pod/moj-pod 8081:80 &
+```
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20090517.png)
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20090507.png)
 
 
 
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20090544.png)
+Jak widać, pokazuje się wersja 1 aplikacji narazie, co jest zgodne z poleceniem.
+
+Pod można usunąć poleceniem:
+
+```bash
+kubectl delete pod moj-pod
+```
+Następnie tworze plik deployment.yaml, dzięki któremu moge zautomatyzować wdrożenie wersji aplikacji na klaster:
+
+```yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab-deployment
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - name: kontener-aplikacji
+        image: moj-app:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lab-service
+spec:
+  selector:
+    app: web-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+```
+
+Tworzymy tutaj deployment, który utworzy 4 pody zawierają wersję v1 nginx. 
+Dodatkowo dodaję jeszcze serwis, który bedzie przekazywał port jednego z podów na local, dzięki czemu bedzie można sprawdzić działanie deploymentu.
+
+Włączam deployment poniższą komendą:
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20091137.png)
+
+Sprawdzam status deploymentu - czy nie ma żadnych błędów (nie ma):
+
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20091159.png)
+
+Dodatkowo na dashboardzie widać nasze 4 pody z deploymentu, każdy z nich używa obrazu moj-app:v1, co jest zgodne z plikiem wdrożenia.
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20091219.png)
+
+Przekazuje porty i sprawdzam działanie deploymentu - jak widać działa poprawnie na porcie 8082.
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20091511.png)
+
+Następnie zmieniam liczbę podów w wdrożeniu z 4 na 8 za pomocą polecenienia `kubectl scale` i ponownie sprawdzam ich liczbę. Analogicznie można skalować w dół oraz do 0, daje to podobne wynki do tego:
+
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20091626.png)
+
+Aktualizuję obraz do wersji moj-app:v2 za pomocą polecenia `kubectl set image` oraz sprawdzam stan klastra poleceniem `kubectl rollout status` 
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20091700.png)
+
+Ponownie przekierowuje porty i sprawdzam działanie za pomocą narzędzia curl - wynikiem jest komunikat "Wersja V2 - po aktualizacji" - pody poprawnie zmieniły obraz w ramach modyfikacji deploymentu.
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20092234.png)
+
+Dodatkowo na dashboardzie wszystkie pody początkowego deploymentu teraz mają obraz V2, natomiast widzimy dwa deploymenty w ReplicaSet, jeden V1, drugi V2.
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20092308.png)
+
+Następnie zmieniam wersje obrazu na V3 w celu sprawdzenia czy klaster przyjmie wadliwy obraz - wynikiem jest zepsucie połowy kontenerów, w związku z czym  trzeba zrobić `kubectl rollout undo` aby powrócić do poprzedniego stanu.
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-05-29%20092743.png)
+
+Następnie tworzę prosty skrypt, który sprawdza staus deploymentu i zwraca odpowiedni komunikat:
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-06-02%20224727.png)
+
+Prechodzę do kwestii rodzajów wdrożeń - zacznę od recreate. Ten typ wdrożenia zabije wszystkie pody ze starą wersją, po czym podnosi je z nowszą wersją oprogramowania:
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab-deployment
+spec:
+  replicas: 4
+  strategy:
+      type: Recreate
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - name: kontener-aplikacji
+        image: moj-app:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lab-service
+spec:
+  selector:
+    app: web-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-06-02%20225434.png)
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-06-02%20225521.png)
+
+Kolejny jest rolling update, gdzie określona część kontenerów zostanie podmnieniona w płynny sposób, a reszta pozostanie w tym czasie w wersji poprzedniej, aby uniknąć przerwy w dostarczanku usług.
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab-deployment
+spec:
+  replicas: 4
+  strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 25%  # 1 kontener przy 4 replikach
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - name: kontener-aplikacji
+        image: moj-app:v2
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lab-service
+spec:
+  selector:
+    app: web-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+Wynikiem tego jest 3 kontenery w wersji v2 oraz 1 w wersji v1, który pod koniec zmienia się w kontener wersji v2.
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-06-02%20230424.png)
+
+Na koniec mamy deployment typu canary, gdzie najpierw musimy wyłączyć wszystkie pody podchodzący pod nasz pierwotny deployment. Ten typ wdrożeń polega na tagach, gdzie tylko ustalona część klientów ma dostęp do podów z nowszą wersją oprogramowania, w porównaniu do Rolling Update to przejście na nowszą wersję jest prawie natychmiastowe, oczywiscie po poprawnie zaliczonym zbiorze testów.
+
+Do zrobienia wdrożenia ponownie modfyikujemy nasz plik wdrożenia:
+
+```yml
+
+---
+# (Wspólny punkt wejścia)
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary-service
+spec:
+  selector:
+    app: aplikacja-lab  # Złapie wszystkie pody z tą etykietą
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+# wdrozenie stabilne v1 - 75% ruchu
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-stable
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aplikacja-lab
+      track: stable       # Unikalna etykieta stabilna
+  template:
+    metadata:
+      labels:
+        app: aplikacja-lab
+        track: stable
+    spec:
+      containers:
+      - name: kontener
+        image: moj-app:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+
+---
+# wdrozenie "canary" - 25% ruchu
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aplikacja-lab
+      track: canary       # Unikalna etykieta kanarka
+  template:
+    metadata:
+      labels:
+        app: aplikacja-lab
+        track: canary
+    spec:
+      containers:
+      - name: kontener
+        image: moj-app:v2
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+
+```
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-06-02%20230845.png)
+
+![img](../screenshots/lab10/Zrzut%20ekranu%202026-06-02%20231151.png)
+
+Dla wersji "stable" przekazujemy 75% ruchu użytkowników, natomiast reszta idzie na nasze pody z tagiem "canary". Dodatkowo sprawdzam za pomocą testowego poda czy rozkład zapytań i odpowiedzi zgadza się z plikiem konfiguracyjnym:
+
+```sh
+kubectl run test-pod --rm -i --tty --image=curlimages/curl -- sh
+All commands and output from this session will be recorded in container logs, including credentials and sensitive information passed through the command prompt.
+If you don't see a command prompt, try pressing enter.
+
+$ for i in $(seq 1 10); do curl -s http://canary-service; echo ""; sleep 0.5; done
+
+<h1>To jest wersja V1 aplikacji na laboratoria kubernetes!</h1>
+<h1>Wersja V2 - po aktualizacji</h1>
+
+<h1>To jest wersja V1 aplikacji na laboratoria kubernetes!</h1>
+<h1>To jest wersja V1 aplikacji na laboratoria kubernetes!</h1>
+<h1>To jest wersja V1 aplikacji na laboratoria kubernetes!</h1>
+<h1>Wersja V2 - po aktualizacji</h1>
+
+<h1>To jest wersja V1 aplikacji na laboratoria kubernetes!</h1>
+<h1>To jest wersja V1 aplikacji na laboratoria kubernetes!</h1>
+<h1>Wersja V2 - po aktualizacji</h1>
+
+<h1>To jest wersja V1 aplikacji na laboratoria kubernetes!</h1>
+ 
+$
+```
+Widać, że mamy tutaj właśnie interakcje z podami "stable" oraz "canary".
+Stosunek poszczególnych odpowiedzi zależy pewnie od load balancera i może być niederministyczny.
+
+### Wnioski
+
+Obiekty typu Deployment abstrakcyjnie zarządzają podami, dbając o utrzymanie pożądanego stanu klastra (np. zdefiniowanej liczby replik). Kubernetes natywnie wspiera bezpieczne aktualizacje wersji aplikacji, a wbudowany mechanizm historii (rollout history i undo) pozwala na błyskawiczne wycofanie zmian w przypadku wdrożenia wadliwego obrazu. Różne strategie (Recreate, Rolling Update, Canary) pozwalają dostosować proces wdrożenia do wymagań biznesowych, balansując między brakiem dostępności a płynnym przenoszeniem ruchu.
+
+
+## Temat 11
+
+#### Kubernetes - ciąg dalszy 
+
+Na podstawie wcześniej utworzonego klastra z aplikacją nginx próbuje wyeksponować na różne sposoby. Na początku mam ustawioną liczbę podów na 12, aby nie zapchać całego RAM'u maszyny wirtualnej. Dodatkowo modyfikuje plik deployment'u - dodaje wyświetlanie identyfikatora każdego poda przy zapytaniu http:
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 12  # Ogromna liczba podów!
+  selector:
+    matchLabels:
+      app: web-server
+  template:
+    metadata:
+      labels:
+        app: web-server
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:alpine
+        # Pod wpisuje swoją nazwę na stronę WWW
+        command: ["/bin/sh", "-c"]
+        args: ["echo \"<h1>Odpowiada Pod: $HOSTNAME</h1>\" > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"]
+        ports:
+        - containerPort: 80
+```
+
+![img](../screenshots/lab11/Zrzut%20ekranu%202026-06-03%20091419.png)
+
+Najpierw przekierowuje porty z jednego poda:
+
+![img](../screenshots/lab11/Zrzut%20ekranu%202026-06-03%20091855.png)
+
+Widać, że pod poprawnie odpowiada identyfikatorem nadanym poprzez deployment:
+
+![img](../screenshots/lab11/Zrzut%20ekranu%202026-06-03%20091904.png)
+
+Tak samo robie następnie dla całego deploymentu - to przypisze mi dokładnie jeden pod należący do klastra:
+
+![img](../screenshots/lab11/Zrzut%20ekranu%202026-06-03%20092236.png)
+
+Wynkiem jest ponownie odpowiedź z identyfikatorem poda:
+
+![img](../screenshots/lab11/Zrzut%20ekranu%202026-06-03%20092246.png)
+
+
+Dodatkowo jeszcze można to zrobić na 2 sposoby:
+
+- poleceniem:
+``` kubectl expose deployment web-deployment --name=web-service-cmd --port=80 --target-port=80```
+
+- oddzielnym plikiem yaml:
+
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service-yaml
+spec:
+  selector:
+    app: web-server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+Ponownie tworze tymczasowy pod żeby przetestować działanie tej zmiany:
+
+```
+bartosz123@ansible-master:~/MDO2026s_ITE$ kubectl run test-pod --rm -i --tty --image=curlimages/curl -- sh
+All commands and output from this session will be recorded in container logs, including credentials and sensitive information passed through the command prompt.
+If you don't see a command prompt, try pressing enter.
+~ $ for i in $(seq 1 10); do curl -s http://web-service-yaml; done
+<h1>Odpowiada Pod: web-deployment-787c5b74bc-hvt8g</h1>
+<h1>Odpowiada Pod: web-deployment-787c5b74bc-59tdf</h1>
+<h1>Odpowiada Pod: web-deployment-787c5b74bc-59tdf</h1>
+<h1>Odpowiada Pod: web-deployment-787c5b74bc-sjl7x</h1>
+<h1>Odpowiada Pod: web-deployment-787c5b74bc-59tdf</h1>
+<h1>Odpowiada Pod: web-deployment-787c5b74bc-qwdtx</h1>
+<h1>Odpowiada Pod: web-deployment-787c5b74bc-hvt8g</h1>
+<h1>Odpowiada Pod: web-deployment-787c5b74bc-kx44x</h1>
+<h1>Odpowiada Pod: web-deployment-787c5b74bc-sw6fv</h1>
+<h1>Odpowiada Pod: web-deployment-787c5b74bc-5jtn7</h1>
+```
+Jak widać, zwracane są pody o różnych identyfikatorach należących do deploymentu.
+
+
+Na koniec ponownie przeskalowuje klaster:
+
+
+- za pomocą polecenia scale:
+
+```sh
+bartosz123@ansible-master:~/MDO2026s_ITE/ITE/GCL1/BB419678/lab11$ kubectl scale deployment web-deployment --replicas=10
+deployment.apps/web-deployment scaled
+bartosz123@ansible-master:~/MDO2026s_ITE/ITE/GCL1/BB419678/lab11$ kubectl get pods
+NAME                              READY   STATUS    RESTARTS   AGE
+test-pod                          1/1     Running   0          6m42s
+web-deployment-787c5b74bc-59tdf   1/1     Running   0          111m
+web-deployment-787c5b74bc-5jtn7   1/1     Running   0          111m
+web-deployment-787c5b74bc-hvt8g   1/1     Running   0          111m
+web-deployment-787c5b74bc-hww2v   1/1     Running   0          111m
+web-deployment-787c5b74bc-j9k2w   1/1     Running   0          111m
+web-deployment-787c5b74bc-kx44x   1/1     Running   0          111m
+web-deployment-787c5b74bc-qwdtx   1/1     Running   0          111m
+web-deployment-787c5b74bc-sw6fv   1/1     Running   0          111m
+web-deployment-787c5b74bc-thnkb   1/1     Running   0          111m
+web-deployment-787c5b74bc-zn4v5   1/1     Running   0          111m
+```
+
+- za pomocą ponownie zmodyfikowanego pliku yaml:
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 8  # liczba podow zmieniona na 8
+  selector:
+    matchLabels:
+      app: web-server
+  template:
+    metadata:
+      labels:
+        app: web-server
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:alpine
+        # Pod wpisuje swoją nazwę na stronę WWW
+        command: ["/bin/sh", "-c"]
+        args: ["echo \"<h1>Odpowiada Pod: $HOSTNAME</h1>\" > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"]
+        ports:
+        - containerPort: 80
+```
+
+```sh
+bartosz123@ansible-master:~/MDO2026s_ITE/ITE/GCL1/BB419678/lab11$ kubectl apply -f web-deployment.yaml 
+deployment.apps/web-deployment configured
+bartosz123@ansible-master:~/MDO2026s_ITE/ITE/GCL1/BB419678/lab11$ kubectl get pods
+NAME                              READY   STATUS    RESTARTS   AGE
+test-pod                          1/1     Running   0          8m15s
+web-deployment-787c5b74bc-59tdf   1/1     Running   0          113m
+web-deployment-787c5b74bc-hvt8g   1/1     Running   0          113m
+web-deployment-787c5b74bc-hww2v   1/1     Running   0          113m
+web-deployment-787c5b74bc-j9k2w   1/1     Running   0          113m
+web-deployment-787c5b74bc-qwdtx   1/1     Running   0          113m
+web-deployment-787c5b74bc-sw6fv   1/1     Running   0          113m
+web-deployment-787c5b74bc-thnkb   1/1     Running   0          113m
+web-deployment-787c5b74bc-zn4v5   1/1     Running   0          113m
+```
+
+### Wnioski
+
+Kubernetes udostępnia elastyczne metody eksponowania usług na zewnątrz – od bezpośredniego przekierowania portów (port-forwarding) dla pojedynczego poda, aż po abstrakcyjne serwisy (Service) rozkładające ruch na całe wdrożenie. Skalowanie zasobów w klastrze można realizować zarówno imperatywnie (polecenie scale), jak i deklaratywnie (aktualizacja pliku YAML), przy czym podejście deklaratywne jest preferowane ze względu na możliwość trzymania infrastruktury w kodzie (Infrastructure as Code).

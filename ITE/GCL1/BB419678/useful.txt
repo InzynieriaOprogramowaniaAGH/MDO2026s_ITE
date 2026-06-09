@@ -2,7 +2,7 @@
 
 ITE/GCL1/BB419678../screenshots/lab1-4/Zrzut\s+ekranu\s+(.*?)\s+(.*)\.png
 
-ITE/GCL1/BB419678/screenshots/lab10/Zrzut\s+ekranu\s+(.*?)\s+(.*)\.png
+ITE/GCL1/BB419678/screenshots/lab11/Zrzut\s+ekranu\s+(.*?)\s+(.*)\.png
 
 ![img](../screenshots/lab1-4/Zrzut%20ekranu%20$1%20$2.png)
 
