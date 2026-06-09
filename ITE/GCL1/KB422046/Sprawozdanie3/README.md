@@ -1,6 +1,9 @@
 # Sprawozdanie 3
 
-[historia poleceń](command_history.txt)
+#### Informacje wstępne
+Stanowisko pracy obejmuje trzy maszyny wirtualne postawione w Hyper-v. Pierwsza (używana do wszystkich wcześniejszych laboratoriów, przemianowana na *ansible-master*) i druga (utworzona na potrzeby ósmego laboratorium, *ansible-target*) na bazie obrazu Ubuntu Serwer 24.04.4, a trzecia (utworzona na potrzeby dziewiątego laboratorium, *fedora-vm*) - Fedora Server 44. Do pracy wykorzystano edytor VS Code połączony zdalnie z każdą z maszyn oraz program FileZilla dla ułatwionego przesyłania plików.
+
+Wszystkie zawarte w poniższym sprawozdaniu polecenia wykonane zostały z poziomu wbudowanego terminala VS Code. Szczegółowa historia poleceń została zawarta w oddzielnym [pliku](command_history.txt).
 
 ## Laboratorium 8
 
