@@ -7,8 +7,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 2   # Parametr > 1
-      maxSurge: 25%       # Parametr > 20% (1 dodatkowy pod dla klastra o wielkości 4)
+      maxUnavailable: 2   
+      maxSurge: 25%       
   selector:
     matchLabels:
       app: express-rolling
