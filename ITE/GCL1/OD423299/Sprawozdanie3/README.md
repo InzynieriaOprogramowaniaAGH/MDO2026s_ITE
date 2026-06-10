@@ -1,4 +1,4 @@
-# Sprawozdanie z laboratoriów 8–11
+# Sprawozdanie z laboratoriów 8-11
 
 ## Lab 8
 
@@ -25,7 +25,7 @@ Test połączenia ping:
 
 ![image](Sprawozdanie3/6.png)
 
-**Playbook – podstawowe zadania**
+**Playbook - podstawowe zadania**
 
 Plik `setup.yml`:
 
@@ -61,7 +61,7 @@ Wynik wykonania playbooka:
 
 ![image](Sprawozdanie3/9.png)
 
-**Zarządzanie artefaktem – kontener**
+**Zarządzanie artefaktem - kontener**
 
 Playbook pobiera artefakt z Jenkinsa, kopiuje plik `.deb` do maszyny docelowej, instaluje Dockera, uruchamia kontener i weryfikuje działanie:
 
@@ -93,7 +93,7 @@ Playbook pobiera artefakt z Jenkinsa, kopiuje plik `.deb` do maszyny docelowej, 
       - "/tmp/app.deb:/tmp/app.deb"
     command: bash -c "apt-get update && apt-get install -y /tmp/app.deb && zlib-tool"
 
-- name: Sanity check – weryfikacja czy kontener działa
+- name: Sanity check - weryfikacja czy kontener działa
   ansible.builtin.assert:
     that:
       - "container_info.container.State.Running"
@@ -521,7 +521,7 @@ Pody z obrazem `broken` (nazwy `bcc648489-...`) są w stanie `ContainerCreating`
 kubectl get pods
 ```
 
-Pody z obrazem `broken` (nazwy `6ddb64574-...`) są w stanie `Error`. Pojawiają się restarty (2 restarty w ciągu 28 sekund). To typowe zachowanie dla kontenera, który kończy pracę z błędem – Kubernetes próbuje go ponownie uruchomić.
+Pody z obrazem `broken` (nazwy `6ddb64574-...`) są w stanie `Error`. Pojawiają się restarty (2 restarty w ciągu 28 sekund). To typowe zachowanie dla kontenera, który kończy pracę z błędem - Kubernetes próbuje go ponownie uruchomić.
 
 ![image](Sprawozdanie3/54.png)
 
@@ -657,9 +657,9 @@ kubectl apply -f deploy-canary-test.yaml
 Po ich wdrożeniu uruchomiono polecenie `kubectl get pods --show-labels`, aby potwierdzić, że pody mają przypisane odpowiednie etykiety `track=canary` oraz `track=stable`.
 
 
-- **Recreate** – pody są usuwane i tworzone od nowa.
-- **Rolling Update** – pody są wymieniane stopniowo.
-- **Canary** – umożliwia testowanie nowej wersji na małej liczbie podów obok stabilnej wersji. Etykiety `track: canary` i `track: stable` pozwalają na selektywne kierowanie ruchu.
+- **Recreate** - pody są usuwane i tworzone od nowa.
+- **Rolling Update** - pody są wymieniane stopniowo.
+- **Canary** - umożliwia testowanie nowej wersji na małej liczbie podów obok stabilnej wersji. Etykiety `track: canary` i `track: stable` pozwalają na selektywne kierowanie ruchu.
 
 
 ![image](Sprawozdanie3/61.png)
@@ -706,7 +706,7 @@ kubectl apply -f lab11-deployment.yaml
 
 #### Krok 2: Status podów po wdrożeniu
 
-Po chwili sprawdzono stan podów – wszystkie 36 podów znajdowało się w stanie `ContainerCreating`. Był to efekt pobierania obrazów i uruchamiania kontenerów na klastrze.
+Po chwili sprawdzono stan podów - wszystkie 36 podów znajdowało się w stanie `ContainerCreating`. Był to efekt pobierania obrazów i uruchamiania kontenerów na klastrze.
 
 ```bash
 kubectl get pods -w
@@ -748,7 +748,7 @@ kubectl port-forward svc/oskar-service-c11 8883:8888 --address 0.0.0.0
 
 #### Krok 7: Weryfikacja działania przez serwis
 
-Ponownie otworzono przeglądarkę – strona `[ KONTENER AKTYWNY ]` była dostępna pod adresem `http://localhost:8883`. Oznacza to, że Service poprawnie kieruje ruch do jednego z podów deploymentu.
+Ponownie otworzono przeglądarkę - strona `[ KONTENER AKTYWNY ]` była dostępna pod adresem `http://localhost:8883`. Oznacza to, że Service poprawnie kieruje ruch do jednego z podów deploymentu.
 
 ![image](Sprawozdanie3/68.png)
 
@@ -788,7 +788,7 @@ Różnica widoczna w linii `replicas: 5` wobec `replicas: 36` w oryginalnym plik
 
 #### Krok 11: Sprawdzenie podów po skalowaniu
 
-Po wykonaniu `scale` sprawdzono listę podów – część z nich znalazła się w stanie `Terminating` (usuwane), a część pozostała `Running`.
+Po wykonaniu `scale` sprawdzono listę podów - część z nich znalazła się w stanie `Terminating` (usuwane), a część pozostała `Running`.
 
 ```bash
 kubectl get pods
@@ -798,7 +798,7 @@ kubectl get pods
 
 Po wykonaniu skalowania ruch z serwisu `oskar-service-c11` jest kierowany przez Kubernetes do różnych podów. Aby sprawdzić, który konkretny Pod obsłużył dane żądanie HTTP, wykonano następujące czynności:
 
-1. **Wysłanie testowego żądania** – na porcie `8084` wykonano zapytanie do ścieżki `/oskar-test` (celowo nieistniejącej), aby wywołać błąd 404 i zarejestrować żądanie w logach:
+1. **Wysłanie testowego żądania** - na porcie `8084` wykonano zapytanie do ścieżki `/oskar-test` (celowo nieistniejącej), aby wywołać błąd 404 i zarejestrować żądanie w logach:
    
    ```
    http://localhost:8084/oskar-test
@@ -808,7 +808,7 @@ Po wykonaniu skalowania ruch z serwisu `oskar-service-c11` jest kierowany przez 
 
    ![image](Sprawozdanie3/76.png)
 
-2. **Analiza logów** – sprawdzono logi wszystkich podów z etykietą `app=oskar-web`, filtrując pod kątem zapytania `oskar-test`:
+2. **Analiza logów** - sprawdzono logi wszystkich podów z etykietą `app=oskar-web`, filtrując pod kątem zapytania `oskar-test`:
 
    ```bash
    kubectl logs -l app=oskar-web --prefix | grep "oskar-test"
