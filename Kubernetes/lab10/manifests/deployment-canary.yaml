@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab10-web-canary
+  labels:
+    app: lab10-web
+    track: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lab10-web
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: lab10-web
+        track: canary
+    spec:
+      containers:
+        - name: lab10-web
+          image: lab10-web:v2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80

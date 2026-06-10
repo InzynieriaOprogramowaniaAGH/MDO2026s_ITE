@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab10-web
+  labels:
+    app: lab10-web
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: lab10-web
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 30%
+  template:
+    metadata:
+      labels:
+        app: lab10-web
+    spec:
+      containers:
+        - name: lab10-web
+          image: lab10-web:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80

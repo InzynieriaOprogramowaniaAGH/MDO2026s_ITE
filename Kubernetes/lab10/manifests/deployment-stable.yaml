@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab10-web-stable
+  labels:
+    app: lab10-web
+    track: stable
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: lab10-web
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: lab10-web
+        track: stable
+    spec:
+      containers:
+        - name: lab10-web
+          image: lab10-web:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
