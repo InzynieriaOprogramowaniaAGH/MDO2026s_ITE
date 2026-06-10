@@ -332,3 +332,76 @@ Ostatnim etapem laboratorium było wykorzystanie etykiet (*labels*) do oznaczani
 ![labels](SS-45.png)
 
 
+# Lab 11 #
+Celem tego ćwiczenia było zapoznanie się z metodami eksponowania aplikacji działających w Kubernetes oraz dalsze wykorzystanie mechanizmów skalowania deploymentów. W ramach laboratorium sprawdzono różne sposoby udostępniania aplikacji, utworzono usługę sieciową oraz przeprowadzono skalowanie wdrożenia przy użyciu poleceń i plików YAML.
+
+## 11.1. Wdrożenie większej liczby podów
+Na początku sprawdzono działanie deploymentu z większą liczbą replik. W klastrze widoczna była duża liczba uruchomionych podów aplikacji `lab10-app`.
+
+![36 podów](SS-46.png)
+
+## 11.2. Eksponowanie pojedynczego poda
+Pierwszym sposobem udostępnienia aplikacji było przekierowanie portu bezpośrednio do jednego wybranego poda za pomocą polecenia `kubectl port-forward`.
+
+![1 pod](SS-47.png)
+
+### Działanie aplikacji przez curl w drugim terminalu: ###
+
+![curl 1](SS-48.png)
+
+## 11.3. Eksponowanie deploymentu
+Kolejnym sposobem było przekierowanie portu bezpośrednio do deploymentu `lab10-app`.
+
+![deployment](SS-49.png)
+
+### Działanie aplikacji przez curl w drugim terminalu: ###
+
+![curl 2](SS-50.png)
+
+Potwierdza to możliwość dostępu do aplikacji przez deployment.
+
+## 11.4. Eksponowanie deploymentu jako Service
+Następnie deployment został wyeksponowany jako usługa typu `NodePort` przy użyciu dedykowanego polecenia `kubectl expose deployment`.
+
+![deployment service](SS-51.png)
+
+Po utworzeniu usługi wykonano przekierowanie portu do service i sprawdzono działanie aplikacji.
+
+### Działanie aplikacji przez curl w drugim terminalu: ###
+
+![curl 3](SS-52.png)
+
+## 11.5. Eksponowanie deploymentu za pomocą pliku YAML
+Utworzono usługę Kubernetes z pliku [service.yaml](service.yaml). Po zastosowaniu pliku sprawdzono szczegóły utworzonej usługi oraz wykonano przekierowanie portu.
+
+![service yaml apply](SS-53.png)
+
+### Działanie aplikacji przez curl w drugim terminalu: ###
+
+![curl 4](SS-54.png)
+
+## 11.6. Skalowanie deploymentu poleceniem scale
+Przetestowano skalowanie deploymentu za pomocą polecenia `kubectl scale`. Najpierw ustawiono liczbę replik na 6.
+
+![scale 6](SS-55.png)
+
+Następnie zwiększono liczbę replik do 12.
+
+![scale 12](SS-56.png)
+
+Widoczne dodatkowe pody potwierdzają, że Kubernetes automatycznie dostosował liczbę działających instancji aplikacji.
+
+## 11.7. Skalowanie deploymentu przez plik YAML
+Oprócz skalowania poleceniem, przetestowano również zmianę liczby replik przez modyfikację pliku deploymentu. Przygotowano plik [deployment-12.yaml](deployment-12.yaml) dla 12 replik, a następnie zastosowano go w klastrze.
+
+![deployment 12](SS-57.png)
+
+Następnie przygotowałem kolejną wersję pliku, zmniejszającą liczbę replik do 3.
+
+![deployment 3](SS-58.png)
+
+Po zastosowaniu konfiguracji Kubernetes usunął nadmiarowe pody i pozostawił tylko wymaganą liczbę działających instancji.
+
+
+# Podsumowanie #
+Wykonane laboratoria pozwolił mi przejść przez kolejne etapy budowy nowoczesnego środowiska DevOps – od automatyzacji administracji systemami przy użyciu Ansible, przez przygotowanie nienadzorowanej instalacji systemu operacyjnego z wykorzystaniem Kickstart, aż po wdrażanie i zarządzanie aplikacjami kontenerowymi w Kubernetes. Podczas wykonywania laboratoriów skonfigurowałem komunikację pomiędzy maszynami, przygotowałem własne playbooki Ansible, zautomatyzowałem instalację systemu Fedora przy użyciu Kickstart oraz wdrażałem aplikacje kontenerowe w środowisku Kubernetes. Dodatkowo przetestowałem mechanizmy skalowania, aktualizacji oraz eksponowania usług, co pozwoliło lepiej zrozumieć sposób działania współczesnych platform kontenerowych. Zdobyta wiedza stanowi solidną podstawę do dalszej pracy z narzędziami wykorzystywanymi w środowiskach DevOps.
