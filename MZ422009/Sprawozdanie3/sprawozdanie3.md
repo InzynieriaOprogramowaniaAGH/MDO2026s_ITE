@@ -402,6 +402,8 @@ Następnie przygotowałem kolejną wersję pliku, zmniejszającą liczbę replik
 
 Po zastosowaniu konfiguracji Kubernetes usunął nadmiarowe pody i pozostawił tylko wymaganą liczbę działających instancji.
 
+## WAŻNA informacja!
+Pomiędzy laboratorium 8 a 9 moja pierwsza maszyna wirtualna zwróciła mi błąd I/O. Mimo próby jej ratowania finalnie stworzyłem nową maszynę stąd różnica w nazwach użytkownika na zrzutach ekranu (mil_zuc-mil_zuc2). 
 
 # Podsumowanie #
 Wykonane laboratoria pozwolił mi przejść przez kolejne etapy budowy nowoczesnego środowiska DevOps – od automatyzacji administracji systemami przy użyciu Ansible, przez przygotowanie nienadzorowanej instalacji systemu operacyjnego z wykorzystaniem Kickstart, aż po wdrażanie i zarządzanie aplikacjami kontenerowymi w Kubernetes. Podczas wykonywania laboratoriów skonfigurowałem komunikację pomiędzy maszynami, przygotowałem własne playbooki Ansible, zautomatyzowałem instalację systemu Fedora przy użyciu Kickstart oraz wdrażałem aplikacje kontenerowe w środowisku Kubernetes. Dodatkowo przetestowałem mechanizmy skalowania, aktualizacji oraz eksponowania usług, co pozwoliło lepiej zrozumieć sposób działania współczesnych platform kontenerowych. Zdobyta wiedza stanowi solidną podstawę do dalszej pracy z narzędziami wykorzystywanymi w środowiskach DevOps.
