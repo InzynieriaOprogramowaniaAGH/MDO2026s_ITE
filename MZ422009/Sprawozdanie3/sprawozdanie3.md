@@ -213,3 +213,122 @@ Ostatnim etapem tych laboratoriów była weryfikacja usługi `express-app`, utwo
 ![weryfikacja express-app](SS-73.png)
 
 Ponownie widoczny status `active` oraz wpisy związane z poleceniami Dockera potwierdzają, że aplikacja kontenerowa została uruchomiona automatycznie po starcie systemu.
+
+
+# Lab 10 #
+Celem tych laboratorium było zapoznanie się z podstawami platformy Kubernetes. W ramach ćwiczeń uruchomiono lokalny klaster Minikube, wdrożono własną aplikację kontenerową, skonfigurowano usługi sieciowe, przeprowadzono skalowanie wdrożeń oraz przetestowano różne strategie aktualizacji aplikacji.
+
+## 10.1. Uruchomienie klastra Kubernates
+Na sam początek uruchomiono lokalny klaster Kubernetes przy użyciu narzędzia Minikube. Następnie sprawdzono poprawność działania wszystkich podstawowych komponentów klastra.
+
+![minikube status](SS-19.png)
+
+Po uruchomieniu klastra zweryfikowano również dostępność węzła roboczego za pomocą polecenia `kubectl get nodes`. Widoczny status `Ready` potwierdza nam poprawne uruchomienie środowiska Kubernetes.
+
+![kubectl get nodes](SS-20.png)
+
+## 10.2. Uruchomienie Dashboard Kubernetes
+Kolejnym krokiem było uruchomienie Dashboard Kubernetes umożliwiającego graficzne zarządzanie zasobami klastra. Dashboard pozwala monitorować deploymenty, pody, usługi oraz pozostałe zasoby klastra z poziomu przeglądarki internetowej.
+
+![Dashboard Kubernetes](SS-21.png)
+
+## 10.3. Utworzenie deploymentu aplikacji
+Przygotowano plik konfiguracyjny [deployment.yaml](deployment.yaml), definiujący wdrożenie aplikacji kontenerowej. (ilość replik początkowo była równa 1, jak na SS poniżej).
+
+![deployment.yaml](SS-28.png)
+
+Następnie zastosowano konfigurację i uruchomiono deployment.
+
+![kubectl get ...](SS-22.png)
+
+![kubectl get all](SS-24.png)
+
+## 10.4. Weryfikacja działania deploymentu w Dashboard
+Po uruchomieniu wdrożenia sprawdzono widoczność zasobów w Dashboard Kubernetes. 
+### Deployment ###
+
+![Dashboard deployment](SS-25.png)
+
+### Pod ###
+
+![Dashboard pod](SS-26.png)
+
+### Service ###
+
+![Dashboard service](SS-27.png)
+
+## 10.5. Udostępnienie aplikacji
+Aby umożliwić dostęp do aplikacji przygotowano plik [service.yaml](service.yaml), definiujący usługę typu `NodePort`.
+
+![service.yaml](SS-29.png)
+
+Następnie wykonano test przy użyciu polecenia `curl`, a otrzymana odpowiedź HTML potwierdza poprawne działanie aplikacji uruchomionej w klastrze Kubernetes.
+
+![curl-test](SS-30.png)
+
+Dodatkowo sprawdzono poprawność działania aplikacji przy użyciu przeglądarki internetowej.
+
+![web aplikacja](SS-23.png)
+
+## 10.6. Skalowanie deploymentu
+W kolejnym etapie przetestowano mechanizm skalowania deploymentu. Początkowo zwiększono liczbę replik do 4.
+
+![4 repliki](SS-31.png)
+
+Następnie zgodnie z instrukcją zwiększono liczbę instancji do 8.
+
+![8 replik](SS-32.png)
+
+Po sprawdzeniu działania większej liczby podów wykonano zmniejszenie liczby replik i zaobserowano różnicę.
+
+![1 replika](SS-33.png)
+
+Na końcu przetestowano całkowite zatrzymanie aplikacji poprzez ustawienie liczby replik na 0.
+
+![0 replik](SS-34.png)
+
+Widoczny komunikat `No resources found in default namespace` potwierdza usunięcie wszystkich podów deploymentu.
+
+## 10.7. Przygotowanie nowej wersji obrazu
+W tym etapie przygotowano nową wersję obrazu aplikacji oznaczoną jako `v2`. Następnie zaimportowano ją do środowiska Minikube.
+
+![obrazy](SS-35.png)
+
+Po wdrożeniu nowej wersji zweryfikowano działanie aplikacji, a wyświetlona zawartość (v2) potwierdza, że Kubernetes uruchomił nową wersję.
+
+![wersja v2](SS-36.png)
+
+## 10.8. Test błędnego wdrożenia
+W celu sprawdzenia zachowania Kubernetes podczas nieudanego wdrożenia przygotowano wadliwy obraz kontenera oznaczony jako `bad`.
+
+![obraz bad](SS-37.png)
+
+Po wdrożeniu błędnej wersji aplikacji pody przechodziły w stan `CrashLoopBackOff`. Stan ten oznacza nieudane próby uruchomienia kontenera i automatyczne ponawianie startu przez Kubernetes.
+
+![crashloop](SS-38.png)
+
+## 10.9. Kontrola wdrożenia
+Przygotowano skrypt [check_deploy.sh](check_deploy.sh), którego zadaniem było monitorowanie stanu deploymentu i sprawdzanie gotowości wszystkich replik. Po uruchomieniu skrypt potwierdził poprawne wdrożenie aplikacji.
+
+![check_deploy wynik](SS-40.png)
+
+## 10.10. Strategie wdrożenia
+W tej części instrukcji przetestowano strategię `Recreate`, która usuwa stare instancje aplikacji przed uruchomieniem nowych.
+
+![recreate](SS-41.png)
+
+Kolejna przetestowana strategia to `RollingUpdate` (z parametrami `maxUnavailable` > 1 i `maxSurge` > 20%), umożliwiającej stopniową wymianę podów bez zatrzymywania całej aplikacji.
+
+![RollingUpate](SS-42.png)
+
+Następną wersją wdrożenia było `Canary Deployment workload`, pozwalające na równoległe uruchomienie nowej wersji aplikacji. Plik [deployment-canary.yaml](deployment-canary.yaml).
+Po wdrożeniu uruchomione zostały jednocześnie pody wersji podstawowej oraz wersji testowej. Ta wersja rozwiązania umożliwia testowanie nowych wersji aplikacji bez wpływu na całość ruchu produkcyjnego.
+
+![canary](SS-44.png)
+
+## 10.11. Wykorzystanie etykiet
+Ostatnim etapem laboratorium było wykorzystanie etykiet (*labels*) do oznaczania i filtrowania zasobów Kubernetes. Etykiety pozwalają na grupowanie oraz wyszukiwanie wybranych deploymentów, podów i usług.
+
+![labels](SS-45.png)
+
+
