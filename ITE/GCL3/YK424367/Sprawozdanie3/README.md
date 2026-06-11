@@ -1,113 +1,246 @@
-# Sprawozdanie 3 — Ansible + Kubernetes
+# Sprawozdanie 3 (zajęcia 8-11)
 
-## Część 1: Ansible
+Celem zajęć 8-11 było zaznajomienie się z Ansible, kickstartem systemu na maszynie wirtualnej, orkiestracją kontenerów w Kubernetes. Artefaktem jest **readme-aura** (paczka NPM `.tgz`) - wdrożyłem ją przez Ansible i kickstart Fedory. Do laboratorium kubernetes wybrałem **nginx**, bo readme-aura to narzędzie CLI bez serwera HTTP i nie nadaje się na sensowny Deployment.
 
-### Weryfikacja łączności
+---
 
+## Zajęcia 08 - Ansible
+
+### Środowisko
+
+Na głównej maszynie (`myserver`) zainstalowałem Ansible z repozytorium Ubuntu. Druga maszyna wirtualna dostała hostname `ansible-target`, użytkownika `ansible` i OpenSSH. Wymieniłem klucze SSH tak, że logowanie `ssh ansible@ansible-target` nie wymaga hasła.
+
+Nazwy ustawiłem przez `hostnamectl`, wpisy w `/etc/hosts` i `systemd-resolved`, żeby maszyny były dostępne po nazwie a nie tylko po IP:
+
+```bash
+hostname
+# myserver
+
+ssh ansible@ansible-target hostname
+# ansible-target
+
+getent hosts ansible-target
+# 192.168.2.3     ansible-target
+
+ping -c 3 ansible-target
+# 0% packet loss
 ```
-ubuntu@myserver:~/MDO2026s_ITE$ hostname
+
+Plik inwentaryzacji `~/ansible/inventory.ini`:
+
+```ini
+[Orchestrators]
 myserver
-ubuntu@myserver:~/MDO2026s_ITE$ ssh ansible@ansible-target hostname
+
+[Endpoints]
 ansible-target
-ubuntu@myserver:~/MDO2026s_ITE$ getent hosts ansible-target
-192.168.2.3     ansible-target
-ubuntu@myserver:~/MDO2026s_ITE$ getent hosts myserver
-127.0.1.1       myserver myserver
-ubuntu@myserver:~/MDO2026s_ITE$ ping -c 3 ansible-target
-PING ansible-target (192.168.2.3) 56(84) bytes of data.
-64 bytes from ansible-target (192.168.2.3): icmp_seq=1 ttl=64 time=0.536 ms
-64 bytes from ansible-target (192.168.2.3): icmp_seq=2 ttl=64 time=0.875 ms
-64 bytes from ansible-target (192.168.2.3): icmp_seq=3 ttl=64 time=0.779 ms
-
---- ansible-target ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 2111ms
-rtt min/avg/max/mdev = 0.536/0.730/0.875/0.142 ms
 ```
 
-### Ansible ping
+Weryfikacja `ping`:
 
+```bash
+ansible -i ~/ansible/inventory.ini all -m ping
 ```
-ubuntu@myserver:~/MDO2026s_ITE$ ansible -i ~/ansible/inventory.ini all -m ping
+
+```text
 myserver | SUCCESS => { "ping": "pong" }
 ansible-target | SUCCESS => { "ping": "pong" }
 ```
 
----
+Scenariusz z trzecią maszyną i operacjami przy wyłączonym SSH nie był u mnie wykonywany.
 
- Kubernetes (minikube)
+### Playbook `site.yml`
 
-### Instalacja minikube
+Playbook w katalogu `Sprawozdanie3/` obejmuje kilka playów:
 
-System działa na architekturze `aarch64` (ARM64), dlatego pobrano właściwą wersję:
+1. `ping` na wszystkich hostach
+2. kopiowanie `inventory.ini` na `Endpoints`
+3. `apt upgrade` na `Endpoints`
+4. restart `sshd` i `rngd` (rngd z `ignore_errors: yes`)
+5. rola `readme_aura_deploy` - wdrożenie artefaktu z pipelineu
 
-```bash
-curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-arm64
-sudo install minikube-linux-arm64 /usr/local/bin/minikube
-rm minikube-linux-arm64
+Fragment z kopiowaniem inventory i aktualizacją pakietów:
+
+```yaml
+- name: Skopiuj inventory na Endpoints
+  hosts: Endpoints
+  tasks:
+    - name: Kopiuj inventory.ini
+      ansible.builtin.copy:
+        src: "{{ lookup('env', 'HOME') }}/ansible/inventory.ini"
+        dest: /home/ansible/inventory.ini
+
+- name: Zaktualizuj pakiety na Endpoints
+  hosts: Endpoints
+  tasks:
+    - name: apt update i upgrade
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: yes
+      become: yes
 ```
 
-Uruchomienie klastra:
+Uruchomienie całości (w tym roli deploy):
+
+```bash
+ansible-playbook -i ~/ansible/inventory.ini \
+  ITE/GCL3/YK424367/Sprawozdanie3/site.yml \
+  -e "local_artifact_path=ITE/GCL3/YK424367/Sprawozdanie3/readme-aura.tgz"
+```
+
+### Rola `readme_aura_deploy`
+
+Rolę utworzyłem przez `ansible-galaxy role init readme_aura_deploy` i umieściłem w repozytorium.
+
+Rola robi mniej więcej tyle:
+
+1. **Sanity check** - `ping` i sprawdzenie wolnego miejsca na `/` (błędy ignorowane, playbook idzie dalej)
+2. **Instalacja Dockera** na maszynie docelowej przez Docker CE
+3. **Kopiowanie** pliku `.tgz` na endpoint do `/tmp/readme-aura-deploy/`
+4. **Uruchomienie** kontenera `node:20`, który instaluje paczkę lokalnie i odpala `npx readme-aura init` + `npx readme-aura build`
+5. **Assert** na `rc == 0` - sprawdzam exit code kontenera
+6. **Cleanup** - usunięcie katalogu z artefaktem i obrazu `node:20`
+
+Fragment z uruchomienia aplikacji:
+
+```yaml
+- name: Uruchom readme-aura w kontenerze node:20
+  ansible.builtin.shell: |
+    docker run --rm \
+      --name {{ container_name }} \
+      -v {{ artifact_dir }}:/artifacts:ro \
+      {{ node_image }} \
+      sh -c "
+        set -e
+        mkdir /app && cd /app
+        npm init -y
+        npm install /artifacts/{{ artifact_filename }}
+        npx readme-aura init --template PurpleGlow
+        npx readme-aura build
+      "
+  register: run_result
+
+- name: Zweryfikuj poprawne uruchomienie aplikacji
+  ansible.builtin.assert:
+    that:
+      - run_result.rc == 0
+```
+
+Artefakt `readme-aura.tgz` to paczka wyprodukowana wcześniej w pipelinie Jenkinsa.
+
+---
+
+## Zajęcia 09 - Kickstart Fedora
+
+Po pierwszej instalacji Fedory 44 pobrałem szablon `/root/anaconda-ks.cfg` i zmodyfikowałem go pod wymagania zajęć. Plik leży w repozytorium jako [`anaconda-ks.cfg`](./anaconda-ks.cfg).
+
+Kluczowe elementy:
+
+- źródło instalacji Fedora 44 **aarch64** (moja maszyna to ARM64)
+- `clearpart --all` + `autopart` - reinstalacja „w kółko" na pustym dysku
+- hostname `yehor-fedora`, użytkownik `yehor`
+- sekcja `%packages`: `docker`, `docker-compose`, `curl`, `wget`, `git`
+- `reboot` na końcu - instalator nie zostaje na ostatnim ekranie
+
+W `%post` włączam Docker przy starcie i tworzę usługę systemd, która po pierwszym bootcie uruchamia readme-aura w kontenerze:
+
+```bash
+systemctl enable docker
+
+cat > /etc/systemd/system/readme-aura.service << 'EOF'
+[Unit]
+Description=readme-aura container
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/docker run --rm --name readme-aura-app node:20 npx readme-aura@canary --help
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable readme-aura.service
+```
+
+### Instalacja nienadzorowana
+
+Nową maszynę UEFI uruchomiłem z ISO Fedory 44. W GRUB dodałem parametr wskazujący plik kickstart hostowany w sieci:
+
+![GRUB - instalacja z plikiem kickstart](./assets/Screenshot%202026-05-19%20at%2009.24.31.png)
+
+```text
+linux ... ro inst.ks=https://tinyurl.com/35jr8d9r
+```
+
+Formatowanie dysku, pakiety i `%post` poszły automatycznie.
+
+### Weryfikacja po pierwszym uruchomieniu
+
+Po restarcie sprawdziłem czy Docker i usługa readme-aura wstały:
+
+```bash
+systemctl status docker
+systemctl status readme-aura
+journalctl -u readme-aura --no-pager
+cat /root/ks-post.log
+```
+
+W logu post-install jest linia `>>> Post-install complete`. Usługa `readme-aura` odpala kontener z `npx readme-aura@canary --help` - to smoke test tego samego artefaktu co w Jenkinsie, tylko pobranego z NPM z tagiem `canary`.
+
+---
+
+## Zajęcia 10 - Kubernetes (minikube, deployment, strategie)
+
+Do deploymentu użyłem nginx.
+
+
+Uruchomiłem klaster:
 
 ```bash
 minikube start
 ```
 
-```
+```text
 😄  minikube v1.38.1 on Ubuntu 22.04 (arm64)
 ✨  Automatically selected the docker driver
 🏄  Done! kubectl is now configured to use "minikube" cluster
 ```
 
-### Uruchomienie poda nginx (manualnie)
+Dashboard uruchomiłem przez `minikube dashboard`.
+
+### Pierwszy pod (manualnie)
 
 ```bash
 minikube kubectl -- run nginx-app --image=nginx --port=80 --labels app=nginx-app
 minikube kubectl -- get pods
 ```
 
-```
-NAME        READY   STATUS    RESTARTS   AGE
-nginx-app   1/1     Running   0          51s   10.244.0.3   minikube
-```
+![Pod nginx-app w Dashboard](./assets/Screenshot%202026-05-26%20at%2008.57.52.png)
 
-Przekierowanie portu i weryfikacja:
+Port-forward i test HTTP:
 
 ```bash
-minikube kubectl -- port-forward pod/nginx-app 9090:80 --address 0.0.0.0 &
-curl -o /dev/null -w "%{http_code}" http://localhost:9090
-# 200
+minikube kubectl -- port-forward pod/nginx-app 9090:80 --address 0.0.0.0 
 ```
 
-### Dashboard
+### Deployment z pliku YAML
 
-```bash
-minikube dashboard
-```
-
-Dashboard uruchomiony i dostępny w przeglądarce.
-
----
-
-### Deployment YAML (nginx-deployment.yaml)
-
-Plik `nginx-deployment.yaml` z 4 replikami:
+Zapisałem wdrożenie w [`nginx-deployment.yaml`](./nginx-deployment.yaml) i zaaplikowałem:
 
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
-  labels:
-    app: nginx
 spec:
   replicas: 4
   selector:
     matchLabels:
       app: nginx
   template:
-    metadata:
-      labels:
-        app: nginx
     spec:
       containers:
         - name: nginx
@@ -116,233 +249,77 @@ spec:
             - containerPort: 80
 ```
 
-Wdrożenie:
-
 ```bash
 minikube kubectl -- apply -f nginx-deployment.yaml
 minikube kubectl -- rollout status deployment/nginx-deployment
 ```
 
-```
-deployment "nginx-deployment" successfully rolled out
-```
+![4 repliki nginx-deployment](./assets/Screenshot%202026-05-26%20at%2009.04.56.png)
 
-```
-NAME                                READY   STATUS    RESTARTS   AGE
-nginx-deployment-569f95f5cb-8fhgd   1/1     Running   0          37s
-nginx-deployment-569f95f5cb-jtm8x   1/1     Running   0          37s
-nginx-deployment-569f95f5cb-n6v6v   1/1     Running   0          37s
-nginx-deployment-569f95f5cb-ztqsn   1/1     Running   0          37s
-```
+### Skalowanie i zmiany obrazu
 
----
+Po kolei zmieniałem `replicas` i tag obrazu w YAML, za każdym razem `kubectl apply` + `rollout status`:
 
-### Zmiany w deploymencie
+| Zmiana | Efekt |
+|--------|-------|
+| replicas: 8 | 8/8 podów Running |
+| replicas: 1 | zostaje jeden pod |
+| replicas: 0 | deployment istnieje, `No resources found` |
+| replicas: 4 | z powrotem 4 repliki |
+| image: nginx:1.26 | Rolling Update, 4/4 na nowej wersji |
+| image: nginx:1.25 | rollback ręczny przez YAML |
+| image: nginx:99.99 | część podów w `ErrImagePull` |
 
-#### Scale up do 8 replik
+![Deployment 8/8 replik](./assets/Screenshot%202026-05-26%20at%2009.08.21.png)
 
-```bash
-# replicas: 8
-minikube kubectl -- apply -f nginx-deployment.yaml
-minikube kubectl -- rollout status deployment/nginx-deployment
-```
+![Deployment 4/4 na nginx:1.26](./assets/Screenshot%202026-05-26%20at%2009.09.49.png)
 
-```
-deployment "nginx-deployment" successfully rolled out
-# 8 podów Running
-```
+Przy wadliwym obrazie Kubernetes nie usuwa starych podów dopóki nowe nie wstaną - stare 3 pody na `nginx:1.25` zostawały `Running`, a nowe szły w `ImagePullBackOff`:
 
-#### Scale down do 1 repliki
+![Deployment 3/4 - wadliwy obraz nginx:99.99](./assets/Screenshot%202026-05-26%20at%2009.10.23.png)
 
-```bash
-# replicas: 1
-minikube kubectl -- apply -f nginx-deployment.yaml
-```
-
-```
-NAME                                READY   STATUS    RESTARTS   AGE
-nginx-deployment-569f95f5cb-n6v6v   1/1     Running   0          4m11s
-```
-
-#### Scale down do 0 replik
-
-```bash
-# replicas: 0
-minikube kubectl -- apply -f nginx-deployment.yaml
-minikube kubectl -- get pods -l app=nginx
-```
-
-```
-No resources found in default namespace.
-```
-
-Deployment istnieje, ale nie ma żadnych podów.
-
-#### Scale up do 4 replik
-
-```bash
-# replicas: 4
-minikube kubectl -- apply -f nginx-deployment.yaml
-minikube kubectl -- rollout status deployment/nginx-deployment
-```
-
-```
-deployment "nginx-deployment" successfully rolled out
-```
-
-#### Aktualizacja obrazu: nginx:1.25 → nginx:1.26
-
-```bash
-# image: nginx:1.26
-minikube kubectl -- apply -f nginx-deployment.yaml
-minikube kubectl -- rollout status deployment/nginx-deployment
-```
-
-```
-Waiting for deployment rollout to finish: 1 out of 4 new replicas have been updated...
-...
-deployment "nginx-deployment" successfully rolled out
-```
-
-Kubernetes zastępuje pody jeden po drugim (Rolling Update) — stare działają dopóki nowe nie są gotowe.
-
-#### Cofnięcie do nginx:1.25
-
-```bash
-# image: nginx:1.25
-minikube kubectl -- apply -f nginx-deployment.yaml
-minikube kubectl -- rollout status deployment/nginx-deployment
-```
-
-```
-deployment "nginx-deployment" successfully rolled out
-```
-
-#### Wadliwy obraz: nginx:99.99
-
-```bash
-# image: nginx:99.99
-minikube kubectl -- apply -f nginx-deployment.yaml
-sleep 15
-minikube kubectl -- get pods -l app=nginx
-```
-
-```
-NAME                                READY   STATUS         RESTARTS   AGE
-nginx-deployment-569f95f5cb-69p5b   1/1     Running        0          31s
-nginx-deployment-569f95f5cb-sb5h9   1/1     Running        0          30s
-nginx-deployment-569f95f5cb-spphl   1/1     Running        0          29s
-nginx-deployment-9f8c59964-m2pgt    0/1     ErrImagePull   0          15s
-nginx-deployment-9f8c59964-srzs6    0/1     ErrImagePull   0          15s
-```
-
-Kubernetes nie usuwa starych podów gdy nowe nie startują — stare 3 pody pozostają `Running`.
-
----
-
-### Historia wdrożeń i rollback
+![Pody z ErrImagePull obok Running](./assets/Screenshot%202026-05-26%20at%2009.10.43.png)
 
 ```bash
 minikube kubectl -- rollout history deployment/nginx-deployment
-```
-
-```
-REVISION  CHANGE-CAUSE
-2         <none>
-3         <none>
-4         <none>
-```
-
-```bash
 minikube kubectl -- rollout undo deployment/nginx-deployment
 minikube kubectl -- rollout status deployment/nginx-deployment
 ```
 
-```
-deployment.apps/nginx-deployment rolled back
-deployment "nginx-deployment" successfully rolled out
-```
-
-Po rollback wszystkie 4 pody powróciły do stanu `Running`.
-
----
-
-### Eksponowanie deploymentu jako serwis
+### Serwis i skrypt weryfikacji
 
 ```bash
 minikube kubectl -- expose deployment nginx-deployment --port=80 --type=ClusterIP
-minikube kubectl -- get services
-```
-
-```
-NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
-kubernetes         ClusterIP   10.96.0.1       <none>        443/TCP   24m
-nginx-deployment   ClusterIP   10.110.87.132   <none>        80/TCP    0s
-```
-
-Port-forward do serwisu (nie do konkretnego poda):
-
-```bash
 minikube kubectl -- port-forward service/nginx-deployment 9091:80 --address 0.0.0.0 &
-curl -o /dev/null -w "%{http_code}" http://localhost:9091
-# 200
 ```
 
----
+Serwis YAML: [`nginx-service.yaml`](./nginx-service.yaml)
 
-### Skrypt weryfikacji wdrożenia (check-deployment.sh)
+Skrypt [`check-deployment.sh`](./check-deployment.sh) czeka max 60 sekund na rollout:
 
 ```bash
-#!/bin/bash
-DEPLOYMENT=${1:-nginx-deployment}
-TIMEOUT=60
-
-echo "Checking deployment: $DEPLOYMENT (timeout: ${TIMEOUT}s)"
-
-if minikube kubectl -- rollout status deployment/$DEPLOYMENT --timeout=${TIMEOUT}s; then
-    echo "SUCCESS: Deployment $DEPLOYMENT rolled out within ${TIMEOUT}s"
-    exit 0
-else
-    echo "FAILED: Deployment $DEPLOYMENT did not complete within ${TIMEOUT}s"
-    minikube kubectl -- get pods -l app=nginx
-    exit 1
-fi
+chmod +x check-deployment.sh
+./check-deployment.sh nginx-deployment
 ```
 
-Wynik uruchomienia:
-
-```
+```text
 Checking deployment: nginx-deployment (timeout: 60s)
 deployment "nginx-deployment" successfully rolled out
 SUCCESS: Deployment nginx-deployment rolled out within 60s
 ```
 
----
+### Strategie wdrożeń
 
-## Strategie wdrożeń
-
-### Recreate (nginx-recreate.yaml)
-
-Strategia `Recreate` usuwa **wszystkie** stare pody przed stworzeniem nowych. Powoduje krótki downtime.
+#### Recreate ([`nginx-recreate.yaml`](./nginx-recreate.yaml))
 
 ```yaml
 strategy:
   type: Recreate
 ```
 
-```bash
-minikube kubectl -- apply -f nginx-recreate.yaml
-minikube kubectl -- set image deployment/nginx-recreate nginx=nginx:1.26
-```
+Przy zmianie obrazu (`set image ... nginx=nginx:1.26`) wszystkie stare pody znikają naraz, dopiero potem powstają nowe.
 
-Przy zmianie obrazu wszystkie 4 pody zostają usunięte jednocześnie, następnie tworzone są nowe.
-
----
-
-### Rolling Update z parametrami (nginx-rolling.yaml)
-
-`maxUnavailable: 2` — maksymalnie 2 pody mogą być niedostępne podczas aktualizacji.
-`maxSurge: 25%` — można uruchomić o 25% więcej podów niż replicas (czyli 1 dodatkowy pod).
+#### Rolling Update ([`nginx-rolling.yaml`](./nginx-rolling.yaml))
 
 ```yaml
 strategy:
@@ -352,86 +329,101 @@ strategy:
     maxSurge: 25%
 ```
 
-```bash
-minikube kubectl -- apply -f nginx-rolling.yaml
-minikube kubectl -- set image deployment/nginx-rolling nginx=nginx:1.26
-```
+Przy 4 replikach i `maxSurge: 25%` Kubernetes może na chwilę postawić 5 podów. 
+Stary deployment nadal obsługuje ruch podczas aktualizacji.
 
-Obserwacja — 3 nowe pody tworzone jednocześnie (maxUnavailable: 2 + maxSurge: 1):
+#### Canary ([`nginx-canary-stable.yaml`](./nginx-canary-stable.yaml) + [`nginx-canary-new.yaml`](./nginx-canary-new.yaml))
 
-```
-nginx-rolling-c6668c7bf-6zv7c    1/1     Running             0
-nginx-rolling-c6668c7bf-bbgpd    0/1     ContainerCreating   0
-nginx-rolling-c6668c7bf-hm2gn    0/1     ContainerCreating   0
-nginx-rolling-c6668c7bf-vvpsl    0/1     ContainerCreating   0
-```
+Dwa osobne deploymenty i wspólny serwis z selektorem `app: nginx-canary`:
+
+- **stable**: 3 repliki, `nginx:1.25`, etykieta `track: stable`
+- **canary**: 1 replika, `nginx:1.26`, etykieta `track: canary`
+
+Serwis kieruje ruch do obu, 75% na stable, 25% na canary. Jak canary działa, można stopniowo przesuwać repliki.
 
 ---
 
-### Canary Deployment (nginx-canary-stable.yaml + nginx-canary-new.yaml)
+## Zajęcia 11 - Kubernetes (eksponowanie, skalowanie)
 
-Canary to wzorzec z dwoma osobnymi deploymentami i wspólnym serwisem. Serwis kieruje ruch do obu przez etykietę `app: nginx-canary`.
-
-- `nginx-canary-stable`: 3 repliki, `nginx:1.25`, etykieta `track: stable`
-- `nginx-canary-new`: 1 replika, `nginx:1.26`, etykieta `track: canary`
+### Deployment z 36 replikami
 
 ```bash
-minikube kubectl -- apply -f nginx-canary-stable.yaml
-minikube kubectl -- apply -f nginx-canary-new.yaml
-minikube kubectl -- get pods -l app=nginx-canary --show-labels
+minikube start --force
+cd ITE/GCL3/YK424367/Sprawozdanie3
+minikube kubectl -- apply -f nginx-deployment-36.yaml
+minikube kubectl -- rollout status deployment/nginx-deployment
+minikube kubectl -- get deployment nginx-deployment
 ```
 
-```
-NAME                                   READY   STATUS    LABELS
-nginx-canary-new-5446876775-ngksg      1/1     Running   app=nginx-canary,track=canary
-nginx-canary-stable-5d6f45b8d7-6fwgp   1/1     Running   app=nginx-canary,track=stable
-nginx-canary-stable-5d6f45b8d7-t2q79   1/1     Running   app=nginx-canary,track=stable
-nginx-canary-stable-5d6f45b8d7-xnkn9   1/1     Running   app=nginx-canary,track=stable
-```
+`--force` dałem dlatego, że minikube bez tego odmawiał startu - moja virtualna maszyna ma tylko jeden rdzeń CPU, a domyślnie minikube chce więcej i proponuje przebudowę klastra. Nie chciałem tego robić, więc wymusiłem start na istniejącej konfiguracji.
 
-Serwis `nginx-canary` dystrybuuje ruch: **75% → stable (nginx:1.25)**, **25% → canary (nginx:1.26)**.
-Gdy canary jest stabilny — można zwiększyć jego repliki i zmniejszyć stable, stopniowo przenosząc cały ruch.
-
----
-
-## Zajęcia 11
-
-ubuntu@myserver:~/MDO2026s_ITE$ minikube start --force
-ubuntu@myserver:~/MDO2026s_ITE$ cd ITE/GCL3/YK424367/Sprawozdanie3
-ubuntu@myserver:~/MDO2026s_ITE/ITE/GCL3/YK424367/Sprawozdanie3$ minikube kubectl -- apply -f nginx-deployment-36.yaml
-deployment.apps/nginx-deployment configured
-ubuntu@myserver:~/MDO2026s_ITE/ITE/GCL3/YK424367/Sprawozdanie3$ minikube kubectl -- rollout status deployment/nginx-deployment
-deployment "nginx-deployment" successfully rolled out
-ubuntu@myserver:~/MDO2026s_ITE/ITE/GCL3/YK424367/Sprawozdanie3$ minikube kubectl -- get deployment nginx-deployment
+```text
 nginx-deployment   36/36   36           36
+```
 
-ubuntu@myserver:~/MDO2026s_ITE$ minikube dashboard
+Plik [`nginx-deployment-36.yaml`](./nginx-deployment-36.yaml) ma `replicas: 36` i obraz `nginx:1.26`.
 
-one pod:
-ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- get pods -l app=nginx
-ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- port-forward pod/nginx-deployment-8574879789-28zfz 9090:80
-Forwarding from 127.0.0.1:9090 -> 80
-ubuntu@myserver:~/MDO2026s_ITE$ curl -o /dev/null -w "%{http_code}\n" http://127.0.0.1:9090
-200
+### Eksponowanie - pod, deployment, serwis
 
-deployment:
-ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- port-forward deployment/nginx-deployment 9092:80
-Forwarding from 127.0.0.1:9092 -> 80
-ubuntu@myserver:~/MDO2026s_ITE$ curl -o /dev/null -w "%{http_code}\n" http://127.0.0.1:9092
-200
+**Do jednego poda:**
 
-service:
-ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- expose deployment nginx-deployment --port=80
-Error from server (AlreadyExists): services "nginx-deployment" already exists
-ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- apply -f ITE/GCL3/YK424367/Sprawozdanie3/nginx-service.yaml
-service/nginx-deployment configured
-ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- port-forward service/nginx-deployment 9093:80
-Forwarding from 127.0.0.1:9093 -> 80
-ubuntu@myserver:~/MDO2026s_ITE$ curl -o /dev/null -w "%{http_code}\n" http://127.0.0.1:9093
-200
+```bash
+minikube kubectl -- get pods -l app=nginx
+minikube kubectl -- port-forward pod/nginx-deployment-8574879789-28zfz 9090:80
+```
 
-Scale:
-ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- scale deployment/nginx-deployment --replicas=12
-deployment.apps/nginx-deployment scaled
-ubuntu@myserver:~/MDO2026s_ITE$ minikube kubectl -- scale deployment/nginx-deployment --replicas=20
-deployment.apps/nginx-deployment scaled
+![Port-forward do poda - localhost:9090](./assets/Screenshot%202026-06-02%20at%2008.44.27.png)
+
+**Do deploymentu** (Kubernetes wybiera jeden z podów):
+
+```bash
+minikube kubectl -- port-forward deployment/nginx-deployment 9092:80
+```
+
+**Do serwisu** - poleceniem `expose` serwis już istniał (`AlreadyExists`), więc zaaplikowałem YAML:
+
+```bash
+minikube kubectl -- expose deployment nginx-deployment --port=80
+# Error from server (AlreadyExists): services "nginx-deployment" already exists
+
+minikube kubectl -- apply -f nginx-service.yaml
+minikube kubectl -- port-forward service/nginx-deployment 9093:80
+```
+
+Wszystkie trzy warianty pokazują działającą stronę Welcome to nginx.
+
+### Skalowanie
+
+**Przez dyrektywę `scale`:**
+
+```bash
+minikube kubectl -- scale deployment/nginx-deployment --replicas=12
+minikube kubectl -- scale deployment/nginx-deployment --replicas=20
+```
+
+![Deployment 12/12 replik](./assets/Screenshot%202026-06-02%20at%2008.54.02.png)
+
+![Deployment 20/20 replik](./assets/Screenshot%202026-06-02%20at%2008.54.24.png)
+
+**Przez YAML** - wystarczy zmienić `replicas` w pliku i `kubectl apply`. Różnica względem `scale`: YAML trafia do repozytorium i jest powtarzalny, `scale` to szybka zmiana z terminala bez edycji pliku.
+
+---
+
+## Podsumowanie
+
+Na zajęciach 8-11 zapoznałem się z:
+
+- **Ansible** - inventory, playbook, rola instalująca Docker i uruchamiająca artefakt readme-aura z `.tgz`
+- **Kickstart** - powtarzalna instalacja Fedory z automatycznym startem readme-aura po bootcie
+- **Kubernetes** - minikube, deployment YAML, skalowanie, aktualizacje obrazów, rollback, strategie Recreate / Rolling / Canary
+- **Eksponowanie** - port-forward do poda, deploymentu i serwisu; skalowanie do 36, potem 12 i 20 replik
+
+Ten sam projekt readme-aura pojawia się w Jenkinsie, Ansible i kickstart. W minikube użyłem nginx, bo to serwer HTTP, a readme-aura to narzędzie CLI.
+
+---
+
+## Pytania do LLM
+
+1. Jak napisać rolę Ansible, która instaluje Docker na zdalnej maszynie i uruchamia w nim aplikację z pliku `.tgz`?
+2. Co robi `kubectl rollout undo`?
+3. Zformatuj mi sprawozdanie w README.md, ustrukturyzuj je i dodaj formatowanie markdown
