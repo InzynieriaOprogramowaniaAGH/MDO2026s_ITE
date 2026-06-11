@@ -1,6 +1,6 @@
 # Sprawozdanie z laboratoriów 8-11 - DevOps
 
-*Opis wykonania zadań na podstawie rozmów i zrzutów ekranu*
+
 
 | Pole | Wartość |
 | --- | --- |
