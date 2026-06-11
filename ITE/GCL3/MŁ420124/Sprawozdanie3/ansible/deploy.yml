@@ -1,0 +1,7 @@
+---
+- name: Deploy QR Code library
+  hosts: Endpoints
+  become: true
+
+  roles:
+    - qr_deploy

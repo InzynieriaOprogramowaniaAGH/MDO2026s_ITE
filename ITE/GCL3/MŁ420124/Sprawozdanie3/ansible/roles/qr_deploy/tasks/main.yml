@@ -1,0 +1,27 @@
+---
+- name: Install Docker on ansible-target
+  ansible.builtin.import_tasks: install_docker.yml
+
+- name: Sanity check at the beginning
+  ansible.builtin.import_tasks: sanity_check.yml
+
+- name: Create work directory on ansible-target
+  ansible.builtin.import_tasks: create_dir.yml
+
+- name: Copy Dockerfile file to ansible-target
+  ansible.builtin.import_tasks: copy_dockerfile.yml
+
+- name: Copy .ddl file to ansible-target
+  ansible.builtin.import_tasks: copy_ddl.yml
+
+- name: Start and enable Docker service on ansible-target
+  ansible.builtin.import_tasks: docker_service.yml
+
+- name: Build Docker image on ansible-target
+  ansible.builtin.import_tasks: build_image.yml
+
+- name: Create output directory on ansible-target
+  ansible.builtin.import_tasks: output_dir.yml
+
+- name: Run container and generate QR CODE on ansible-target
+  ansible.builtin.import_tasks: run_container.yml

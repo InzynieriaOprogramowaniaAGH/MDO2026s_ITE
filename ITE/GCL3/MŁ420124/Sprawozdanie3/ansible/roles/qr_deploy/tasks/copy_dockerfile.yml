@@ -1,0 +1,12 @@
+---
+- name: Copy Dockerfile
+  ansible.builtin.copy:
+    src: Dockerfile
+    dest: "{{ remote_dir }}/Dockerfile"
+    mode: '0644'
+
+- name: Copy Program.cs
+  ansible.builtin.copy:
+    src: Program.cs
+    dest: "{{ remote_dir }}/Program.cs"
+    mode: '0644'

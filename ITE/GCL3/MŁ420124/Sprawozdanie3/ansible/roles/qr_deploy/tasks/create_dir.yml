@@ -1,0 +1,6 @@
+---
+- name: Create work directory
+  ansible.builtin.file:
+    path: "{{ remote_dir }}"
+    state: directory
+    mode: '0755'

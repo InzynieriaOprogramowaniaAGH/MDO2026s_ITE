@@ -1,0 +1,15 @@
+---
+- name: Verify qrcode.bmp exists
+  ansible.builtin.stat:
+    path: "{{ remote_dir }}/output/qrcode.bmp"
+  register: qr_file
+
+- name: Confirm success
+  ansible.builtin.debug:
+    msg: "Success. QR code generated"
+  when: qr_file.stat.exists
+
+- name: Fail if QR code not generated
+  ansible.builtin.fail:
+    msg: "Failure. qrcode.bmp not found"
+  when: not qr_file.stat.exists

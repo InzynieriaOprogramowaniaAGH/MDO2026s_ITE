@@ -1,0 +1,6 @@
+---
+- name: Create output directory
+  ansible.builtin.file:
+    path: "{{ remote_dir }}/output"
+    state: directory
+    mode: '0777'

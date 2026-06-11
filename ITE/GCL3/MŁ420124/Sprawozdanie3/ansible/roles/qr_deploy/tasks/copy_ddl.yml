@@ -1,0 +1,6 @@
+---
+- name: Copy .ddl
+  ansible.builtin.copy:
+    src: Genocs.QRCodeLibrary.dll
+    dest: "{{ remote_dir }}"
+    mode: '0644'

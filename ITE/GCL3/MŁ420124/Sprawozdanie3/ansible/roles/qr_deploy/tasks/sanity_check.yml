@@ -1,0 +1,33 @@
+---
+- name: Check disk usage
+  ansible.builtin.shell: df -h / | awk 'NR==2 {print $5}' | tr -d '%'
+  register: disk_usage
+  changed_when: false
+  ignore_errors: true
+
+- name: Warn if disk usage high
+  ansible.builtin.debug:
+    msg: "Disk is almost full"
+  when: disk_usage.stdout | int > 80
+
+- name: Check free RAM
+  ansible.builtin.shell: free -m | awk 'NR==2 {print $7}'
+  register: free_ram
+  changed_when: false
+  ignore_errors: true
+
+- name: Warn if low RAM
+  ansible.builtin.debug:
+    msg: "Low RAM"
+  when: free_ram.stdout | int < 256
+
+- name: Check Docker connectivity
+  ansible.builtin.command: docker info
+  register: docker_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Warn if Docker not available
+  ansible.builtin.debug:
+    msg: "Docker is not available"
+  when: docker_check.rc != 0
