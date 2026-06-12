@@ -1,0 +1,5 @@
+---
+- name: Wdrozenie artefaktu pipeline na Endpoints
+  hosts: Endpoints
+  roles:
+    - ripgrep_deploy

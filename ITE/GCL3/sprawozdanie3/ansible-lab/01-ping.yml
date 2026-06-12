@@ -1,0 +1,6 @@
+---
+- name: Ping wszystkich maszyn
+  hosts: all
+  tasks:
+    - name: Test laczonosci modulem ping
+      ansible.builtin.ping:

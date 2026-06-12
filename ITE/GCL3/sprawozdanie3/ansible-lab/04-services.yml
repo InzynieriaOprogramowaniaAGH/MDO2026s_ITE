@@ -1,0 +1,24 @@
+---
+- name: Restart uslug sshd i rngd
+  hosts: Endpoints
+  become: true
+  tasks:
+    - name: Zainstaluj rng-tools (dostarcza rngd)
+      ansible.builtin.dnf5:
+        name: rng-tools
+        state: present
+
+    - name: Wlacz rngd na stale
+      ansible.builtin.systemd_service:
+        name: rngd
+        enabled: true
+
+    - name: Zrestartuj sshd
+      ansible.builtin.systemd_service:
+        name: sshd
+        state: restarted
+
+    - name: Zrestartuj rngd
+      ansible.builtin.systemd_service:
+        name: rngd
+        state: restarted

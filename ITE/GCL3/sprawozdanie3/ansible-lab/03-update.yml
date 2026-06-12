@@ -1,0 +1,18 @@
+---
+- name: Aktualizacja pakietow w systemie
+  hosts: all
+  become: true
+  tasks:
+    - name: Zapewnij python3-libdnf5 (wymagane przez modul dnf5)
+      ansible.builtin.command: dnf -y install python3-libdnf5
+      register: bootstrap
+      changed_when: "'Nothing to do' not in bootstrap.stdout"
+
+    - name: Odswiez metadane repozytoriow
+      ansible.builtin.command: dnf clean expire-cache
+      changed_when: false
+
+    - name: Zaktualizuj wszystkie pakiety
+      ansible.builtin.dnf5:
+        name: "*"
+        state: latest

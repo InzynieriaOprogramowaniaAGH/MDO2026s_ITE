@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  role_name: ripgrep_deploy
+  author: KL
+  description: Wdrozenie artefaktu ripgrep (.deb z pipeline CI) w kontenerze Docker
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Fedora
+      versions:
+        - "44"
+  galaxy_tags:
+    - docker
+    - deployment
+
+dependencies: []

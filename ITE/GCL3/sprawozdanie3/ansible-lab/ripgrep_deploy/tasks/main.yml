@@ -1,0 +1,119 @@
+---
+- name: Zapewnij python3-libdnf5
+  ansible.builtin.command: dnf -y install python3-libdnf5
+  register: bootstrap
+  changed_when: "'Nothing to do' not in bootstrap.stdout"
+  become: true
+
+
+- name: Sanity check maszyny docelowej
+  block:
+    - name: Sprawdz wolne miejsce na /
+      ansible.builtin.assert:
+        that:
+          - root_mount.size_available > (min_free_gb | int) * 1024 * 1024 * 1024
+        fail_msg: "Za malo wolnego miejsca na dysku"
+        quiet: true
+      vars:
+        root_mount: "{{ ansible_facts['mounts'] | selectattr('mount', 'equalto', '/') | first }}"
+
+    - name: Sprawdz dostep do Docker Hub
+      ansible.builtin.uri:
+        url: https://registry-1.docker.io/v2/
+        status_code: [200, 401]
+        timeout: 10
+  rescue:
+    - name: Sanity check nieudany - pomijam wdrozenie
+      ansible.builtin.debug:
+        msg: "Host {{ inventory_hostname }} nie przeszedl sanity check, wdrozenie pominiete."
+    - name: Zakoncz przetwarzanie hosta bez awarii playbooka
+      ansible.builtin.meta: end_host
+
+
+- name: Zainstaluj Dockera (moby-engine z repo Fedory)
+  ansible.builtin.dnf5:
+    name: moby-engine
+    state: present
+  become: true
+
+- name: Uruchom i wlacz usluge docker
+  ansible.builtin.systemd_service:
+    name: docker
+    state: started
+    enabled: true
+  become: true
+
+- name: Zweryfikuj, ze demon Dockera odpowiada
+  ansible.builtin.command: docker info
+  become: true
+  changed_when: false
+
+
+- name: Utworz katalog aplikacji
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Wyslij artefakt na zdalna maszyne
+  ansible.builtin.copy:
+    src: "{{ artifact_src }}"
+    dest: "{{ app_dir }}/ripgrep.deb"
+    mode: "0644"
+  become: true
+
+- name: Wyslij Dockerfile
+  ansible.builtin.copy:
+    src: Dockerfile
+    dest: "{{ app_dir }}/Dockerfile"
+    mode: "0644"
+  become: true
+
+- name: Zbuduj obraz z aplikacja
+  ansible.builtin.command:
+    cmd: docker build -t {{ image_name }} {{ app_dir }}
+  become: true
+
+
+- name: Usun poprzedni kontener, jesli istnieje (idempotencja)
+  ansible.builtin.command: docker rm -f {{ container_name }}
+  become: true
+  failed_when: false
+  changed_when: false
+
+- name: Uruchom kontener
+  ansible.builtin.command:
+    cmd: docker run -d --name {{ container_name }} {{ image_name }}
+  become: true
+
+
+- name: Wykonaj aplikacje w dzialajacym kontenerze
+  ansible.builtin.command:
+    cmd: docker exec {{ container_name }} rg --version
+  register: rg_check
+  become: true
+  changed_when: false
+  failed_when: "'ripgrep' not in rg_check.stdout"
+
+- name: Pokaz wynik weryfikacji
+  ansible.builtin.debug:
+    var: rg_check.stdout_lines
+
+
+- name: Oczysc srodowisko z wdrozonej aplikacji
+  become: true
+  tags: [never, cleanup]
+  block:
+    - name: Zatrzymaj i usun kontener
+      ansible.builtin.command: docker rm -f {{ container_name }}
+      failed_when: false
+
+    - name: Usun obraz
+      ansible.builtin.command: docker rmi -f {{ image_name }}
+      failed_when: false
+
+    - name: Usun katalog aplikacji
+      ansible.builtin.file:
+        path: "{{ app_dir }}"
+        state: absent

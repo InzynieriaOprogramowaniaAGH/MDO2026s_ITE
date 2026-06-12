@@ -1,0 +1,6 @@
+---
+app_dir: /opt/ripgrep
+image_name: ripgrep-app
+container_name: ripgrep-test
+artifact_src: ripgrep.deb
+min_free_gb: 2

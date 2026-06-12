@@ -1,0 +1,9 @@
+---
+- name: Dystrybucja pliku inwentaryzacji
+  hosts: Endpoints
+  tasks:
+    - name: Skopiuj inventory.ini do katalogu domowego
+      ansible.builtin.copy:
+        src: inventory.ini
+        dest: /home/ansible/inventory.ini
+        mode: "0644"
