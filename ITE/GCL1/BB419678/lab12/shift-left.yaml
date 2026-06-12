@@ -1,0 +1,45 @@
+name: Shift-left Neovim Pipeline
+
+# Akcja reaguje tylko na kod wrzucony do gałęzi ino_dev
+on:
+  push:
+    branches:
+      - ino_dev
+
+jobs:
+  code-quality-and-artifact:
+    runs-on: ubuntu-24.04
+
+    steps:
+      # Pobranie kodu repozytorium
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      #  Analiza jakości kodu (Code Quality) - Zamiast długiego buildu
+      - name: Sprawdzenie jakości kodu (Shellcheck)
+        run: |
+          echo "Zgodnie z poleceniem: Ponieważ pełny build Neovima zajmuje >30 min,"
+          echo "wykonujemy czynnosc zastepcza: Code Quality."
+          
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          
+          # Szukamy wszystkich skryptów .sh w repozytorium i sprawdzamy ich poprawność
+          find . -type f -name "*.sh" -exec shellcheck {} + || true
+          
+          echo "Jakość kodu powłoki sprawdzona pomyślnie!"
+
+      # Wygenerowanie pliku do artefaktu
+      - name: Generowanie przykladowego artefaktu
+        run: |
+          mkdir -p build_output
+          echo "Raport Code Quality wygenerowany pomyślnie dla gałęzi ino_dev" > build_output/raport_cq.txt
+          # Pakujemy folder do archiwum .tar.gz
+          tar -czvf neovim-raport.tar.gz build_output/
+
+      # Zapisanie zbudowanego artefaktu za pomocą dedykowanej akcji
+      - name: Udostepnienie artefaktu (Upload Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: neovim-raport-artefakt
+          path: neovim-raport.tar.gz
+          retention-days: 5

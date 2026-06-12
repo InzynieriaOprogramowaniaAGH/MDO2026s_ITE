@@ -1,0 +1,87 @@
+name: Full Neovim Build Pipeline
+
+on:
+  push:
+    branches:
+      - ino_dev
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------
+      # Zbudowanie Neovima i paczki DEB (Natywnie)
+      # ---------------------------------------------------------
+      - name: Instalacja zaleznosci systemowych
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build gettext cmake unzip curl build-essential
+
+      - name: Kompilacja Neovima ze zrodel
+        run: |
+          echo "Rozpoczynamy kompilacje Neovima. Moze to potrwac 10-15 minut..."
+          make CMAKE_BUILD_TYPE=Release
+
+      - name: Pakowanie do pliku DEB (Wykorzystanie CPack)
+        run: |
+          cd build
+          cpack -G DEB
+          
+          # Zmiana nazwy wygenerowanego pliku na ta, ktorej uzywales w Jenkinsie
+          mv nvim-*.deb ../neovim-final.deb
+          cd ..
+          
+          echo "--- zaleznosci zbudowanej paczki .deb ---"
+          dpkg -I ./neovim-final.deb | grep 'Depends' || true
+
+      # ---------------------------------------------------------
+      #  Deploy i Smoke Test w izolowanym kontenerze Dockera
+      # ---------------------------------------------------------
+      - name: Deploy i Smoke Test (CD)
+        run: |
+          echo "--- Tworzymy przykładowe pliki tekstowe do smoke test'u ---"
+          echo "To jest NIEZMODYFIKOWANY tekst testowy." > test_file.txt
+
+          echo "--- Budowanie kontenera CD (Deploy) ---"
+          cat << 'EOF' > Dockerfile.deploy
+          FROM ubuntu:24.04
+          COPY neovim-final.deb /tmp/
+          COPY test_file.txt /workspace/
+          WORKDIR /workspace
+          ARG DEBIAN_FRONTEND=noninteractive
+          RUN apt-get update && apt-get install -y /tmp/neovim-final.deb && rm -rf /var/lib/apt/lists/*
+          EOF
+
+          docker build -t neovim-cd-container -f Dockerfile.deploy .
+          docker rm -f smoke-test-run || true
+
+          echo "--- Wykonanie testu w kontenerze (Run & Check OUT) ---"
+          docker run --name smoke-test-run neovim-cd-container nvim --headless -c '%s/NIEZMODYFIKOWANY/ZMODYFIKOWANY/g' -c 'wq' test_file.txt
+
+          echo "--- Weryfikacja wyniku (OUT -> OK?) ---"
+          docker cp smoke-test-run:/workspace/test_file.txt ./test_file_out.txt
+          
+          if grep -q "ZMODYFIKOWANY" ./test_file_out.txt; then
+              echo "Neovim poprawnie zedytował plik."
+          else
+              echo "Plik nie został poprawnie przetworzony!"
+              exit 1
+          fi
+
+      - name: Sprzatanie po Smoke Tescie
+        if: always() # klauzula post { always { ... } } w Jenkinsie
+        run: docker rm -f smoke-test-run || true
+
+      # ---------------------------------------------------------
+      # Archiwizacja artefaktu
+      # ---------------------------------------------------------
+      - name: Archiwizacja Artefaktow (Paczka DEB)
+        uses: actions/upload-artifact@v4
+        with:
+          name: neovim-final-deb
+          path: ./neovim-final.deb
+          retention-days: 5
