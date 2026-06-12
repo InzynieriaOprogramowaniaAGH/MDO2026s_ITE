@@ -7,8 +7,6 @@ Przed przystąpieniem do pracy zapoznałem się z cennikiem i limitami darmowego
 ### 1. Przygotowanie niezależnego środowiska (Forkowanie)
 Zgodnie z rygorystycznym wymogiem instruktorskim, nie mogłem modyfikować głównego repozytorium twórców oprogramowania. Zdecydowałem się wykorzystać oficjalny kod projektu **Spring PetClinic**, który sforkowałem (skopiowałem) na swoje prywatne konto na GitHubie. Zapewniło to bezpieczne środowisko do eksperymentów (tzw. piaskownicę), gdzie mogłem definiować potoki bez ryzyka, że zostaną odrzucone przez głównych kontrybutorów.
 
-![Tworzenie forka oryginalnego repozytorium Spring PetClinic](screeny/image_968c10.png)
-
 Następnie sklonowałem swoją prywatną kopię na maszynę wirtualną (poza główne repozytorium przedmiotowe, aby uniknąć konfliktów zagnieżdżonych repozytoriów Git). Po pobraniu plików utworzyłem wymaganą w poleceniu, dedykowaną gałąź o nazwie `ino_dev`.
 Oryginalny kod posiadał już wbudowane, skomplikowane procesy CI/CD przygotowane przez twórców. Aby nie zakłócały one mojego zadania, usunąłem wszystkie dotychczasowe pliki konfiguracyjne z folderu `.github/workflows/`.
 
