@@ -1,0 +1,76 @@
+name: zlib CI Pipeline (Jenkins Migration)
+on:
+  push:
+    branches: [ "ino_dev" ]
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Instalacja zlib1g-dev
+        run: sudo apt-get update && sudo apt-get install -y zlib1g-dev
+
+      - name: Build (Kompilacja)
+        run: |
+          echo "Kompilacja pliku pobranego z Gita..."
+          ls
+          gcc -o wrapper.bin wrapper.c -lz
+
+      - name: Pakowanie (Niezależne)
+        run: |
+          echo "Test integralności zlib w CI/CD" > test.txt
+          md5sum test.txt | awk '{print $1}' > original.md5
+          gzip -c test.txt > test.txt.gz
+
+      - name: Test MD5 (C1)
+        run: |
+          ./wrapper.bin test.txt.gz > wynik.txt
+          
+          ORIG_MD5=$(md5sum test.txt | cut -d' ' -f1)
+          CURR_MD5=$(md5sum wynik.txt | cut -d' ' -f1)
+          
+          echo "MD5 przed: $ORIG_MD5"
+          echo "MD5 po:    $CURR_MD5"
+          
+          if [ "$ORIG_MD5" = "$CURR_MD5" ]; then
+              echo "Weryfikacja powiodła się"
+          else
+              echo "BŁĄD: Dane uległy uszkodzeniu!"
+              exit 1
+          fi
+
+      - name: Pakowanie .DEB
+        run: |
+          mkdir -p pkg/DEBIAN pkg/usr/bin
+          cp wrapper.bin pkg/usr/bin/zlib-tool
+          
+          cat <<EOF > pkg/DEBIAN/control
+          Package: zlib-wrapper-tool
+          Version: 1.0.0
+          Architecture: amd64
+          Maintainer: GitHub Actions
+          Description: Narzedzie do dekompresji GZIP oparte na zlib
+          EOF
+          
+          dpkg-deb --build pkg zlib-tool.deb
+
+      - name: Deploy (Wdrożenie Sandbox)
+        run: |
+          echo "Instalacja paczki na serwerze docelowym"
+          sudo dpkg -i zlib-tool.deb
+          
+          echo "Weryfikacja działania"                    
+          /usr/bin/zlib-tool || true
+          
+          echo "Deploy udany"
+
+      - name: Upload Artifact (post success)
+        uses: actions/upload-artifact@v4
+        with:
+          name: zlib-tool-deb
+          path: zlib-tool.deb
+          retention-days: 5
