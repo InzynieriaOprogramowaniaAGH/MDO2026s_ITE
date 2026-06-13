@@ -5,9 +5,9 @@ metadata:
   labels:
     app: nginx-custom
   annotations:
-    kubernetes.io/change-cause: "init 1.0"
+    kubernetes.io/change-cause: "dobra"
 spec:
-  replicas: 4
+  replicas: 6
   selector:
     matchLabels:
       app: nginx-custom
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: nginx-custom
-          image: evernever2000/nginx-custom:1.0
+          image: evernever2000/nginx-custom:2.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
