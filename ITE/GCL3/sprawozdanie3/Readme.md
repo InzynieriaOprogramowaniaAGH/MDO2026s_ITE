@@ -9,7 +9,7 @@
 
 ### Środowisko i sieć
 
-Utworzono dwie maszyny wirtualne Fedora 44: `ansible-control` (dyrygent, edycja Server) oraz `ansible-target` (końcówka, instalacja minimalna - możliwie najmniejszy zbiór pakietów, z `tar` i `sshd`). Hostname i użytkownika ustawiono już podczas instalacji; po instalacji wykonano migawkę.
+Utworzono dwie maszyny wirtualne Fedora 44: `ansible-control` (dyrygent, edycja Server) oraz `ansible-target` (końcówka, instalacja minimalna - możliwie najmniejszy zbiór pakietów, z `tar` i `sshd`). Hostname ustawiono już podczas instalacji; po instalacji wykonano migawkę (dedykowanego użytkownika `ansible` dodano później - patrz sekcja Inwentaryzacja).
 
 ![](zaj8/1-zainstalowano_2_maszyny.png)
 
@@ -73,13 +73,17 @@ Polecenie `ansible all -m ping` zwraca `pong` z obu maszyn (control - lokalnie, 
 
 ![](zaj8/17-kopia_inwentaryzacji.png)
 
-`03-update.yml` - aktualizacja pakietów.
+`03-update.yml` - aktualizacja pakietów. Pierwsze dwa taski (bindingi `python3-libdnf5` oraz odświeżenie metadanych) obchodzą [problem modułu `dnf5` #84634](https://github.com/ansible/ansible/issues/84634):
 
 ```yaml
-- name: Zapewnij python3-libdnf5
+- name: Zapewnij python3-libdnf5 (wymagane przez modul dnf5)
   ansible.builtin.command: dnf -y install python3-libdnf5
   register: bootstrap
   changed_when: "'Nothing to do' not in bootstrap.stdout"
+
+- name: Odswiez metadane repozytoriow
+  ansible.builtin.command: dnf clean expire-cache
+  changed_when: false
 
 - name: Zaktualizuj wszystkie pakiety
   ansible.builtin.dnf5:
@@ -89,7 +93,7 @@ Polecenie `ansible all -m ping` zwraca `pong` z obu maszyn (control - lokalnie, 
 
 ![](zaj8/18-aktualizacja_pakietów.png)
 
-`04-services.yml` - restart usług `sshd` i `rngd`.
+`04-services.yml` - instaluje pakiet `rng-tools` (minimalna Fedora nie zawiera `rngd`), włącza `rngd`, po czym restartuje usługi `sshd` i `rngd`.
 
 ![](zaj8/19-testart_sshd_rngd.png)
 
@@ -126,7 +130,7 @@ Sanity check w bloku `block`/`rescue` - przy niepowodzeniu host jest pomijany be
 
 ![](zaj8/22-rola_wdrażająca.png)
 
-Uruchomienie roli.
+Pierwsze uruchomienie roli zakończyło się błędem - task kopiujący artefakt nie znalazł pliku `ripgrep.deb` (plik miał błędną nazwę). Po jej poprawieniu wdrożenie przeszło.
 
 ![](zaj8/23-fail_i_narpawienie_nazwy.png)
 
