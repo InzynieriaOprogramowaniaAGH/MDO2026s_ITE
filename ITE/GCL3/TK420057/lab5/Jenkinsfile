@@ -1,0 +1,29 @@
+pipeline {
+    agent any 
+    stages {
+        stage('Check') {
+            steps {
+                sh 'ls -R'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'docker build -t flask-build -f ITE/GCL3/TK420057/lab5/Dockerfile.build .'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'docker build -t flask-test -f ITE/GCL3/TK420057/lab5/Dockerfile.test .'
+                sh 'docker run --rm flask-test'
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline zakończony sukcesem.'
+        }
+        failure {
+            echo 'Coś poszło nie tak. Sprawdź logi.'
+        }
+    }
+}
