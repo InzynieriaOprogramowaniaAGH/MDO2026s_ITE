@@ -1,0 +1,57 @@
+---
+
+
+- name: 1. Sanity check sprawdzenie dostepnego miejsca 
+  assert:
+    that:
+      - ansible_memfree_mb > 100
+    fail_msg: "Za malo wolnej pamieci"
+  ignore_errors: yes
+
+- name: 2. Instalacja Dockera na target (Fedora)
+  shell: dnf install -y docker docker-compose
+
+- name: 3. Sprawdzenie czy usluga Docker działa i startuje z systemem
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: 4. Przygotowanie katalogu na targecie
+  file:
+    path: /home/ansible/app
+    state: directory
+    mode: '0755'
+
+- name: 5. Przeslanie artefaktu (*.tgz) 
+  copy:
+    src: ./szymonjednorozec-mdo-url-shortener-0.0.3.tgz       
+    dest: /home/ansible/app/url-shortener.tgz
+    owner: ansible
+    mode: '0644'
+
+- name: 6. Uruchomienie aplikacji w kontenerze Node.js wraz z udostepnieniem i rozpakowaniem artefaktu
+  shell: |
+    tar -xzf url-shortener.tgz
+    
+    docker run -d --name url-shortener-running \
+      -v /home/ansible/app/package:/src:Z \
+      -w /src \
+      -p 8081:8080 \
+      node:20-alpine sleep 100
+  args:
+    chdir: /home/ansible/app
+    executable: /bin/bash
+
+- name: 7. Weryfikacja poprawnego uruchomienia i obecnosci rozpakowanych plikow (Sanity Check)
+  command: docker exec url-shortener-running ls -la
+  register: docker_check
+  failed_when: "'package.json' not in docker_check.stdout"
+
+- name: 8. Oczyszczenie srodowiska z wdrozonej aplikacji i sprzatanie
+  shell: |
+    docker stop url-shortener-running
+    docker rm url-shortener-running
+    rm -rf /home/ansible/app
+  args:
+    executable: /bin/bash
