@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-rolling
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2   
+      maxSurge: 25%       
+  selector:
+    matchLabels:
+      app: express-rolling
+  template:
+    metadata:
+      labels:
+        app: express-rolling
+    spec:
+      containers:
+      - name: express-container
+        image: express-app:v2
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
