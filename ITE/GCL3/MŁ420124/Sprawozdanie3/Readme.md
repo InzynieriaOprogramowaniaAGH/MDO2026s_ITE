@@ -155,7 +155,7 @@ Rezultat:
 
 Playbook restartuje usługi sshd i rndg. Przed wykonaniem zadania ręcznie zainstalowano i uruchonmiono obie usługi na maszynie docelowej, aby playbook przeszedł bez problemów.
 
----
+```bash
 - name: Restart sshd and rngd
   hosts: all
   become: true
@@ -170,6 +170,7 @@ Playbook restartuje usługi sshd i rndg. Przed wykonaniem zadania ręcznie zains
       ansible.builtin.service:
         name: rng-tools-debian
         state: restarted
+```
 
 Rezultat:
 
@@ -606,5 +607,242 @@ exit 1
 
 Jeśli Kubernetes wyśle kod wyjścia 0, skrypt przerywa działanie i zwraca status powodzenia. Jeśli czas minie, a pody nadal się tworzą, skrypt zwraca błąd exit 1.
 
+### Strategie wdrożenia 
+
+1. `Recreate` - wszystkie istniejące pody są zamykane przed utworzeniem nowych. Użycie: `.spec.strategy.type==Recreate`. Zagwarantuje to zamknięcie podów tylko przed utworzeniem aktualizacji. W przypadku aktualizacji wdrożenia wszystkie pody starej wersji zostaną natychmiast zamknięte. Przed utworzeniem jakiegokolwiek poda nowej wersji oczekiwane jest pomyślne usunięcie.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-recreate
+spec:
+  replicas: 4
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: demo-recreate
+  template:
+    metadata:
+      labels:
+        app: demo-recreate
+    spec:
+      containers:
+      - name: demo-server
+        image: demo-server:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+```
+
+Uruchomienie:
+
+```bash
+minikube kubectl -- apply -f deployment-recreate.yaml
+minikube kubectl -- get pods -w
+# zmiana na v2
+minikube kubectl -- apply -f deployment-recreate.yaml
+```
+
+Kubernetes najpierw nakazuje ubicie wszystkich 4 starych podów, cluster przez chwilę zostaje z zerem działających kontenerów i dopiero wtedy zaczyna tworzyć 4 nowe pody.
+
+![Zdjęcie 27](img/s27.png)
+
+2. `Rolling` - wdrożenie aktualizuje kontenery w trybie aktualizacji ciągłej (stopniowo zmniejszając stare zestawy replik i zwiększając nowe). Użycie: `.spec.strategy.type==RollingUpdate`. Można określić parametry `maxUnavailable` i `maxSurge`, aby kontrolować proces aktualizacji ciągłej.
+
+`.spec.strategy.rollingUpdate.maxUnavailable` to pole opcjonalne, które określa maksymalną liczbę kontenerów, które mogą być niedostępne podczas procesu aktualizacji.
+
+`.spec.strategy.rollingUpdate.maxSurge` to pole opcjonalne, które określa maksymalną liczbę kontenerów, jakie można utworzyć dla żądanej liczby kontenerów.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-rolling
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 3
+      maxSurge: 30%
+  selector:
+    matchLabels:
+      app: demo-rolling
+  template:
+    metadata:
+      labels:
+        app: demo-rolling
+    spec:
+      containers:
+      - name: demo-server
+        image: demo-server:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+```
+
+Uruchomienie:
+
+```bash
+minikube kubectl -- apply -f deployment-rolling.yaml
+minikube kubectl -- get pods -w
+# zmiana na v2
+minikube kubectl -- apply -f deployment-rolling.yaml
+```
+
+Dzięki parametrom cluster nie zabija wszystkiego. Najpierw stworzy dodatkowe pod v2, a ponieważ pozwoliliśmy na niedostępność 3 podów naraz, zacznie gasić maksymalnie 3 stare pody v1, w ich miejsce powołując kolejne v2.
+
+![Zdjęcie 28](img/s28.png)
+
+3. `Canary` - wdrożenie używane, jeeśli potrzeba wdrożyć wydania dla podzbioru użytkowników lub serwerów za pomocą wdrożenia. Można utworzyć wiele wdrożeń, po jednym dla każdego wydania, zgodnie ze schematem kanarkowym.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-canary
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo-canary-deployment
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: demo-canary-deployment
+        version: stable
+    spec:
+      containers:
+      - name: demo-server
+        image: demo-server:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+```
+
 ## Class 11
 
+### Wdrożenie 36 podów
+
+W pliku `deployment.yml` utworzono 36 podów.
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-deployment
+  labels:
+    app: demo
+spec:
+  replicas: 36
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      containers:
+      - name: demo-server
+        image: demo-server:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+```
+
+Uruchomienie:
+
+```bash
+minikube kubectl -- apply -f deployment.yml
+minikube kubectl -- get pods
+```
+
+### Ekspozycja do jednego poda
+
+Poleceniem `post-forward` utworzono bezpośreni tunel łączący port hosta z portem kontenera. Pozwoliło to na odpalenie i podejrzenie serwera z poziomu maszyny hosta.
+
+```bash
+minikube kubectl -- port-forward pod/demo-deployment-6f88f9986-29pgf 9001:3000
+```
+
+![Zdjęcie 29](img/s29.png)
+
+### Ekspozycja do deploymentu 
+
+Dzięki temu rozwiązaniu i użyciu `deployment/demo-deployment`, jeden z 36 podów został wystawiony do hosta.
+
+```bash
+minikube kubectl -- port-forward deployment/demo-deployment 9002:3000
+```
+
+![Zdjęcie 30](img/s30.png)
+
+### Ekspozycja do serwisu
+
+Za pomocą polecenia `expose` wygenerowano obiekt sieciowy, mapujący ruch z wewnętrznego portu 80 na docelowy port 3000 kontenerów. Serwis stanowi stały punkt dostępowy i automatycznie rozdziela zapytania pomiędzy całą pulę podów.
+
+```bash
+minikube kubectl -- expose deployment demo-deployment --type=ClusterIP --port=80 --target-port=3000 --name=service-demo-deployment
+```
+
+### Ekspozycja do deploymentu - plik .yml
+
+To samo można zadeklarować w pliku .yml.
+
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-demo-deployment-yml
+spec:
+  ports:
+  - port: 80
+    targetPort: 3000
+  selector:
+    app: demo-server
+```
+
+![Zdjęcie 31](img/s31.png)
+
+### Przeskalowanie wdrożeń
+
+Wykorzystując polecenie `scale` z flagą `--replicas=4`, zredukowano ilość podów z 36 do 4 aktywnych.
+
+```bash
+minikube kubectl -- scale deployment/demo-deployment --replicas=4
+```
+
+![Zdjęcie 32](img/s32.png)
+
+### Przeskalowanie wdrożeń - plik .yml
+
+Innym rozwiązaniem jest podmiana pola `replicas` w pliku .yml i ponowne uruchomienie deploymentu.
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-deployment
+  labels:
+    app: demo
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      containers:
+      - name: demo-server
+        image: demo-server:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+```
