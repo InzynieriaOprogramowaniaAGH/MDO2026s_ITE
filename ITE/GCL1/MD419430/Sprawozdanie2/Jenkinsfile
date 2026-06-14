@@ -1,0 +1,117 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = "nest-app"
+        BUILD_TAG = "${BUILD_NUMBER}"
+        BLDR_IMAGE = "${APP_NAME}-bldr:${BUILD_TAG}"
+        RUNTIME_IMAGE = "${APP_NAME}:${BUILD_TAG}"
+        REGISTRY = "mateuszdoktor1/${APP_NAME}"
+        NETWORK_NAME = "test-net-${BUILD_NUMBER}"
+        CONTAINER_NAME = "nest-service-${BUILD_NUMBER}"
+        PORT = "3000"
+    }
+
+    stages {
+
+        stage('Czyszczenie workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Pobranie kodu (SCM)') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Budowanie obrazu CI') {
+            steps {
+                dir('ITE/GCL1/MD419430/Sprawozdanie1/work/typescript-starter') {
+                    sh "docker build -t ${BLDR_IMAGE} -f Dockerfile.ci ."
+                }
+            }
+        }
+
+        stage('Testy') {
+            steps {
+                dir('ITE/GCL1/MD419430/Sprawozdanie1/work/typescript-starter') {
+                    sh "docker run --rm ${BLDR_IMAGE} npm run test"
+                }
+            }
+        }
+
+        stage('Budowanie obrazu runtime') {
+            steps {
+                dir('ITE/GCL1/MD419430/Sprawozdanie1/work/typescript-starter') {
+                    sh "docker build -t ${RUNTIME_IMAGE} -f Dockerfile ."
+                }
+            }
+        }
+
+        stage('Wdrozenie (srodowisko testowe)') {
+            steps {
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
+                sh "docker network create ${NETWORK_NAME} || true"
+
+                sh """
+                docker run -d \
+                    --name ${CONTAINER_NAME} \
+                    --network ${NETWORK_NAME} \
+                    -p ${PORT}:${PORT} \
+                    ${RUNTIME_IMAGE}
+                """
+
+                sleep 5
+            }
+        }
+
+        stage('Test integracyjny') {
+            steps {
+                script {
+                    try {
+                        sh "docker run --rm --network ${NETWORK_NAME} curlimages/curl -s -f http://${CONTAINER_NAME}:${PORT}/"
+                        echo "Usługa działa poprawnie"
+                    } catch (err) {
+                        error "Blad: test dostepności uslugi nie powiodl sie"
+                    }
+                }
+            }
+        }
+
+        stage('Publikacja (Docker Registry)') {
+            steps {
+                script {
+                    docker.withRegistry('', 'docker-credentials') {
+                        sh "docker tag ${RUNTIME_IMAGE} ${REGISTRY}:${BUILD_TAG}"
+                        sh "docker push ${REGISTRY}:${BUILD_TAG}"
+                    }
+                }
+            }
+        }
+
+        stage('Archiwizacja metadanych') {
+            steps {
+                writeFile file: 'image.txt', text: "${REGISTRY}:${BUILD_TAG}"
+                archiveArtifacts artifacts: 'image.txt', fingerprint: true
+            }
+        }
+
+        stage('Sprzatanie (runtime)') {
+            steps {
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
+                sh "docker network rm ${NETWORK_NAME} || true"
+            }
+        }
+    }
+
+    post {
+        always {
+            sh "docker rmi ${BLDR_IMAGE} || true"
+            sh "docker rmi ${RUNTIME_IMAGE} || true"
+        }
+    }
+}
