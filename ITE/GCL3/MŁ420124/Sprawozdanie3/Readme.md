@@ -392,16 +392,32 @@ Potwierdzenie poprawnej instalacji i uruchomienia aplikacji:
 
 ## Class 10
 
-Kubernetes to przenośna, rozszerzalna platforma oprogramowania open source służąca do zarządzania zadaniami i serwisami uruchamianymi w kontenerach. Umożliwia ich deklaratywną konfigurację i automatyzację. 
+`Kubernetes` to przenośna, rozszerzalna platforma oprogramowania open source służąca do zarządzania zadaniami i serwisami uruchamianymi w kontenerach. Umożliwia ich deklaratywną konfigurację i automatyzację. 
+
+W ramach zajęć użyto narzędzia `Minikube`, które pozwala odpalić jednowęzłowy cluster k8s lokalnie na maszynie wirtualnej lub na Dockerze. Na maszynie wirtualnej pobrano wersję binarną Minikube.
 
 ```bash
 curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
 sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
 ```
 
+Następnie odpalono Minikube z limitami zasobów poleceniem `minikube start`. W ten sposób stworzony został lokalny cluster. 
+
 ![Zdjęcie 3](img/s3.png)
 
+Poleceniem `minikube dashbord` odpalony został panel sterowania, następnie zapoznano się z jego funkcjami oraz pojęciami `pod` oraz `deployment`.
+
+`pod` - reprezentuje najmniejszą jednostkę pracy w Kubernetes, zapewniającą specyfikacje do uruchamiania jednego lub większej liczby kontenerów
+
+`deployment` - służy jako obiekt wyższego rzędu przeznaczony do zarządzania i aktualizowania instancji podów
+
 ![Zdjęcie 4](img/s4.png)
+
+### Analiza posiadanego kontenera
+
+Wybrana na poprzednich zajęciach aplikacja nie nadaje się do pracy w kontenerze i nie wyprowadza interfejsu funkcjonalnego przez sieć. Zamiast statycznego `nginxa`, zdecydowano się na użycie prostego servera `nodejs`. Aplikacja wyciaga hostname z poda i wysyła html z nazwą poda.
+
+Kod źródłowy aplikacji:
 
 ```javascript
 const http = require('http');
@@ -431,6 +447,8 @@ server.listen(3000, () => {
 });
 ```
 
+Aplikacja została zapakowana w kontener Dockera.
+
 ```Dockerfile
 FROM node:18-alpine
 
@@ -441,7 +459,13 @@ EXPOSE 3000
 CMD ["node", "server.js"]
 ```
 
+Po zbudowaniu obrazu za pomocą `docker build`, zostął on załadowany do pamięci podręcznej Minikube poleceniem `minikube image load demo-server:v1`, dzięki czemu K8s widzi go lokalnie.
+
 ![Zdjęcie 11](img/s11.png)
+
+### Uruchamianie oprogramowania
+
+Nasteępnie poleceniem poniżej załadowano pojedynczego poda. Użyte zostało narzędzie `kubectl` - oficjalnego narzędzie wiersza poleceń (CLI) do zarządzania klastrami Kubernetes. Umożliwia pełną interakcję z interfejsem API Kubernetes: wdrażanie aplikacji, monitorowanie zasobów oraz analizowanie i naprawianie błędów.
 
 ```bash
 minikube kubectl -- run demo-server-pod --image=demo-server:v1 --port=3000 --labels="app=demo-server-pod"
@@ -449,15 +473,25 @@ minikube kubectl -- run demo-server-pod --image=demo-server:v1 --port=3000 --lab
 
 ![Zdjęcie 12](img/s12.png)
 
+Ponieważ pod domyślnie siedzi zamknięty wewnątrz sieci klastra, trzeba wystawić go na zewnątrz. Wykorzystano do tego przekierowanie portów (port forwarding).
+
 ```bash
 minikube kubectl -- port-forward pod/demo-server-pod 9000:3000
 ```
 
 ![Zdjęcie 13](img/s13.png)
 
+Za pomocą `curl` oraz w przeglądarce zweryfikowano poprawne przekierowanie portów i wystawienie aplikacji.
+
 ![Zdjęcie 14](img/s14.png)
 
 ![Zdjęcie 15](img/s15.png)
+
+![Zdjęcie 26](img/s26.png)
+
+### Przekucie wdrożenia manualnego w plik wdrożenia (Deployment)
+
+Zamiast ręcznie stawiać pody, możliwe jest zdefiniowanie pliku `.yml`. Deployment jest połączeniem deklaracji podu i zestawu replik (określona liczba instancji podów utrzynywana do uruchomienia w dowolnym momencie). W pliku `deplyment.yml` zadeklarowano stan docelowy: 4 repliki aplikacji działające jednocześnie.
 
 ```yaml
 apiVersion: apps/v1
@@ -484,7 +518,7 @@ spec:
         - containerPort: 3000
 ```
 
-![Zdjęcie 16](img/s16.png)
+Wdrożono deklarację pliku, sprawdzono pody, wyekponowano deployment jako stabilny serwis oraz orzekierowano porty dla całego serwisu.
 
 ```bash
 minikube kubectl -- apply -f deployment.yaml
@@ -493,4 +527,84 @@ minikube kubectl -- expose deployment demo-server-deployment --type=ClusterIP --
 minikube kubectl -- port-forward service/demo-server-service 8080:80
 ```
 
-![Zdjęcie 17](img/s16.png)
+![Zdjęcie 16](img/s16.png)
+
+Weryfikacja w dashbordzie Minikubea
+
+![Zdjęcie 17](img/s17.png)
+
+### Test symulacji aktualizacji oraz crasha 
+
+Aby zasymulować aktualizację aplikacji, zmodyfikowano styl w server.js (zmiana koloru tła z szarego na biały) i zbudowano obraz jako v2.
+
+Dodatkowo dodano do kodu endpoint `/crash` powodujący błąd uruchomienia i zrobiono curla na ten endpoint. Efektem było oznaczenie poda jako `ERROR`.
+
+![Zdjęcie 18](img/s18.png)
+
+![Zdjęcie 19](img/s19.png)
+
+### Zmiany w deploymencie 
+
+Wdrożenie pełni funkcję obiektu wyższego rzędu, przeznaczonego do zarządzania i aktualizowania instancji podu. Choć obejmuje funkcje takie jak zapewnienie określonej liczby replik podów, wdrożenia umożliwiają również przeprowadzanie aktualizacji bez przestojów lub wycofywania w przypadku awarii.
+
+W przeciwieństwie do kontenera, wdrożenia reprezentują pożądany stan systemu. Kubernetes stale porównuje żądany stan wdrożenia ze stanem rzeczywistym, aby dopasować stan rzeczywisty do żądanego. To zachowanie odpowiada za ponowne uruchomienie nieudanych kontenerów we wdrożeniu lub zmianę liczby uruchomionych kontenerów w miarę aktualizowania liczby żądanych replik.
+
+1. Zwiększenie replik do 8
+
+Cluster stworzył 8 podów.
+
+![Zdjęcie 20](img/s20.png)
+
+2. Zmniejszenie replik do 1
+
+Kubernetes ubił 7 zbędnych podów, zostawiając jeden działający.
+
+![Zdjęcie 21](img/s21.png)
+
+3. Zmniejszenie replik do 0
+
+Wszystkie pody zostały usunięte - aplikacja całkowicie zniknęła z clustra.
+
+![Zdjęcie 22](img/s22.png)
+
+4. Ponowne przeskalowanie w górę do 4
+
+Powrót do 4 działających podów.
+
+![Zdjęcie 23](img/s23.png)
+
+5. Zastosowanie nowej wersji obrazu i powrót do starszej wersji obrazu
+
+Na screenach udało się zachować sytuację z trzema stanami: `Terminating`, `Running` oraz `ContainerCreating`. Odpowiadają one kolejno: wysłanie stanu wygaszania do starych podów, działających oraz odpalających nowe podu.
+
+![Zdjęcie 24](img/s24.png)
+
+![Zdjęcie 25](img/s25.png)
+
+### Kontrola wdrożenia
+
+Aby zautomatyzować sprawdzanie, czy wdrożenie przeszło pomyślnie i zmieściło się w wymaganym czasie można napisać skrypt w bashu bądź w pythonie. Skrypt działa w pętli i w każdej sekundzie odpytuje cluster o stan wdrożenia.
+
+```bash
+#!/bin/bash
+I=0
+while [ $I -lt 60 ]
+do
+    minikube kubectl -- rollout status deployment/demo-server-deployment --watch=false
+    if [ $? -eq 0 ] 
+    then
+        echo "Deployment completed successfully"
+        exit 0
+    fi
+    sleep 1
+    I=$((I + 1))
+done
+
+echo "Deployment failed"
+exit 1
+```
+
+Jeśli Kubernetes wyśle kod wyjścia 0, skrypt przerywa działanie i zwraca status powodzenia. Jeśli czas minie, a pody nadal się tworzą, skrypt zwraca błąd exit 1.
+
+## Class 11
+
