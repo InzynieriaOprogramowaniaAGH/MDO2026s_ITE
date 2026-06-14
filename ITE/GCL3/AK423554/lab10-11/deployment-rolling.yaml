@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastify-rolling
+  labels:
+    app: fastify-app
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: "25%"
+  selector:
+    matchLabels:
+      app: fastify-app-rolling
+  template:
+    metadata:
+      labels:
+        app: fastify-app-rolling
+    spec:
+      containers:
+      - name: fastify-container
+        image: moja-aplikacja:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000

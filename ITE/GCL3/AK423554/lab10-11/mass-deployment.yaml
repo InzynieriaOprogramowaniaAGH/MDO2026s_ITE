@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastify-mass-deployment
+  labels:
+    app: fastify-mass
+spec:
+  replicas: 36
+  selector:
+    matchLabels:
+      app: fastify-mass-pod
+  template:
+    metadata:
+      labels:
+        app: fastify-mass-pod
+    spec:
+      containers:
+      - name: fastify-container
+        image: moja-aplikacja:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
