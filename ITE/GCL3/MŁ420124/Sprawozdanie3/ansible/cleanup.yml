@@ -1,0 +1,25 @@
+---
+- name: Cleanup QR deployment
+  hosts: Endpoints
+  become: true
+
+  vars:
+    remote_dir: "/tmp/qr_deploy"
+    image_name: "qr_app"
+    container_name: "qr_runner"
+
+  tasks:
+    - name: Stop container
+      ansible.builtin.command:
+        cmd: docker stop {{ container_name }}
+      ignore_errors: true
+
+    - name: Remove Docker image
+      ansible.builtin.command:
+        cmd: docker rmi -f {{ image_name }}
+      ignore_errors: true
+
+    - name: Delete remote directory
+      ansible.builtin.file:
+        path: "{{ remote_dir }}"
+        state: absent

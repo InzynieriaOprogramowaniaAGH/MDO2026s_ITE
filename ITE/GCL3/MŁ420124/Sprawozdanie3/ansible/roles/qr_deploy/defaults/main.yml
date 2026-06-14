@@ -1,0 +1,4 @@
+local_ddl_path: "files/Genocs.QRCodeLibrary.dll"
+remote_dir: "/tmp/qr_deploy"
+container_name: "qr_runner"
+image_name: "qr_app"

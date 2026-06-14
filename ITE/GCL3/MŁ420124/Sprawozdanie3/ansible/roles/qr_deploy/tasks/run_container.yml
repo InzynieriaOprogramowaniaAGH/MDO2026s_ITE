@@ -1,0 +1,14 @@
+---
+- name: Run container and generate QR CODE
+  ansible.builtin.command:
+    cmd: >
+      docker run --rm
+      --name {{ container_name }}
+      -v {{ remote_dir }}/output:/output
+      {{ image_name }}
+  become: true
+  register: container_output
+
+- name: Container output
+  ansible.builtin.debug:
+    msg: "{{ container_output.stdout }}"
