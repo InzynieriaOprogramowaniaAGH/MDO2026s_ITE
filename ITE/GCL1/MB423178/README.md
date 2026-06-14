@@ -1,1 +1,1 @@
-Wszystko jest w README.md w odpowiednim folderze Sprawozdanie 1
+Wszystko jest w README.md w odpowiednich folderach
