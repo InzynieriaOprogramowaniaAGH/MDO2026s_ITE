@@ -1,0 +1,31 @@
+---
+- name: Ping i Kopiowanie
+  hosts: Endpoints
+  tasks:
+    - name: 1. PING
+      ping:
+
+    - name: 2. Skopiowanie pliku inwentaryzacji
+      copy:
+        src: inventory.ini
+        dest: /tmp/kopia_inventory.ini
+    - name: 3. Aktualizacja pakietow (apt update & upgrade)
+      apt:
+        update_cache: yes
+        upgrade: dist
+      become: yes
+
+    - name: 4. Instalacja pakietu dla uslugi rngd
+      apt:
+        name: rng-tools-debian
+        state: present
+      become: yes
+
+    - name: 5. Restart uslug sshd i rngd
+      service:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - ssh
+        - rng-tools-debian
+      become: yes
