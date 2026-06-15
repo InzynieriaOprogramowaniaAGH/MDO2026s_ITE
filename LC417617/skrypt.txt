@@ -1,0 +1,14 @@
+Skrypt do zadania z commitem
+
+#!/bin/sh
+
+commit_msg_file=$1
+commit_msg=$(cat "$commit_msg_file")
+
+
+PREFIX="LC417617"
+
+if ! echo "$commit_msg" | grep -q "^$PREFIX"; then
+  echo "BŁĄD: Wiadomość commita musi zaczynać się od $PREFIX"
+  exit 1
+fi
