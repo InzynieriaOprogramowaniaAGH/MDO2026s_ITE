@@ -1,0 +1,179 @@
+    1  sudo apt update
+    2  sudo apt install git -y
+    3  ssh-keygen -t ed25519 -C sebix6785gmail.com
+    4  sudo apt update
+    5  sudo apt install git -y
+    6  ssh-keygen -t ed25519 -C sebix6785@gmail.com
+    7  ssh-keygen -t ecdsa -b 521 -f ~/.ssh/id_ecdsa
+    8  cat ~/.ssh/id_ed25519.pub
+    9  git clone git@github.com:InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+   10  ls
+   11  cd MDO2026s_ITE
+   12  git branch -a
+   13  ls -F
+   14  ls -F READMEs/
+   15  git branch -a | grep ITE
+   16  git checkout ITE
+   17  git checkout 01-Class
+   18  git checkout 01-Class.md
+   19  git checkout main
+   20  git checkout -b SB422052
+   21  mkdir SB422052
+   22  cd SB422052
+   23  chmod +x githook.sh
+   24  cp githook.sh ../.git/hooks/commit-msg
+   25  git add .
+   26  git commit -m "SB422052 ostateczne oddanie zadania"
+   27  git config --global user.name "Sebastian Bozek"
+   28  git config --global user.email "sebix6785@gmail.com"
+   29  git commit -m "SB422052 ostateczne oddanie zadania"
+   30  git push -u origin SB422052
+   31  sudo apt update
+   32  sudo apt install -y docker.io
+   33  sudo usermod -aG docker $USER
+   34  newgrp docker
+   35  cd ~/MD02026s_ITE/SB422052
+   36  cat << 'EOF' > githook.sh
+   37  bash
+   38  ls
+   39  ls
+   40  #zm 
+   41  #fg
+   42  EOF
+   43  cat << 'EOF' > sprawozdanie.md
+   44  # Sprawozdanie SB422052
+   45  Zadanie z laboratorium DevOps wykonane na Macu.
+   46  1. Maszyna wirtualna na UTM (Ubuntu).
+   47  2. Dostęp przez SSH i VS Code.
+   48  3. Utworzenie Git Hooka.
+   49  EOF
+   50  chmod +x githook.sh
+   51  cp githook.sh ../.git/hooks/commit-msg
+   52  git add .
+   53  git commit -m "SB422052 gotowe zadanie"
+   54  git push -u origin SB422052
+   55  cd ~/MD02026s_ITE
+   56  cd ~/MD*ITE
+   57  git checkout SB422052 || git checkout -b SB422052
+   58  mkdir -p SB422052
+   59  cd SB422052
+   60  cat << 'EOF' > githook.sh
+   61  echo '#!/bin/bash' > githook.sh
+   62  echo 'if ! grep -q "^SB422052" "$1"; then echo "BLAD: Wiadomosc musi zaczynac sie od SB422052"; exit 1; fi' >> githook.sh
+   63  echo '# Sprawozdanie SB422052' > sprawozdanie.md
+   64  echo 'Wszystkie punkty zrealizowane: UTM (Ubuntu), SSH, Klucze, Git Hook.' >> sprawozdanie.md
+   65  code .
+   66  docker run hello-world
+   67  docker run busybox
+   68  docker run -it busybox
+   69  ls
+   70  docker run -it ubuntu bash
+   71  ps aux | grep docker
+   72  cat << 'EOF' > Dockerfile
+   73  FROM ubuntu:24.04
+   74  RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+   75  RUN git clone https://github.com/InzynieriaOprogramowaniaAGH/MD02026s_ITE.git /repozytorium
+   76  WORKDIR /repozytorium
+   77  CMD ["bash"]
+   78  EOF
+   79  docker build -t obraz-seb .
+   80  docker run -it obraz-seb
+   81  cat << 'EOF' > Dockerfile
+   82  FROM ubuntu:24.04
+   83  RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+   84  COPY . /repozytorium
+   85  WORKDIR /repozytorium
+   86  CMD ["bash"]
+   87  EOF
+   88  docker build -t obraz-seb .
+   89  docker run -it obraz-seb
+   90  docker ps -a
+   91  docker container prune -f
+   92  docker image prune -a -f
+   93  git add Dockerfile
+   94  git commit -m "SB422052 Dodanie Dockerfile - Punkt 9"
+   95  git push origin SB422052
+   96  git add .
+   97  git commit -m "SB422052 dodanie szczegolowych screenow z Dockera do sprawozdania"
+   98  git push origin SB422052
+   99  mkdir screeny
+  100  mv *.png screeny/
+  101  git add .
+  102  git commit -m "SB422052 uporzadkowanie screenow w folderze"
+  103  git push origin SB42205
+  104  git push origin SB422052
+  105  docker run -it node:20 bash
+  106  cat << 'EOF' > Dockerfile.build
+  107  FROM node:20
+  108  WORKDIR /app
+  109  cat << 'EOF' > Dockerfile.build
+  110  FROM node:20
+  111  WORKDIR /app
+  112  RUN git clone https://github.com/expressjs/express.git .
+  113  RUN npm install
+  114  EOF
+  115  cat << 'EOF' > Dockerfile.test
+  116  FROM express-build:latest
+  117  WORKDIR /app
+  118  CMD ["npm", "test"]
+  119  EOF
+  120  docker build -t express-build -f Dockerfile.build .
+  121  docker run -it node:20 bash
+  122  docker build -t express-build -f Dockerfile.build .
+  123  docker build -t express-test -f Dockerfile.test .
+  124  docker run express-test
+  125  cat << 'EOF' > docker-compose.yml
+  126  version: '3.8'
+  127  services:
+  128    test-app:
+  129      build:
+  130        context: .
+  131        dockerfile: Dockerfile.test
+  132  EOF
+  133  docker compose up
+  134  cat << 'EOF' > docker-compose.yml
+  135  version: '3.8'
+  136  services:
+  137  test-app:
+  138  build:
+  139  context: .
+  140  dockerfile: Dockerfile.test
+  141  EOF
+  142  docker compose up
+  143  sudo apt install -y docker-compose
+  144  docker-compose up
+  145  git add .
+  146  git commit -m "Zajecia 3"
+  147  git commit -m "SB422052 Zajecia 3"
+  148  git push origin SB422052
+  149  docker volume create vol_wejsciowy
+  150  docker volume create vol_wyjsciowy
+  151  docker run --rm -v vol_wejsciowy:/repo alpine/git clone https://github.com/expressjs/express.git /repo
+  152  docker run -it -v vol_wejsciowy:/app_in -v vol_wyjsciowy:/app_out node:20 bash
+  153  docker run --rm -v vol_wyjsciowy:/out alpine ls -la /out/express_build
+  154  git add .
+  155  git commit -m "SB422052 Zajecia 4 - czesc 1 (woluminy gotowe)"
+  156  git push origin SB422052
+  157  docker run -d --name iperf-server networkstatic/iperf3 -s
+  158  docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf-server
+  159  docker run -it --rm networkstatic/iperf3 -c TUTAJ_IP
+  160  docker run -it --rm networkstatic/iperf3 -c 172.17.0.2
+  161  docker stop iperf-server && docker rm iperf-server
+  162  docker network create iperf_siec
+  163  docker run -d --name iperf-serwer-dns --network iperf_siec -p 5201:5201 networkstatic/iperf3 -s
+  164  docker run -it --rm --network iperf_siec networkstatic/iperf3 -c iperf-serwer-dns
+  165  sudo apt-get update && sudo apt-get install -y iperf3
+  166  iperf3 -c 127.0.0.1
+  167  docker run -d --name moj-ssh -p 2222:22 ubuntu:latest sleep infinity
+  168  docker exec -it moj-ssh bash
+  169  ssh root@127.0.0.1 -p 2222
+  170  docker network create jenkins
+  171  docker run --name jenkins-docker --rm --detach --privileged --network jenkins --network-alias docker --env DOCKER_TLS_CERTDIR=/certs --volume jenkins-docker-certs:/certs/client --volume jenkins-data:/var/jenkins_home --publish 2376:2376 docker:dind
+  172  docker run --name jenkins-blueocean --rm --detach --network jenkins --env DOCKER_HOST=tcp://docker:2376 --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 --volume jenkins-data:/var/jenkins_home --volume jenkins-docker-certs:/certs/client:ro --publish 8080:8080 --publish 50000:50000 jenkins/jenkins:lts
+  173  docker ps
+  174  docker exec -it jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+  175  git add .
+  176  git commit -m "SB422052 Zajecia 4 - komplet (iperf3, SSH, Jenkins)"
+  177  git push origin SB422052
+  178  history > Sprawozdanie4/historia_polecen.txt
+  179  history > SprawozdanieN/historia_polecen.txt

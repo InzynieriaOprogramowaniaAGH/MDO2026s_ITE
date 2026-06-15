@@ -1,0 +1,3 @@
+FROM app-build
+
+CMD ["npm", "run", "test"]

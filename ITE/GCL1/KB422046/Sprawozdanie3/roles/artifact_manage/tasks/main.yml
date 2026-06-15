@@ -1,0 +1,139 @@
+---
+- name: Sanity check - connectivity and disk
+  ansible.builtin.shell: |
+    echo "disk_free=$(df -h / | tail -1 | awk '{print $4}')"
+  register: sanity
+  failed_when: false
+  changed_when: false
+
+- name: Install Docker
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - openssl
+    state: present
+    update_cache: yes
+
+- name: Ensure Docker running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Resolve artifact filename
+  ansible.builtin.set_fact:
+    artifact_file: "{{ artifact_src | basename }}"
+  changed_when: false
+
+- name: Create work directory
+  ansible.builtin.file:
+    path: "{{ work_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy artifact to target
+  ansible.builtin.copy:
+    src: "{{ artifact_src }}"
+    dest: "{{ work_dir }}/{{ artifact_file }}"
+    mode: "0644"
+
+- block:
+    - name: Remove old container if exists
+      ansible.builtin.command: "docker rm -f {{ container_name }}"
+      failed_when: false
+      changed_when: false
+
+    - name: Start base container
+      ansible.builtin.command: "docker run -d --name {{ container_name }} ubuntu:24.04 sleep infinity"
+
+    - name: Copy artifact into container
+      ansible.builtin.command: "docker cp {{ work_dir }}/{{ artifact_file }} {{ container_name }}:/tmp/{{ artifact_file }}"
+
+    - name: Install runtime dependencies and .deb inside container
+      ansible.builtin.shell: |
+        docker exec {{ container_name }} bash -lc "apt-get update && apt-get install -y --no-install-recommends ca-certificates libpsl5 zlib1g libssl3 && dpkg -i /tmp/{{ artifact_file }} && ldconfig"
+
+    - name: Copy mock_http.py
+      ansible.builtin.copy:
+        src: "{{ mocks_src_dir }}/mock_http.py"
+        dest: "{{ work_dir }}/mock_http.py"
+        mode: "0644"
+
+    - name: Copy mock_https.py
+      ansible.builtin.copy:
+        src: "{{ mocks_src_dir }}/mock_https.py"
+        dest: "{{ work_dir }}/mock_https.py"
+        mode: "0644"
+
+    - name: Copy mock_rest.py
+      ansible.builtin.copy:
+        src: "{{ mocks_src_dir }}/mock_rest.py"
+        dest: "{{ work_dir }}/mock_rest.py"
+        mode: "0644"
+
+    - name: Create test network
+      ansible.builtin.command: docker network create test-net
+      failed_when: false
+      changed_when: false
+
+    - name: Connect runtime container to test network
+      ansible.builtin.command: "docker network connect test-net {{ container_name }}"
+      failed_when: false
+      changed_when: false  
+
+    - name: Generate SSL certificate for C2
+      ansible.builtin.shell: |
+        openssl req -x509 -newkey rsa:2048 -keyout {{ work_dir }}/key.pem -out {{ work_dir }}/cert.pem -days 1 -nodes -subj "/CN=C2"
+
+    - name: Remove old mock containers if exist
+      ansible.builtin.command: "docker rm -f C1 C2 C3"
+      failed_when: false
+      changed_when: false
+
+    - name: Start mock servers
+      ansible.builtin.command: >
+        docker run -d --name C1 --network test-net --network-alias C1 -v {{ work_dir }}:/workspace python:3-slim python /workspace/mock_http.py
+
+    - name: Start mock HTTPS server
+      ansible.builtin.command: >
+        docker run -d --name C2 --network test-net --network-alias C2 -v {{ work_dir }}:/workspace python:3-slim python /workspace/mock_https.py
+
+    - name: Start mock REST server
+      ansible.builtin.command: >
+        docker run -d --name C3 --network test-net --network-alias C3 -v {{ work_dir }}:/workspace python:3-slim python /workspace/mock_rest.py
+
+    - name: HTTP test (C1)
+      ansible.builtin.command: docker exec {{ container_name }} curl -sS http://C1:81
+      register: http_out
+      failed_when: http_out.stdout != "HTTP_OK"
+
+    - name: HTTPS test (C2)
+      ansible.builtin.command: docker exec {{ container_name }} curl -sS -k https://C2:82
+      register: https_out
+      failed_when: https_out.stdout != "HTTPS_OK"
+
+    - name: REST POST test (C3)
+      ansible.builtin.command: docker exec {{ container_name }} curl -sS -X POST http://C3:93
+      register: rest_out
+      failed_when: rest_out.stdout != "REST_OK"
+
+  always:
+    - name: Cleanup container
+      ansible.builtin.command: "docker rm -f {{ container_name }}"
+      failed_when: false
+      changed_when: false
+
+    - name: Cleanup mock containers
+      ansible.builtin.command: "docker rm -f C1 C2 C3"
+      failed_when: false
+      changed_when: false
+
+    - name: Cleanup test network
+      ansible.builtin.command: "docker network rm test-net"
+      failed_when: false
+      changed_when: false
+
+    - name: Cleanup work directory
+      ansible.builtin.file:
+        path: "{{ work_dir }}"
+        state: absent

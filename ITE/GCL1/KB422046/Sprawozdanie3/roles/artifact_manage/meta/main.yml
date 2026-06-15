@@ -1,0 +1,17 @@
+galaxy_info:
+  role_name: artifact_manage
+  author: KB422046
+  description: Manage .deb artifact
+
+  license: MIT
+
+  min_ansible_version: 2.1
+
+  platforms:
+    - name: Ubuntu
+      versions:
+      - 24.04
+
+  galaxy_tags: []
+
+  dependencies: []
