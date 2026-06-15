@@ -23,7 +23,7 @@ ansible-target
 
 Test połączenia ping:
 
-![image](Sprawozdanie3/6.png)
+![image](6.png)
 
 **Playbook - podstawowe zadania**
 
@@ -59,7 +59,7 @@ ansible-playbook -i inventory.ini setup.yml
 
 Wynik wykonania playbooka:
 
-![image](Sprawozdanie3/9.png)
+![image](9.png)
 
 **Zarządzanie artefaktem - kontener**
 
@@ -102,7 +102,7 @@ Playbook pobiera artefakt z Jenkinsa, kopiuje plik `.deb` do maszyny docelowej, 
 
 Wynik uruchomienia powyższych zadań:
 
-![image](Sprawozdanie3/14.png)
+![image](14.png)
 
 **Stworzenie roli Ansible**
 
@@ -110,7 +110,7 @@ Wynik uruchomienia powyższych zadań:
 ansible-galaxy role init moja_aplikacja
 ```
 
-![image](Sprawozdanie3/12.png)
+![image](12.png)
 
 Wypełniono strukturę roli zadaniami i meta/main.yml.
 
@@ -186,16 +186,16 @@ Maszynę wirtualną UEFI uruchomiono z Fedora Everything Netinst ISO. W boot men
 inst.ks=http://172.23.08.1:8000/fedora-ks.cfg
 ```
 
-![image](Sprawozdanie3/15%20lab9.png)
-![image](Sprawozdanie3/17.png)
-![image](Sprawozdanie3/18.png)
-![image](Sprawozdanie3/19.png)
+![image](15%20lab9.png)
+![image](17.png)
+![image](18.png)
+![image](19.png)
 
 
 
 Instalacja przebiegła w pełni automatycznie. Po zakończeniu system uruchomił się ponownie, a na ekranie widoczne były logi z działania skryptu.
-![image](Sprawozdanie3/20.png)
-![image](Sprawozdanie3/21.png)
+![image](20.png)
+![image](21.png)
 
 
 
@@ -206,7 +206,7 @@ Instalacja przebiegła w pełni automatycznie. Po zakończeniu system uruchomił
 #### Krok 1: Weryfikacja konfiguracji sieciowej i SSH 
 
 
-![image](Sprawozdanie3/22%20lab10.png)
+![image](22%20lab10.png)
 
 #### Krok 2: Uruchomienie Minikube
 
@@ -218,7 +218,7 @@ minikube start --cpus=2 --memory=2048 --driver=docker
 
 Minikube uruchamia klaster Kubernetes z określonymi zasobami (2 CPU, 2048 MB RAM) przy użyciu sterownika Docker. Widoczne są komunikaty systemowe, w tym ostrzeżenie o alokacji pamięci pozostawiającej niewielki margines dla systemu.
 
-![image](Sprawozdanie3/23.png)
+![image](23.png)
 
 #### Krok 3: Sprawdzenie stanu węzłów klastra
 
@@ -230,7 +230,7 @@ kubectl get nodes
 
 Wynik pokazuje jeden węzeł `minikube` w stanie `Ready`, z rolą `control-plane` i wersją Kubernetesa `v1.35.1`. Oznacza to, że klaster jest gotowy do pracy.
 
-![image](Sprawozdanie3/24.png)
+![image](24.png)
 
 #### Krok 4: Uruchomienie Dashboardu
 
@@ -240,7 +240,7 @@ minikube dashboard
 
 Polecenie otwiera panel zarządzania klastrem w przeglądarce. Widok Dashboardu jest pusty (brak zasobów), co jest prawidłowe po czystej instalacji.
 
-![image](Sprawozdanie3/25.png)
+![image](25.png)
 
 #### Krok 5: Budowa obrazu Docker wersji v1 
 
@@ -249,7 +249,7 @@ sudo docker build -t oskar-nginx:v1 .
 ```
 
 Proces budowy obrazu bazującego na `nginx:alpine`. 
-![image](Sprawozdanie3/26.png)
+![image](26.png)
 
 #### Krok 6: Test lokalny obrazu v1
 
@@ -259,16 +259,16 @@ sudo docker run -d --name lab10-web -p 8888:8888 oskar-nginx:v1
 
 Kontener uruchomiony w tle. Widoczny identyfikator kontenera.
 
-![image](Sprawozdanie3/27.png)
+![image](27.png)
 
 #### Krok 7: Weryfikacja działania kontenera
 
-![image](Sprawozdanie3/28.png)
+![image](28.png)
 #### Krok 8: Strona dostępna w przeglądarce
 
 W przeglądarce wyświetla się strona z napisem `[ KONTENER AKTYWNY ]`. Potwierdza to poprawne działanie kontenera z własną konfiguracją Nginx na porcie 8888.
 
-![image](Sprawozdanie3/29.png)
+![image](29.png)
 
 #### Krok 9: Eksport obrazu i wczytanie do Minikube
 
@@ -279,7 +279,7 @@ minikube image load oskar-nginx.tar
 
 Obraz zostaje zapisany do pliku `.tar`, a następnie wczytany do środowiska Minikube, aby był dostępny dla klastra.
 
-![image](Sprawozdanie3/30.png)
+![image](30.png)
 
 #### Krok 10: Sprawdzenie obrazów w Minikube
 
@@ -289,7 +289,7 @@ docker images | grep oskar
 
 Przełączenie się na terminal wewnątrz minikube i zbudowanie tam obrazu v1
 
-![image](Sprawozdanie3/31.png)
+![image](31.png)
 
 #### Krok 11: Ręczne uruchomienie Poda
 
@@ -299,7 +299,7 @@ kubectl run oskar-web-pod --image=oskar-nginx:v1 --port=8888 --labels app=oskar-
 
 Polecenie tworzy pojedynczy Pod z obrazem `v1`, eksponując port 8888 i dodając etykietę.
 
-![image](Sprawozdanie3/32.png)
+![image](32.png)
 
 #### Krok 12: Sprawdzenie statusu Poda
 
@@ -309,13 +309,13 @@ kubectl get pods
 
 Pod `oskar-web-pod` jest w stanie `Running` od 47 sekund. Weryfikacja poprawności uruchomienia.
 
-![image](Sprawozdanie3/33.png)
+![image](33.png)
 
 #### Krok 13: Dashboard Kubernetesa
 
 Widok Dashboardu pokazuje pojedynczy Pod uruchomiony w domyślnym namespace. Potwierdza to, że Pod jest widoczny w interfejsie graficznym.
 
-![image](Sprawozdanie3/34.png)
+![image](34.png)
 
 #### Krok 14: Wdrożenie Deploymentu z 4 replikami
 
@@ -325,7 +325,7 @@ kubectl apply -f deployment.yaml
 
 Deployment `oskar-web-deployment` został utworzony. Wcześniej przygotowany plik YAML definiował 4 repliki.
 
-![image](Sprawozdanie3/35.png)
+![image](35.png)
 
 #### Krok 15: Sprawdzenie Deploymentu
 
@@ -335,7 +335,7 @@ kubectl get deployments
 
 Wdrożenie `oskar-web-deployment` ma 4/4 replik gotowych, co oznacza poprawne uruchomienie wszystkich podów.
 
-![image](Sprawozdanie3/36.png)
+![image](36.png)
 
 #### Krok 16: Port-forward do Poda
 
@@ -345,7 +345,7 @@ kubectl port-forward pod/oskar-web-pod 8888:8888 --address 0.0.0.0
 
 Przekierowanie ruchu z portu 8888 na hoście na port 8888 w Podzie. Widać komunikaty o nawiązywaniu połączeń.
 
-![image](Sprawozdanie3/37.png)
+![image](37.png)
 
 #### Krok 17: Sprawdzenie statusu rollout
 
@@ -355,7 +355,7 @@ kubectl rollout status deployment/oskar-web-deployment
 
 Komenda potwierdza, że wdrożenie "successfully rolled out". Wszystkie repliki są aktualne.
 
-![image](Sprawozdanie3/38.png)
+![image](38.png)
 
 #### Krok 18: Lista podów po wdrożeniu
 
@@ -365,7 +365,7 @@ kubectl get pods
 
 Widoczne są 4 pody z deploymentu (`oskar-web-deployment-...`) oraz osobny pod `oskar-web-pod`. Wszystkie w stanie `Running`.
 
-![image](Sprawozdanie3/39.png)
+![image](39.png)
 
 #### Krok 19: Eksponowanie Deploymentu jako Service
 
@@ -375,14 +375,14 @@ kubectl expose deployment oskar-web-deployment --type=ClusterIP --port=8888 --na
 
 Tworzy Service typu `ClusterIP` dla deploymentu, udostępniając go wewnątrz klastra na porcie 8888.
 
-![image](Sprawozdanie3/40.png)
+![image](40.png)
 
 #### Krok 20: Sprawdzenie Service
 
 
 Service `oskar-web-service` został utworzony.
 
-![image](Sprawozdanie3/41.png)
+![image](41.png)
 
 #### Krok 21: Budowa obrazu wersji v2
 
@@ -392,7 +392,7 @@ docker build -t oskar-nginx:v2 .
 
 Budowa zaktualizowanej wersji obrazu.
 
-![image](Sprawozdanie3/42.png)
+![image](42.png)
 
 #### Krok 22: Budowa obrazu "broken"
 
@@ -408,7 +408,7 @@ FROM oskar-nginx:v1
 
 CMD ["/bin/sh", "-c", "echo 'KRYTYCZNY BLAD: Aplikacja zepsuta!' && exit 1"]
 ```
-![image](Sprawozdanie3/43.png)
+![image](43.png)
 
 #### Krok 23: Lista obrazów Docker na hoście
 
@@ -418,7 +418,7 @@ docker images | grep oskar
 
 Widoczne obrazy: `oskar-nginx:v1`, `oskar-nginx:v2`, `oskar-nginx:broken`.
 
-![image](Sprawozdanie3/44.png)
+![image](44.png)
 
 #### Krok 24: Wczytanie obrazu v2 do Minikube
 
@@ -428,7 +428,7 @@ minikube image load oskar-nginx:v2
 
 Obraz `v2` zostaje załadowany do środowiska Minikube.
 
-![image](Sprawozdanie3/45.png)
+![image](45.png)
 
 #### Krok 25: Skalowanie do 8 replik
 
@@ -439,7 +439,7 @@ kubectl apply -f deployment.yaml
 
 Plik YAML jest edytowany, a następnie zastosowany. Liczba replik zmienia się z 4 na 8.
 
-![image](Sprawozdanie3/46.png)
+![image](46.png)
 
 #### Krok 26: Sprawdzenie podów po skalowaniu
 
@@ -449,7 +449,7 @@ kubectl get pods
 
 Widać 8 podów z nowego deploymentu (te z nazwą zawierającą `7b779b9b74`), a także stary pod `oskar-web-pod`.
 
-![image](Sprawozdanie3/47.png)
+![image](47.png)
 
 #### Krok 27: Skalowanie do 0 replik
 
@@ -460,7 +460,7 @@ kubectl apply -f deployment.yaml
 
 Liczba replik zostaje zredukowana do 0. Wszystkie pody z deploymentu przechodzą w stan `Terminating`.
 
-![image](Sprawozdanie3/48.png)
+![image](48.png)
 
 #### Krok 28: Skalowanie do 4 replik
 
@@ -471,7 +471,7 @@ kubectl apply -f deployment.yaml
 
 Przywrócenie 4 replik. Pody są tworzone na nowo.
 
-![image](Sprawozdanie3/49.png)
+![image](49.png)
 
 #### Krok 29: Zmiana wersji obrazu na v2
 
@@ -482,7 +482,7 @@ kubectl apply -f deployment.yaml
 
 Aktualizacja obrazu z `v1` na `v2`. Wdrożenie jest ponownie konfigurowane.
 
-![image](Sprawozdanie3/50.png)
+![image](50.png)
 
 #### Krok 30: Status podów po aktualizacji
 
@@ -492,7 +492,7 @@ kubectl get pods
 
 Widoczne pody z obrazem `v2` (nazwy zawierają `bcc648489`). Wszystkie w stanie `Running`.
 
-![image](Sprawozdanie3/51.png)
+![image](51.png)
 
 #### Krok 31: Test wadliwego obrazu
 
@@ -503,7 +503,7 @@ kubectl apply -f deployment.yaml
 
 Obraz `broken` zostaje zastosowany. Widoczne są komunikaty o błędach.
 
-![image](Sprawozdanie3/52.png)
+![image](52.png)
 
 #### Krok 32: Status podów po wdrożeniu wadliwego obrazu
 
@@ -513,7 +513,7 @@ kubectl get pods
 
 Pody z obrazem `broken` (nazwy `bcc648489-...`) są w stanie `ContainerCreating`, ale wkrótce przejdą w `Error`.
 
-![image](Sprawozdanie3/53.png)
+![image](53.png)
 
 #### Krok 33: Pody w stanie błędu
 
@@ -523,7 +523,7 @@ kubectl get pods
 
 Pody z obrazem `broken` (nazwy `6ddb64574-...`) są w stanie `Error`. Pojawiają się restarty (2 restarty w ciągu 28 sekund). To typowe zachowanie dla kontenera, który kończy pracę z błędem - Kubernetes próbuje go ponownie uruchomić.
 
-![image](Sprawozdanie3/54.png)
+![image](54.png)
 
 #### Krok 34: Historia wdrożeń
 
@@ -533,7 +533,7 @@ kubectl rollout history deployment/oskar-web-deployment
 
 Wyświetla historię zmian. Widoczne rewizje od 2 do 4. Brak adnotacji `CHANGE-CAUSE` (domyślnie `<none>`).
 
-![image](Sprawozdanie3/55.png)
+![image](55.png)
 
 #### Krok 35: Rollback do wersji 2
 
@@ -543,7 +543,7 @@ kubectl rollout undo deployment/oskar-web-deployment --to-revision=2
 
 Przywracamy wdrożenie do rewizji nr 2. Komenda potwierdza pomyślny rollback.
 
-![image](Sprawozdanie3/56.png)
+![image](56.png)
 
 #### Krok 36: Status podów po rollbacku
 
@@ -553,7 +553,7 @@ kubectl get pods
 
 Pody wróciły do stanu `Running`. Widać 4 pody z nazwami zawierającymi `7b779b9b74`. Rollback przywrócił stabilną wersję.
 
-![image](Sprawozdanie3/57.png)
+![image](57.png)
 
 #### Krok 37: Wdrożenie strategii Recreate
 
@@ -563,7 +563,7 @@ kubectl apply -f deploy-recreate.yaml
 
 Plik `deploy-recreate.yaml` definiuje strategię `Recreate`. Wdrożenie zostało skonfigurowane. Widoczne pody w stanie `Running`.
 
-![image](Sprawozdanie3/58.png)
+![image](58.png)
 
 #### Krok 38: Wdrożenie strategii Rolling Update
 
@@ -573,7 +573,7 @@ kubectl apply -f deploy-rolling.yaml
 
 Plik `deploy-rolling.yaml` definiuje strategię `RollingUpdate` z parametrami `maxUnavailable: 2` i `maxSurge: 25%`. Wdrożenie zakończone pomyślnie.
 
-![image](Sprawozdanie3/59.png)
+![image](59.png)
 
 #### Krok 39: Usunięcie deploymentu oraz zastosowanie metody kanarkowej
 
@@ -583,7 +583,7 @@ kubectl delete deployment oskar-web-deployment
 
 Usunięcie wdrożenia i wszystkich podów. Komenda potwierdza, że deployment został skasowany oraz zastosowana zostałą metoda kanarkowa.
 
-![image](Sprawozdanie3/60.png)
+![image](60.png)
 
 #### Krok 40: Sprawdzanie działania kanarkowej metody.
 
@@ -662,7 +662,7 @@ Po ich wdrożeniu uruchomiono polecenie `kubectl get pods --show-labels`, aby po
 - **Canary** - umożliwia testowanie nowej wersji na małej liczbie podów obok stabilnej wersji. Etykiety `track: canary` i `track: stable` pozwalają na selektywne kierowanie ruchu.
 
 
-![image](Sprawozdanie3/61.png)
+![image](61.png)
 Zauważamy załadowane czściowe wersji v2. Jest to dowód działania kanarkowej metody.
 
 ## Lab 11
@@ -702,7 +702,7 @@ Wdrożenie wykonano poleceniem:
 kubectl apply -f lab11-deployment.yaml
 ```
 
-![image](Sprawozdanie3/62%20lab11.png)
+![image](62%20lab11.png)
 
 #### Krok 2: Status podów po wdrożeniu
 
@@ -720,13 +720,13 @@ Aby przetestować dostęp do aplikacji, wykonano port-forward z deploymentu na p
 kubectl port-forward deployment/oskar-massive-web 8882:8888 --address 0.0.0.0
 ```
 
-![image](Sprawozdanie3/65.png)
+![image](65.png)
 
 #### Krok 4: Weryfikacja działania strony
 
 Po przekierowaniu portu otworzono w przeglądarce adres `http://localhost:8882`. Strona wyświetlała treść `[ KONTENER AKTYWNY ]`. Potwierdziło to poprawne działanie serwera Nginx z własną konfiguracją na porcie 8888.
 
-![image](Sprawozdanie3/64.png)
+![image](64.png)
 
 #### Krok 5: Eksponowanie deploymentu jako Service
 
@@ -736,7 +736,7 @@ Aby udostępnić wdrożenie wewnątrz klastra, utworzono Service typu `ClusterIP
 kubectl expose deployment oskar-massive-web --type=ClusterIP --port=8888 --name=oskar-service-c11
 ```
 
-![image](Sprawozdanie3/67.png)
+![image](67.png)
 
 #### Krok 6: Port-forward do serwisu (część 1)
 
@@ -750,7 +750,7 @@ kubectl port-forward svc/oskar-service-c11 8883:8888 --address 0.0.0.0
 
 Ponownie otworzono przeglądarkę - strona `[ KONTENER AKTYWNY ]` była dostępna pod adresem `http://localhost:8883`. Oznacza to, że Service poprawnie kieruje ruch do jednego z podów deploymentu.
 
-![image](Sprawozdanie3/68.png)
+![image](68.png)
 
 #### Krok 8: Alternatywny port-forward do serwisu
 
@@ -760,8 +760,8 @@ Wykonano także przekierowanie na port 8884 (przykład dla różnych portów):
 kubectl port-forward svc/oskar-service-c11 8884:8888 --address 0.0.0.0
 ```
 
-![image](Sprawozdanie3/70.png)
-![image](Sprawozdanie3/71.png)
+![image](70.png)
+![image](71.png)
 
 
 #### Krok 9: Skalowanie przez `scale`
@@ -772,7 +772,7 @@ Zwiększono liczbę replik z 36 na 10 (operacja skalowania w dół, aby zmniejsz
 kubectl scale deployment oskar-massive-web --replicas=10
 ```
 
-![image](Sprawozdanie3/72.png)
+![image](72.png)
 
 #### Krok 10: Porównanie plików YAML
 
@@ -782,7 +782,7 @@ Aby zobaczyć różnicę między oryginalnym plikiem `lab11-deployment.yaml` a n
 diff lab11-deployment.yaml lab11-deployment-scaled.yaml
 ```
 
-![image](Sprawozdanie3/73.png)
+![image](73.png)
 
 Różnica widoczna w linii `replicas: 5` wobec `replicas: 36` w oryginalnym pliku.
 
@@ -794,7 +794,7 @@ Po wykonaniu `scale` sprawdzono listę podów - część z nich znalazła się w
 kubectl get pods
 ```
 
-![image](Sprawozdanie3/74.png)
+![image](74.png)
 
 Po wykonaniu skalowania ruch z serwisu `oskar-service-c11` jest kierowany przez Kubernetes do różnych podów. Aby sprawdzić, który konkretny Pod obsłużył dane żądanie HTTP, wykonano następujące czynności:
 
@@ -806,7 +806,7 @@ Po wykonaniu skalowania ruch z serwisu `oskar-service-c11` jest kierowany przez 
 
    W rezultacie w przeglądarce pojawił się błąd **404 Not Found**:
 
-   ![image](Sprawozdanie3/76.png)
+   ![image](76.png)
 
 2. **Analiza logów** - sprawdzono logi wszystkich podów z etykietą `app=oskar-web`, filtrując pod kątem zapytania `oskar-test`:
 
@@ -816,7 +816,7 @@ Po wykonaniu skalowania ruch z serwisu `oskar-service-c11` jest kierowany przez 
 
    Wynik wskazał konkretnego Poda, który obsłużył to żądanie:
 
-   ![image](Sprawozdanie3/75.png)
+   ![image](75.png)
 
    W logach widoczne jest:
 
