@@ -1,0 +1,14 @@
+#!/bin/bash
+
+PREFIX="LC417617" 
+COMMIT_MSG=$(head -n 1 "$1")
+
+if [[ ! $COMMIT_MSG == $PREFIX* ]]; then
+  echo "=========================================="
+  echo "BŁĄD COMMITA!"
+  echo "Wiadomość musi zaczynać się od '$PREFIX'."
+  echo "Twoja wiadomość: $COMMIT_MSG" 
+  exit 1
+fi
+
+exit 0
