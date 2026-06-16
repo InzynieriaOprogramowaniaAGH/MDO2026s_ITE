@@ -21,5 +21,7 @@
 ### Zadanie do wykonania
  1. Utwórz własny [*Resource Group*](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal)
  2. Wdróż swój kontener z Docker Hub w swoim Azure
- 3. Wykaż, że kontener został uruchomiony i pracuje, pobierz logi, przedstaw metodę dostępu do serwowanej usługi HTTP
- 4. Zatrzymaj i usuń kontener, pamiętaj o *resource group* (to bardzo ważne!)
+    * Sprawdź, czy potrzebujesz *container registry cache*?
+    * Alternatywnie możesz wysłać swój obraz do Docker registry Azure'a?
+ 4. Wykaż, że kontener został uruchomiony i pracuje, pobierz logi, przedstaw metodę dostępu do serwowanej usługi HTTP
+ 5. Zatrzymaj i usuń kontener, pamiętaj o *resource group* (to bardzo ważne!)
