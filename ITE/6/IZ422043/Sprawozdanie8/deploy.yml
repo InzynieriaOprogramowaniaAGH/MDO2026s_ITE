@@ -1,0 +1,21 @@
+---
+- hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Check disc space (Sanity check)
+      command: df -h
+      register: disk_info
+
+    - name: Install docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Run container
+      docker_container:
+        name: app
+        image: nginx
+        state: started
+        ports:
+          - "8080:80"

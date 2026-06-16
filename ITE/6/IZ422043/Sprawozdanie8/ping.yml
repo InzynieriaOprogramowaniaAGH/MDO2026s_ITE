@@ -1,0 +1,5 @@
+---
+- hosts: Endpoints
+  tasks:
+    - name: Connection test
+      ping:

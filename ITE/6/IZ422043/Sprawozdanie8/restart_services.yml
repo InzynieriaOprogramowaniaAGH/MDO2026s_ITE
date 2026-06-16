@@ -1,0 +1,15 @@
+---
+- hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restarted
+
+    - name: Restart RNGD
+      service:
+        name: rng-tools
+        state: restarted
+      ignore_errors: true

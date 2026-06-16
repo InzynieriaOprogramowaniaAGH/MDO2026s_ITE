@@ -1,0 +1,9 @@
+---
+- hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Remove docker container
+      docker_container:
+        name: app
+        state: absent
