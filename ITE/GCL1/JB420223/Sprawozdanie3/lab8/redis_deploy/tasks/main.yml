@@ -1,0 +1,110 @@
+---
+- name: Sanity check - Sprawdzenie wolnej pamięci RAM przed wdrożeniem
+  ansible.builtin.shell: free -m | awk '/^Mem:/{print $4}'
+  register: free_memory
+  ignore_errors: yes
+
+- name: Wyświetl ostrzeżenie, jeśli pamięć jest na wyczerpaniu
+  ansible.builtin.debug:
+    msg: "UWAGA: Wykryto mało pamięci RAM, ale kontynuuję wdrożenie!"
+  when: free_memory.stdout | int < 200
+  ignore_errors: yes
+
+- name: Instalacja wymaganych zależności systemowych
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - python3-pip
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Upewnij się, że katalog na klucze repozytoriów istnieje
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Dodanie oficjalnego klucza GPG Dockera
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+  become: yes
+
+- name: Rejestracja repozytorium Docker w systemie
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+  become: yes
+
+- name: Instalacja silnika Docker (docker-ce)
+  ansible.builtin.apt:
+    name: docker-ce
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Upewnij się, że usługa Docker jest uruchomiona i włączona
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Utworzenie dedykowanego katalogu pod aplikację
+  ansible.builtin.file:
+    path: /opt/redis_app
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Przesłanie i automatyczne wypakowanie archiwum binarnego
+  ansible.builtin.unarchive:
+    src: redis-JB420223-bin.tar.gz
+    dest: /opt/redis_app/
+  become: yes
+
+- name: Uruchomienie aplikacji w kontenerze
+  ansible.builtin.shell: |
+    docker stop redis_runtime_container || true
+    docker rm redis_runtime_container || true
+    docker run -d \
+      --name redis_runtime_container \
+      --restart always \
+      -v /opt/redis_app:/app \
+      -p 6379:6379 \
+      ubuntu:latest /app/redis-server
+  become: yes
+
+- name: Oczekiwanie na inicjalizację Redis
+  ansible.builtin.pause:
+    seconds: 5
+
+- name: Sprawdzenie statusu kontenera przez docker ps
+  ansible.builtin.shell: docker ps --filter "name=redis_runtime_container" --format "{{"{{.Status}}"}}"
+  register: container_status
+  become: yes
+
+- name: Walidacja czy status kontenera zawiera 'Up'
+  ansible.builtin.assert:
+    that:
+      - "'Up' in container_status.stdout"
+    fail_msg: "Błąd: Aplikacja wewnątrz kontenera nie działa poprawnie!"
+    success_msg: "Sukces: Kontener wdrożony i działa w tle."
+
+- name: Czyszczenie - Zatrzymanie i usunięcie kontenera testowego
+  ansible.builtin.shell: |
+    docker stop redis_runtime_container || true
+    docker rm redis_runtime_container || true
+  become: yes
+
+- name: Czyszczenie - Skasowanie katalogu aplikacyjnego wraz z artefaktami
+  ansible.builtin.file:
+    path: /opt/redis_app
+    state: absent
+  become: yes
