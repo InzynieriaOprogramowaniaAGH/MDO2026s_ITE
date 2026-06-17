@@ -1,6 +1,6 @@
 # Sprawozdanie 1 - Konfiguracja środowiska
 
-#  Lab 1: Wprowadzenie, Git, Gałęzie, SSH
+## Lab 1: Wprowadzenie, Git, Gałęzie, SSH
 
 Na początku odpowiednio skonfigurowałam token PAT w ustawieniach githuba.<br>
 ![PAT](<img/Lab1/Zrzut ekranu 2026-06-15 153207.png>)<br>
@@ -29,16 +29,18 @@ Utworzyłam własny branch *MB421332* i skonfigurowałam odpowiednio strukturę 
 ![Git hook](<img/Lab1/Zrzut ekranu 2026-03-24 101346.png>)<br>
 Treść Git hooka:
 
-#!/bin/bash
-MSG=$(cat "$1")
-if [[ ! $MSG =~ ^MB421332 ]]; then
-    echo "BŁĄD: Commit musi zaczynać się od MB421332!"
-    exit 1
-fi
+#!/bin/bash  
+MSG=$(cat "$1")  
+if [[ ! $MSG =~ ^MB421332 ]]; then  
+    echo "BŁĄD: Commit musi zaczynać się od MB421332!"  
+    exit 1  
+fi  
 
 
-#  Lab 2: Git, Docker
+
+## Lab 2: Git, Docker
 
 
-#  Lab 3: Dockerfiles, kontener jako definicja etapu
+
+## Lab 3: Dockerfiles, kontener jako definicja etapu
 
