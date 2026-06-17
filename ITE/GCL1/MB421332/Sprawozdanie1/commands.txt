@@ -1,0 +1,48 @@
+LAB1: Wprowadzenie, Git, Gałęzie, SSH
+- Windows PowerShell
+Set-Service -Name ssh-agent -StartupType Automatic
+Start-Service ssh-agent
+- Hyper-v
+sudo apt update && sudo apt install avahi-daemon avahi-utils
+- VS Code SSH
+git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519
+cat ~/.ssh/id_ed25519.pub
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_with_pass
+cat ~/.ssh/id_ed25519_with_pass.pub
+ls
+ssh -i ~/.ssh/id_ed25519_with_pass -T git@github.com
+ssh -i ~/.ssh/id_ed25519_with_pass -T git@github.com
+git remote -v
+git config --global user.email "madziabiskup89@gmail.com"
+git config --global user.name "mbism"
+git remote set-url origin git@github.com:InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+git remote -v
+ssh-add -D
+ssh -vT git@github.com
+hostname -I
+cd MDO2026s_ITE
+git checkout main
+git pull
+git checkout -b MB421332
+mkdir ITE
+cd ITE
+mkdir GCL1
+cd GCL1
+mkdir MB421332
+cd MB421332
+cd ../../../
+ls -l .git/hooks/
+nano .git/hooks/commit-msg.sample
+mv .git/hooks/commit-msg.sample .git/hooks/commit-msg.
+ls -l .git/hooks/
+mv .git/hooks/commit-msg. .git/hooks/commit-msg
+ls -l .git/hooks/
+chmod +x .git/hooks/commit-msg
+cat .git/hooks/commit-msg 
+git status
+git add .
+git commit -m "TEST"
+git commit -m "MB421332: TEST git hooka"
+git push
+
