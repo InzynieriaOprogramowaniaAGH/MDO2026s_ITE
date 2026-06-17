@@ -36,7 +36,10 @@ if [[ ! $MSG =~ ^MB421332 ]]; then
     exit 1  
 fi  
 
-
+Zorientowałam się również, że w ukrytym folderze *.git/hooks* commit-msg miał rozszerzenie *.sample* - należało przenieść treść *Git hooka* do pliku o tej samej nazwie bez rozszerzenia.  
+![commit-msg](image-2.png)  
+Poprawny komunikat przy błędnie dodanym *Git hooku*
+![Treść ostrzeżenia](<img/Lab1/Zrzut ekranu 2026-06-17 222511.png>)
 
 ## Lab 2: Git, Docker
 
