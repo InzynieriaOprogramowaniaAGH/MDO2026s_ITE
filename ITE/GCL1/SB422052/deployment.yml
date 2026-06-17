@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moj-express-deploy
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app: moj-express
+  template:
+    metadata:
+      labels:
+        app: moj-express
+    spec:
+      containers:
+      - name: express-container
+        image: sebboze3/moj-express-bldr:latest
+        ports:
+        - containerPort: 3000

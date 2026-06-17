@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moj-express-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: moj-express
+  template:
+    metadata:
+      labels:
+        app: moj-express
+    spec:
+      containers:
+      - name: express-container
+        image: sebboze3/moj-express-bldr:v2
+        ports:
+        - containerPort: 3000
