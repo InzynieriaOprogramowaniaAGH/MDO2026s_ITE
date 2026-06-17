@@ -1,0 +1,24 @@
+---
+- name: Zdalne wywoływanie procedur
+  hosts: all
+  become: yes
+  tasks:
+    - name: Wysłanie żądania ping
+      ansible.builtin.ping:
+
+    - name: Skopiowanie pliku inwentaryzacji na Endpoints
+      ansible.builtin.copy:
+        src: inventory.ini
+        dest: /tmp/inventory.ini
+      when: "'Endpoints' in group_names"
+
+    - name: Aktualizacja pakietów w systemie (APT)
+      ansible.builtin.apt:
+        update_cache: yes
+      when: "'Endpoints' in group_names"
+
+    - name: Zrestartowanie usługi sshd
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+      when: "'Endpoints' in group_names"
