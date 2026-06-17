@@ -3,9 +3,9 @@
 **Konfiguracja klienta Git**
 
 
-Na początku odpowiednio skonfigurowałam token PAT w ustawieniach githuba.  
+Na początku odpowiednio skonfigurowałam token PAT w ustawieniach githuba.\
 ![PAT](<img/Lab1/Zrzut ekranu 2026-06-15 153207.png>)
-Największy problem pojawił się przy połączeniu SSH Hyper-V z Windowsem. Pomimo każdorazowego podmieniania adresu IP, za każdym razem wyświetlał się poniższy błąd. Wykonałam więc odpowiednie kroki by naprawić problem.  
+Największy problem pojawił się przy połączeniu SSH Hyper-V z Windowsem. Pomimo każdorazowego podmieniania adresu IP, za każdym razem wyświetlał się poniższy błąd. Wykonałam więc odpowiednie kroki by naprawić problem.<br>
 ![problem](<img/Lab1/Zrzut ekranu 2026-03-10 081533.png>)
 Włączyłam agenta SSH w PowerShellu.  
 ![Agent SSH](img/Lab1/image.png)
