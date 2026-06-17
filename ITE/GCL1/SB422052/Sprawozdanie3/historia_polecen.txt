@@ -1,0 +1,356 @@
+    1  sudo apt update
+    2  sudo apt install git -y
+    3  ssh-keygen -t ed25519 -C sebix6785gmail.com
+    4  sudo apt update
+    5  sudo apt install git -y
+    6  ssh-keygen -t ed25519 -C sebix6785@gmail.com
+    7  ssh-keygen -t ecdsa -b 521 -f ~/.ssh/id_ecdsa
+    8  cat ~/.ssh/id_ed25519.pub
+    9  git clone git@github.com:InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+   10  ls
+   11  cd MDO2026s_ITE
+   12  git branch -a
+   13  ls -F
+   14  ls -F READMEs/
+   15  git branch -a | grep ITE
+   16  git checkout ITE
+   17  git checkout 01-Class
+   18  git checkout 01-Class.md
+   19  git checkout main
+   20  git checkout -b SB422052
+   21  mkdir SB422052
+   22  cd SB422052
+   23  chmod +x githook.sh
+   24  cp githook.sh ../.git/hooks/commit-msg
+   25  git add .
+   26  git commit -m "SB422052 ostateczne oddanie zadania"
+   27  git config --global user.name "Sebastian Bozek"
+   28  git config --global user.email "sebix6785@gmail.com"
+   29  git commit -m "SB422052 ostateczne oddanie zadania"
+   30  git push -u origin SB422052
+   31  sudo apt update
+   32  sudo apt install -y docker.io
+   33  sudo usermod -aG docker $USER
+   34  newgrp docker
+   35  cd ~/MD02026s_ITE/SB422052
+   36  cat << 'EOF' > githook.sh
+   37  #!/bin/bash
+   38  if ! grep -q "^SB422052" "$1"; then
+   39    echo "BŁĄD: Wiadomość commita musi zaczynać się od SB422052"
+   40    exit 1
+   41  fi
+   42  EOF
+   43  cat << 'EOF' > sprawozdanie.md
+   44  # Sprawozdanie SB422052
+   45  Zadanie z laboratorium DevOps wykonane na Macu.
+   46  1. Maszyna wirtualna na UTM (Ubuntu).
+   47  2. Dostęp przez SSH i VS Code.
+   48  3. Utworzenie Git Hooka.
+   49  EOF
+   50  chmod +x githook.sh
+   51  cp githook.sh ../.git/hooks/commit-msg
+   52  git add .
+   53  git commit -m "SB422052 gotowe zadanie"
+   54  git push -u origin SB422052
+   55  cd ~/MD02026s_ITE
+   56  cd ~/MD*ITE
+   57  git checkout SB422052 || git checkout -b SB422052
+   58  mkdir -p SB422052
+   59  cd SB422052
+   60  cat << 'EOF' > githook.sh
+   61  echo '#!/bin/bash' > githook.sh
+   62  echo 'if ! grep -q "^SB422052" "$1"; then echo "BLAD: Wiadomosc musi zaczynac sie od SB422052"; exit 1; fi' >> githook.sh
+   63  echo '# Sprawozdanie SB422052' > sprawozdanie.md
+   64  echo 'Wszystkie punkty zrealizowane: UTM (Ubuntu), SSH, Klucze, Git Hook.' >> sprawozdanie.md
+   65  code .
+   66  docker run hello-world
+   67  docker run busybox
+   68  docker run -it busybox
+   69  to dawaj dalej
+   70  docker run -it ubuntu bash
+   71  ps aux | grep docker
+   72  cat << 'EOF' > Dockerfile
+   73  FROM ubuntu:24.04
+   74  RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+   75  RUN git clone https://github.com/InzynieriaOprogramowaniaAGH/MD02026s_ITE.git /repozytorium
+   76  WORKDIR /repozytorium
+   77  CMD ["bash"]
+   78  EOF
+   79  docker build -t obraz-seb .
+   80  docker run -it obraz-seb
+   81  cat << 'EOF' > Dockerfile
+   82  FROM ubuntu:24.04
+   83  RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+   84  COPY . /repozytorium
+   85  WORKDIR /repozytorium
+   86  CMD ["bash"]
+   87  EOF
+   88  docker build -t obraz-seb .
+   89  docker run -it obraz-seb
+   90  docker ps -a
+   91  docker container prune -f
+   92  docker image prune -a -f
+   93  git add Dockerfile
+   94  git commit -m "SB422052 Dodanie Dockerfile - Punkt 9"
+   95  git push origin SB422052
+   96  git add .
+   97  git commit -m "SB422052 dodanie szczegolowych screenow z Dockera do sprawozdania"
+   98  git push origin SB422052
+   99  mkdir screeny
+  100  mv *.png screeny/
+  101  git add .
+  102  git commit -m "SB422052 uporzadkowanie screenow w folderze"
+  103  git push origin SB42205
+  104  git push origin SB422052
+  105  docker run -it node:20 bash
+  106  cat << 'EOF' > Dockerfile.build
+  107  FROM node:20
+  108  WORKDIR /app
+  109  cat << 'EOF' > Dockerfile.build
+  110  FROM node:20
+  111  WORKDIR /app
+  112  RUN git clone https://github.com/expressjs/express.git .
+  113  RUN npm install
+  114  EOF
+  115  cat << 'EOF' > Dockerfile.test
+  116  FROM express-build:latest
+  117  WORKDIR /app
+  118  CMD ["npm", "test"]
+  119  EOF
+  120  docker build -t express-build -f Dockerfile.build .
+  121  docker run -it node:20 bash
+  122  docker build -t express-build -f Dockerfile.build .
+  123  docker build -t express-test -f Dockerfile.test .
+  124  docker run express-test
+  125  cat << 'EOF' > docker-compose.yml
+  126  version: '3.8'
+  127  services:
+  128    test-app:
+  129      build:
+  130        context: .
+  131        dockerfile: Dockerfile.test
+  132  EOF
+  133  docker compose up
+  134  cat << 'EOF' > docker-compose.yml
+  135  version: '3.8'
+  136  services:
+  137  test-app:
+  138  build:
+  139  context: .
+  140  dockerfile: Dockerfile.test
+  141  EOF
+  142  docker compose up
+  143  sudo apt install -y docker-compose
+  144  docker-compose up
+  145  git add .
+  146  git commit -m "Zajecia 3"
+  147  git commit -m "SB422052 Zajecia 3"
+  148  git push origin SB422052
+  149  docker volume create vol_wejsciowy
+  150  docker volume create vol_wyjsciowy
+  151  docker run --rm -v vol_wejsciowy:/repo alpine/git clone https://github.com/expressjs/express.git /repo
+  152  docker run -it -v vol_wejsciowy:/app_in -v vol_wyjsciowy:/app_out node:20 bash
+  153  docker run --rm -v vol_wyjsciowy:/out alpine ls -la /out/express_build
+  154  git add .
+  155  git commit -m "SB422052 Zajecia 4 - czesc 1 (woluminy gotowe)"
+  156  git push origin SB422052
+  157  docker run -d --name iperf-server networkstatic/iperf3 -s
+  158  docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf-server
+  159  docker run -it --rm networkstatic/iperf3 -c TUTAJ_IP
+  160  docker run -it --rm networkstatic/iperf3 -c 172.17.0.2
+  161  docker stop iperf-server && docker rm iperf-server
+  162  docker network create iperf_siec
+  163  docker run -d --name iperf-serwer-dns --network iperf_siec -p 5201:5201 networkstatic/iperf3 -s
+  164  docker run -it --rm --network iperf_siec networkstatic/iperf3 -c iperf-serwer-dns
+  165  sudo apt-get update && sudo apt-get install -y iperf3
+  166  iperf3 -c 127.0.0.1
+  167  docker run -d --name moj-ssh -p 2222:22 ubuntu:latest sleep infinity
+  168  docker exec -it moj-ssh bash
+  169  ssh root@127.0.0.1 -p 2222
+  170  docker network create jenkins
+  171  docker run --name jenkins-docker --rm --detach --privileged --network jenkins --network-alias docker --env DOCKER_TLS_CERTDIR=/certs --volume jenkins-docker-certs:/certs/client --volume jenkins-data:/var/jenkins_home --publish 2376:2376 docker:dind
+  172  docker run --name jenkins-blueocean --rm --detach --network jenkins --env DOCKER_HOST=tcp://docker:2376 --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 --volume jenkins-data:/var/jenkins_home --volume jenkins-docker-certs:/certs/client:ro --publish 8080:8080 --publish 50000:50000 jenkins/jenkins:lts
+  173  docker ps
+  174  docker exec -it jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+  175  git add .
+  176  git commit -m "SB422052 Zajecia 4 - komplet (iperf3, SSH, Jenkins)"
+  177  git push origin SB422052
+  178  history > Sprawozdanie4/historia_polecen.txt
+  179  history > SprawozdanieN/historia_polecen.txt
+  180  cd ~/MD02026s_ITE
+  181  mkdir -p ite/gcl1
+  182  mv SB422052 ite/gcl1/
+  183  git add -A
+  184  git commit -m "SB422052 Przeniesienie plikow do wlasciwej sciezki ite/gcl1/"
+  185  git push origin SB422052
+  186  cd $(git rev-parse --show-toplevel)
+  187  mkdir -p ITE/GCL1
+  188  if [ -d "SB422052" ]; then mv SB422052 ITE/GCL1/; fi
+  189  if [ -d "ite/gcl1/SB422052" ]; then mv ite/gcl1/SB422052 ITE/GCL1/; fi
+  190  if [ -d "ITE/GCL1/SB422052/SprawozdanieN" ]; then mv ITE/GCL1/SB422052/SprawozdanieN ITE/GCL1/SB422052/Sprawozdanie1; fi
+  191  rm -rf ite
+  192  git add -A
+  193  git commit -m "SB422052 Poprawa "
+  194  git push origin SB422052
+  195  git add .
+  196  git commit -m "SB422052 Poprawki i aktualizacja w pliku README.md"
+  197  git push origin SB422052
+  198  if [ -f "SB422052/SprawozdanieN/README.md" ]; then cp SB422052/SprawozdanieN/README.md ITE/GCL1/SB422052/Sprawozdanie1/README.md; fi
+  199  rm -rf SB422052
+  200  git add -A
+  201  git commit -m "SB422052 Przeniesienie ostatecznych poprawek do wlasciwej sciezki ITE/GCL1"
+  202  git push origin SB422052
+  203  docker rm -f jenkins-blueocean jenkins-docker
+  204  docker network rm jenkins
+  205  docker network create jenkins
+  206  docker rm -f jenkins-blueocean jenkins-docker
+  207  docker network rm jenkins
+  208  docker network create jenkins
+  209  docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind
+  210  docker run --name jenkins-blueocean --rm --detach   --network jenkins --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   --publish 8080:8080 --publish 50000:50000   jenkins/jenkins:lts
+  211  docker ps
+  212  docker exec jenkins-blueocean sed -i 's/<useSecurity>true<\/useSecurity>/<useSecurity>false<\/useSecurity>/' /var/jenkins_home/config.xml
+  213  docker restart jenkins-blueocean
+  214  docker exec -u root jenkins-blueocean bash -c "apt-get update && apt-get install -y docker.io"
+  215  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  216  git commit -m "SB422052 Dodanie pliku Jenkinsfile z etapami Build i Test"
+  217  git push origin SB422052
+  218  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  219  git commit -m "SB422052 Naprawa etapu Test - uzycie dedykowanego kontenera Tester"
+  220  git push origin SB422052
+  221  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  222  git commit -m "SB422052 Ominięcie błędu DIND - budowa obrazu testowego"
+  223  git push origin SB422052
+  224  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  225  git commit -m "SB422052 naprawa"
+  226  git push origin SB422052
+  227  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  228  git commit -m "SB422052 Dodanie etapow Publish i Deploy"
+  229  git push origin SB422052
+  230  git add ITE/GCL1/SB422052/Sprawozdanie1/Jenkinsfile
+  231  git commit -m "SB422052 Dodanie etapow Publish i Deplo(y"
+  232  git push origin SB422052
+  233  git add .
+  234  git commit -m "Final Lab 5 i 6 - dokumentacja"
+  235  SB422052 git commit -m "Final Lab 5 i 6 - dokumentacja"
+  236  git commit -m "SB244052 Final Lab 5 i 6 - dokumentacja"
+  237  git commit -m "SB422052 l5 l6 sprawko"
+  238  git push origin SB422052
+  239  git add .
+  240  git commit -m "SB422052 l5 l6 sprawko-2"
+  241  git push origin SB422052
+  242  git add .
+  243  git commit -m "SB422052 aktualizacja jenkinsa"
+  244  git push origin SB422052
+  245  git add .
+  246  git commit -m "SB422052 poprawa sciezki dir"
+  247  git push origin SB422052
+  248  git add .
+  249  git commit -m "SB422052 poprawa"
+  250  git push origin SB422052
+  251  git add package.json server.js
+  252  cd ITE/GCL1/SB422052/Sprawozdanie1
+  253  git add package.json server.js
+  254  git commit -m "Poprawne dodanie plikow wlasciwej aplikacji"
+  255  git commit -m "SB422052 Poprawne dodanie plikow wlasciwej aplikacji"
+  256  git push origin SB422052
+  257  git add Jenkinsfile
+  258  git commit -m "Poprawka pakowania tar - wykluczenie archiwum"
+  259  git commit -m "SB422052 Poprawka pakowania tar - wykluczenie archiwum"
+  260  git push origin SB422052
+  261  git add Jenkinsfile
+  262  git commit -m "Ostateczna naprawa pakowania tar"
+  263  git commit -m "SB422052 Ostateczna naprawa pakowania tar"
+  264  git push origin SB422052
+  265  cd ..
+  266  ls
+  267  cd ITE/
+  268  ls
+  269  cd GCL1/
+  270  ls
+  271  cd SB422052/
+  272  ls
+  273  cd Sprawozdanie1/
+  274  ls
+  275  exit
+  276  su - ansible
+  277  ip a
+  278  exit
+  279  git add .
+  280  git commit -m "SB422052 zmiany gałęzi"
+  281  git push origin SB422052
+  282  git add .
+  283  git commit -m "SB422052 zmiany gałęzi"
+  284  git push origin SB422052
+  285  git add .
+  286  git commit -m "SB422052 zmiany gałęzi"
+  287  git push origin SB422052
+  288  git add .
+  289  git commit -m "SB422052 zmiany gałęzi"
+  290  git push origin SB422052
+  291  git add .
+  292  git commit -m "SB422052 final"
+  293  git push origin SB422052
+  294  history
+  295  git add .
+  296  git commit -m "SB422052 final2"
+  297  git push origin SB422052
+  298  git add .
+  299  git commit -m "rozbudowa aplikacji i dołoenie testów"
+  300  git commit -m "SB422052 rozbudowa aplikacji i dołoenie testów"
+  301  git push origin "SB422052"
+  302  git add .
+  303  git commit -m "SB422052 rozbudowa aplikacji i dołoenie testów-2"
+  304  git push origin "SB422052"
+  305  git add .
+  306  git add .
+  307  git commit -m "SB422052 rozbudowa aplikacji i dołoenie testów-2-naprawa"
+  308  git push origin "SB422052"
+  309  git add .
+  310  git commit -m "SB422052 rozbudowa aplikacji i dołoenie testów-2-naprawa2"
+  311  git push origin "SB422052"
+  312  git add .
+  313  git commit -m "SB422052 rozbudowa aplikacji i dołoenie testów-2-naprawa2"
+  314  git push origin "SB422052"
+  315  git add .
+  316  git commit -m "SB422052 rozbudowa aplikacji i dołoenie testów-2-naprawa2"
+  317  git push origin "SB422052"
+  318  git add .
+  319  git commit -m "SB422052 rozbudowa aplikacji i dołoenie testów-2-naprawa2"
+  320  git push origin "SB422052"
+  321  git add .
+  322  git commit -m "SB422052 ping ansibla przeszedl, dodano screena"
+  323  git push origin "SB422052"
+  324  git add .
+  325  git commit -m "SB422052 do sprawka"
+  326  git push origin "SB422052"
+  327  git status
+  328  git add .
+  329  git commit -m "SB422052"
+  330  git push 
+  331  sudo usermod -aG docker $USER
+  332  exit
+  333  curl localhost:8888
+  334  curl localhost:8081
+  335  curl localhost:8082
+  336  curl localhost:8083
+  337  kubectl scale deployment nginx-potega --replicas=10
+  338  kubectl get pods
+  339  sed -i 's/replicas: 36/replicas: 3/g' nginx-deploy.yml
+  340  kubectl apply -f nginx-deploy.yml
+  341  kubectl get pods
+  342  ubectl port-forward svc/nginx-svc-yaml 8080:80 &
+  343  sleep 2
+  344  for i in {1..6}; do curl -s -o /dev/null localhost:8080; done
+  345  kubectl logs -l app=super-nginx --tail=2
+  346  killall kubectl
+  347  kubectl port-forward svc/nginx-svc-yaml 8080:80 &
+  348  sleep 2
+  349  for i in {1..6}; do curl -s -o /dev/null localhost:8080; done
+  350  sleep 1
+  351  kubectl logs -l app=super-nginx --tail=2
+  352  killall kubectl
+  353  git add . 
+  354  git commit -m "SB422052"
+  355  git push 
+  356  history > historia_polecen.txt
