@@ -1,0 +1,36 @@
+---
+- name: Wdrożenie aplikacji Docker
+  hosts: Endpoints
+  become: yes
+  tasks:
+    - name: Sanity check - sprawdzenie czy maszyna żyje
+      ansible.builtin.ping:
+
+    - name: Instalacja środowiska Docker
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Usunięcie ewentualnych starych kontenerów
+      ansible.builtin.shell: docker rm -f express-prod-app || true
+
+    - name: Pobranie i uruchomienie aplikacji z Docker Hub
+      ansible.builtin.shell: docker run -d --name express-prod-app -p 3000:3000 sebboze3/moj-express-bldr:latest
+
+    - name: Czekamy chwilę na start aplikacji...
+      ansible.builtin.pause:
+        seconds: 5
+
+    - name: Zweryfikowanie poprawnego działania (Pobranie strony)
+      ansible.builtin.uri:
+        url: http://localhost:3000/health
+        return_content: yes
+      register: test_wynik
+
+    - name: Wyświetlenie wyniku testu z kontenera
+      ansible.builtin.debug:
+        msg: "Odpowiedź od aplikacji: {{ test_wynik.content }}"
+
+    - name: Oczyszczenie środowiska docelowego (usunięcie kontenera)
+      ansible.builtin.shell: docker rm -f express-prod-app
