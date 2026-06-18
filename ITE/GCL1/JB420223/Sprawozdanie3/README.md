@@ -11,6 +11,9 @@ Utworzono maszynę wirtualną w hyper-v która posiada:
 * 16 GB miejsca na dysku
 * Program tar
 * Serwer OpenSSH
+* Default switch (dostęp do internetu)
+
+Ważnym jest wyłączenie Secure Boot, w innym przypakdu masyzna nie rozpocznie instalacji z iso
 
 Zapisano checkpoint
 
@@ -327,3 +330,130 @@ Wtedy cały proces przejdzie prawidłowo bez żadnych przeszkód
 ![Zdj](lab8/8_12.png)
 
 ![Zdj](lab8/8_13.png)
+
+
+
+## Lab 9 Pliki odpowiedzi dla wdrożeń nienadzorowanych
+
+Zaczęto od pobrania wersji systemu fedora: `Fedora-Everything-netinst-x86_64-44-1.7.iso`
+
+Po pobraniu utworzono maszynę wirtualną na podstawie pliku obrazu z 4 GB pamięci RAM i 16 GB pojemności dysku wirtualnego, oraz default switch'em (dostęp do internetu).
+
+Ważnym jest wyłączenie Secure Boot, w innym przypakdu masyzna nie rozpocznie instalacji z iso
+
+Miłym zaskoczeniem jest UI instalatora w którym wybieramy domyślny dysk oraz tworzymy nowego zwykłego usera `fedora_user`
+
+![Zdj](lab9/9_1.png)
+
+Następnie wysietlamy treść pliku odpowiedzi na konsolę (w przypadku odmowy uprawnień warto spróbować `sudo -i`)
+
+![Zdj](lab9/9_2.png)
+
+Następnie modyfikujemy plik odpowiedzi dodając:
+
+* Zewnętrzne źródła instalacyjne oraz oficjalne repozytoria systemu Fedora 44, umożliwiające instalatorowi sieciowemu bezproblemowe pobranie pakietów.
+
+* Wymóg automatycznego formatowania i czyszczenia nośników (zerombr, clearpart --all), co pozwala na bezdotykową reinstalację systemu „w kółko”
+
+* Niestandardową nazwę hosta (fedora-target-jb) oraz nowego użytkownika z uprawnieniami administratora (devops-jb)
+
+* Instalację środowiska Docker bezpośrednio na etapie konfiguracji pakietów systemu w sekcji %packages.
+
+* Skrypt postinstalacyjny w sekcji %post, tworzący dedykowaną usługę systemd, która automatycznie pobiera i uruchamia kontener z aplikacją zaraz po pierwszym uruchomieniu systemu
+
+* Dyrektywę automatycznego restartu (reboot) po zakończeniu całego procesu instalacji
+
+```
+// Zmodyfikowany plik odpowiedzi
+
+text
+cmdline
+
+url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-44&arch=x86_64
+repo --name=updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f44&arch=x86_64
+repo --name=docker-ce-stable --baseurl=https://download.docker.com/linux/fedora/44/x86_64/stable
+
+keyboard --vckeymap=pl --xlayouts='pl'
+lang en_US.UTF-8
+
+%packages
+@^custom-environment
+wget
+curl
+docker-ce
+docker-ce-cli
+containerd.io
+%end
+
+firstboot --enable
+
+zerombr
+clearpart --all --initlabel
+autopart
+bootloader --location=mbr
+
+timezone Europe/Warsaw --utc
+
+network --bootproto=dhcp --device=link --activate
+network --hostname=fedora-target-jb
+
+rootpw --lock
+user --groups=wheel --name=devops-jb --password=admin1234 --gecos="devops-jb"
+
+reboot
+
+%post --log=/root/kickstart_post.log
+
+systemctl enable docker
+
+cat << 'EOF' > /etc/rc.d/init.d/start_app.sh
+#!/bin/bash
+sleep 10
+docker run -d --name moj_pipeline_app --restart always -p 6379:6379 redis:latest
+EOF
+
+chmod +x /etc/rc.d/init.d/start_app.sh
+
+cat << 'EOF' > /etc/systemd/system/run-app-once.service
+[Unit]
+Description=Uruchomienie aplikacji z Pipeline po pierwszym boocie
+After=docker.service network-online.target
+Wants=docker.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/etc/rc.d/init.d/start_app.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable run-app-once.service
+
+%end
+```
+
+Następnym krokiem jest isntalacja fedory na podstawie zmodyfikowanego pliku, aby nie musieć go ręcznie wpiysywać. Jendak najpierw musimy go w jakiś sposób podać instalatorowi, można zrobić to poprzez postawienie małego serwera https i udostępnienia przez niego pliku instalatorowi
+
+W tym celu na głównej maszynie w folderze ze zmodyfikowanym plikiem otwieramy serwer:
+
+```
+python3 -m http.server 8000 // 8080 był zajęty
+```
+
+Potem tworzymy drugą maszynę na fedorę identyczną jak poprzednio z takimi samymi parametrami
+
+Po uruchomieniu i połączeniu się z maszyną zaznaczamy (nie klikamy!) opcję Fedora 44 (lub inna wersja np. 38), i klikamy 'e', następnie dopisujemy na końcu:
+
+```
+inst.ks=http://ip_maszyny_z_plikiem:8000/nazwa_pliku.cfg
+```
+
+![Zdj](lab9/9_3.png)
+
+Następnie w celu przejścia dalej naciskamy 'F10'
+
+Po instalacji możemy zalogować się na automatycznie utworzone konto dowodząc że plik jest poprawny i instalacja przebiegła automatycznie i poprawnie
+
+![Zdj](lab9/9_4.png)
