@@ -101,7 +101,7 @@ Zainstalowano pakiet `docker.io`. Pobrano i przeanalizowano podstawowe obrazy sy
 ![Docker.io instalacja](./img/L1_Start_1.png)
 
 
-Poniższa tabela przedstawia zestawienie pobranych obrazów wraz z ich rozmiarami oraz kodami wyjścia (Exit Code) po zakończeniu działania:
+Poniższa tabela przedstawia zestawienie pobranych obrazów wraz z ich rozmiarami oraz Exit Code po zakończeniu działania:
 
 | Nazwa obrazu  | Rozmiar lokalny | Kod wyjścia (Exit Code) | Funkcja / Rola w systemie                  |
 | :------------ | :-------------- | :---------------------- | :----------------------------------------- |
@@ -118,11 +118,13 @@ Uruchomiono kontener `busybox` w trybie interaktywnym (`-it`), wywołując polec
 
 ![Izolacja procesów PID1](./img/L1_Start_3.png)
 
-Wewnątrz kontenera proces `/bin/bash` uzyskał najwyższy priorytet i identyfikator **PID 1**, co udowadnia pełną izolację środowiska. Na hoście ten sam proces widoczny był pod standardowym, wysokim identyfikatorem systemowym.
+*Rys. 11_1. Docker run i docker biild .*
+
+Wewnątrz kontenera proces `/bin/bash` ma izolację środowiska. Na hoście ten sam proces widoczny był pod wysokim identyfikatorem systemowym.
 
 ![Izolacja procesów PID1](./img/L1_Start_8.png)
 
-*Rys. 11. Drzewo procesów wewnątrz kontenera Ubuntu z widocznym procesem PID 1.*
+*Rys. 11. Drzewo procesów wewnątrz kontenera Ubuntu z widocznym procesem PID .*
 
 ---
 
@@ -165,7 +167,7 @@ Następnie usunięto pobrane obrazy z lokalnego magazynu poleceniem:
 docker rmi <nazwa_obrazu>
 ```
 
-oraz przeprowadzono głębokie czyszczenie nieużywanych warstw komendą:
+oraz przeprowadzono czyszczenie nieużywanych warstw komendą:
 
 ```bash
 docker image prune -a -f
@@ -193,5 +195,86 @@ docker image prune -a -f
 
 ### Metoda weryfikacji i modyfikacji
 
-Na podstawie otrzymanych wskazówek przygotowano plik Dockerfile oraz uzupełniono dokumentację. Następnie samodzielnie zweryfikowano poprawność działania kontenera, poleceń Dockera oraz treści sprawozdania, wprowadzając niezbędne poprawki redakcyjne i techniczne.
+Na podstawie otrzymanych wskazówek przygotowano plik Dockerfile oraz uzupełniono dokumentację. Następnie samodzielnie zweryfikowano poprawność działania kontenera, poleceń Dockera oraz treści sprawozdania, wprowadzając ewentualnie niezbędne poprawki.
 
+
+
+# Sprawozdanie 3 - Dockerfiles, kontener jako definicja etapu
+
+## 1. Wybór oprogramowania na zajęcia
+Do realizacji zadania wybrano bibliotekę **cJSON** (lekki parser JSON napisany w języku ANSI C). 
+Projekt ten posiada otwartą licencję (MIT), wykorzystuje system budowania `CMake` oraz zawiera zdefiniowane testy uruchamiane za pomocą wbudowanego narzędzia `CTest`.
+
+---
+
+## 2. Izolacja i powtarzalność: build w kontenerze (Interaktywnie)
+Proces budowania i testowania przeprowadzono początkowo wewnątrz kontenera bazowego `ubuntu:24.04`.
+Zainstalowano niezbędne zależności (`git`, `cmake`, `build-essential`), sklonowano repozytorium, a następnie skompilowano projekt i uruchomiono testy.
+
+![Instalacja](./img/L2_przygotuj_1.png)
+*Rys. 1. Instalacja kontenera cz.1*
+
+
+![Instalacja 2](./img/L2_przygotuj_2.png)
+*Rys. 2. Instalacja kontenera cz.2*
+
+
+![Wynik testów interaktywnych](./img/L2_przygotuj_3.png)
+*Rys. 3. Pomyślne przejście testów jednostkowych wewnątrz interaktywnego kontenera.*
+
+
+---
+
+## 3. Automatyzacja procesu (Dockerfile)
+Podzielono proces na dwa etapy, tworząc dwa osobne pliki `Dockerfile`:
+1. **Dockerfile.build** – przygotowuje środowisko kompilacji, klonuje kod i buduje projekt.
+2. **Dockerfile.test** – bazuje na zbudowanym obrazie i służy wyłącznie do uruchomienia testów.
+
+![Docker1](./img/L2_DockerBuild_4.png)
+*Rys. 4. Zawartość DockerBuild*
+
+![Docker2](./img/L2_DockerTest_6.png)
+*Rys. 5. Zawartość DockerTest*
+
+
+
+---
+
+## 4. Docker Compose
+Zamiast ręcznego zarządzania kontenerami, proces zautomatyzowano przy użyciu narzędzia Docker Compose. Wdrożenie testowego kontenera realizowane jest komendą.
+
+![Plik DockerCompose](./img/L2_DockerCompose_7.png)
+*Rys. 6. Zawartość pliku DockerCompose*
+
+![Instalacja potrzebnych pakietów](./img/L2_DockerCompose_8_install.png)
+*Rys. 7. Instalacja bibliotek
+
+![Wynik](./img/L2_DockerCompose_9_end.png)
+*Rys. 8. Wynik działania kompozycji – automatyczne zbudowanie obrazu i wykonanie testów cJSON.*
+
+---
+
+## 5. Przygotowanie do wdrożenia (Deploy): Dyskusje
+* **Czy program nadaje się do wdrażania i publikowania jako kontener?**
+  Nie. Wybrane oprogramowanie (`cJSON`) jest tylko biblioteką programistyczną języka C. Dystrybuowanie jej jako "działającego kontenera" nie ma sensu. Kontener pełni tutaj wyłącznie rolę izolowanego środowiska do testowania (w procesie CI).
+* **W jaki sposób miałoby zachodzić przygotowanie finalnego artefaktu?**
+   Środowisko musielibyśmy oczyścić ze zbędnych elementów(narzędzia kompilacyjne typu GCC, CMake), które tylko zwiększają wagę.
+* **Czy dedykowany deploy-and-publish byłby oddzielną ścieżką?**
+  Tak. Należałoby zastosować *Multi-stage builds*. Ostatni krok potoku CI wyodrębniłby wyłącznie skompilowaną bibliotekę z pierwszego, ciężkiego kontenera kompilacyjnego, przenosząc ją do czystego systemu bazowego lub eksportując bezpośrednio na hosta.
+* **Czy zbudowany program należałoby dystrybuować jako pakiet?**
+  Tak, finalnym formatem dla systemu Linux powinna być natywna paczka dystrybucyjna (np. `.deb` lub `.rpm`). Dodatkowym krokiem byłoby użycie zintegrowanego narzędzia (np. `CPack`), które automatycznie spakowałoby skompilowane pliki w instalowalną paczkę oprogramowania.
+
+
+## Użycie narzędzi Generatywnej AI (Zajęcia 03)
+
+### Treść wysłanego zapytania (Prompt)
+
+> 1. Pomóż mi przeanalizować poniższe pytania do dyskusji na temat mojego projektu cJson na GitHubie w ramach deploya:
+>    - Czy dedykowany deploy-and-publish byłby oddzielną ścieżką?
+>    - Czy zbudowany program należałoby dystrybuować jako pakiet?
+>
+> 2. Sformatuj plik README.md pod kątem sprawozdania. Sprawdź go pod kątem błędów składniowych, aby poprawnie renderował ścieżki do zrzutów ekranu i bloki kodu na GitHubie.
+
+### Metoda weryfikacji i modyfikacji
+
+ Otrzymane argumenty do dyskusji zweryfikowano pod kątem logiki i zgodności z informacjami na internecie.(wzorzec multi-stage builds oraz natywna dystrybucja pakietów). Wygenerowany kod dokumentacji Markdown został poddany manualnemu sprawdzeniu, aby na 100% odpowiadał strukturze katalogów i nazwom plików graficznych w środowisku.
