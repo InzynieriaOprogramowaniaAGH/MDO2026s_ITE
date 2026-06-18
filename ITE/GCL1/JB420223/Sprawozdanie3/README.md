@@ -457,3 +457,13 @@ Następnie w celu przejścia dalej naciskamy 'F10'
 Po instalacji możemy zalogować się na automatycznie utworzone konto dowodząc że plik jest poprawny i instalacja przebiegła automatycznie i poprawnie
 
 ![Zdj](lab9/9_4.png)
+
+Sprawdzono również działanie mechanizmów postinstalacyjnych oraz statusu automatycznie wdrożonej aplikacji
+
+![Zdj](lab9/9_5.png)
+
+* `sudo docker ps`: Pokazuje działający kontener moj_pipeline_app (bazujący na redis:latest). Kontener działa stabilnie od 8 minut (Up 8 minutes) i ma wystawiony port 6379.
+
+* `sudo cat /root/kickstart_post.log`: Potwierdza, że sekcja %post instalatora Kickstart pomyślnie utworzyła dowiązania symboliczne (symlinki) dla usłgi Docker oraz Twojej dedykowanej usługi startowej.
+
+* `sudo systemctl status run-app-once.service`: Pokazuje status active (exited) z kodem status=0/SUCCESS. Oznacza to, że przygotowana usługa systemd odpaliła skrypt, skrypt pomyślnie wykonał docker run (w logach na dole widać warstwy pobierania obrazu: Pull complete), po czym usługa zakończyła pracę, zostawiając kontener uruchomiony w tle.
