@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Informacje o systemie') 
+{
+            steps 
+{
+                sh 'uname -a'
+            }
+        }
+        stage('Weryfikacja godziny') 
+{
+            steps {
+                sh '''
+                    HOUR=$(date +%H)
+                    echo "Aktualna godzina to: $HOUR"
+                    
+                    if [ $((HOUR % 2)) -ne 0 ]; then
+                        echo "BŁĄD: Godzina jest nieparzysta!"
+                        exit 1
+                    else
+                        echo "SUKCES: Godzina jest parzysta. Kontynuujemy."
+                    fi
+                '''
+            }
+        }
+        stage('Pobranie obrazu') 
+{
+            steps 
+{
+                sh 'docker pull ubuntu'
+            }
+        }
+    }
+}
