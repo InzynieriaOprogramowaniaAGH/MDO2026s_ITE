@@ -1,0 +1,2 @@
+FROM my-redis:v1
+CMD ["/usr/local/bin/redis-server", "--gupi-blad"]

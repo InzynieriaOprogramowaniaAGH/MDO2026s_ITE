@@ -522,9 +522,436 @@ Następnie zapoznano się z dokumentacją kubernetesa i jego koncepcjami
 
 ### Analiza posiadanego kontenera
 
-Aby otryzmać obraz dla kuberentesa musimy dodać do naszego pipeline'u stage który daje nam stosowny obraz, w tym celu modyfikujemy stary plik i umieszczamy go w nowej lokacji którą również trzeba zmienić w jenkinsie
+Najpierw tworzymy odpowienid obraz z serwerem, do tego celu wykorzystamy artefakt wcześneijszego builda:
 
-![Zdj](lab10/10_6.png) 
+![Zdj](lab10/10_6.png)
 
-W stosownym miejscu należy stowrzyć plik JenkinsfileCloud który będzie zmodyfikowanym plikiem (plik jest w ścieżce jak na zdjęciu)
+Ładujemy go do minikube i odpalamy jako poda
 
+```
+minikube image load my-redis:v1
+
+kubectl run redis-jednopodowe --image=my-redis:v1 --image-pull-policy=Never --port=6379 --labels app=redis-jednopodowe
+```
+
+![Zdj](lab10/10_7.png)
+
+Redis w środku poda żyje i ma się dobrze
+
+
+### Uruchamianie oprogramowania
+
+Skoro Redis działa należy teraz wyprowadzić jego portu tak aby byl dostępny z zewnątrz
+
+```
+kubectl port-forward pod/redis-jednopodowe 6379:6379
+```
+
+![Zdj](lab10/10_8.png)
+
+Możemy komunikować się z Redisem z poziomu głownego systemu
+
+
+### Przekucie wdrożenia manualnego w plik wdrożenia
+
+Tworzymy plik konfiguracyjny YAML dla nginx
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+```
+
+Następnie wdrażamy nasz plik:
+
+![Zdj](lab10/10_9.png)
+
+Oraz sprawdzamy jego stan
+
+![Zdj](lab10/10_10.png)
+
+Funkcjonuje bez problemów
+
+Teraz czas aby wyeksponować nginx jako serwis na porcie 8888 i sprawdzić połączenie
+
+```
+kubectl expose deployment nginx-deployment --type=ClusterIP --name=nginx-service --port=8888 --target-port=80
+```
+![Zdj](lab10/10_11.png)
+
+![Zdj](lab10/10_12.png)
+
+Usługa jest aktywna i działa prawidłowo
+
+### Przygotowanie nowego obrazu
+
+Tworzymy nowy obraz na bazie starego i ładujemy go do minikube
+
+![Zdj](lab10/10_13.png)
+
+Nastepnie tworzymy plik `Dockerfile.Bad`
+
+```
+FROM my-redis:v1
+CMD ["/usr/local/bin/redis-server", "--gupi-blad"]
+```
+
+i na jego podstawie tworzymy wadliwy obraz
+
+![Zdj](lab10/10_14.png)
+
+i ładujemy go do minikube
+
+```
+minikube image load my-redis:v3-bug
+```
+
+Towrzymy następnie nowy plik wdrożenia `deployment2.yaml`
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  labels:
+    app: my-redis
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-redis
+  template:
+    metadata:
+      labels:
+        app: my-redis
+    spec:
+      containers:
+      - name: redis
+        image: my-redis:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 6379
+```
+
+Oraz wdrażamy go:
+
+```
+kubectl apply -f deployment2.yaml
+```
+
+Nastepnie symulujemy wdrożenie nowej wersji aplikacji
+
+![Zdj](lab10/10_15.png)
+
+A potem jeszcze raz ale tym razem wprowadzamy wadliwy obraz
+
+![Zdj](lab10/10_16.png)
+
+Widzimy że nasz pod się wywalił, dlatego trzeba zrobić undo
+
+![Zdj](lab10/10_17.png)
+
+Teraz widzimy że pod działa poprawnie ponieważ przywróciliśmy starą wersję
+
+
+### Kontrola wdrożenia
+
+Sprawdzamy historię wdrożeń
+
+![Zdj](lab10/10_18.png)
+
+Wywołanie polecenia kubectl rollout history pozwoliło na identyfikację pełnej historii zmian wdrożenia, w której rewizja numer 3 została jednoznacznie skorelowana z wadliwym obrazem my-redis:v3-bug. Szczegółowa inspekcja szablonu poda ujawniła, że to właśnie ta wersja wywołała błędy aplikacyjne na środowisku z powodu błędnej konfiguracji startowej kontenera. Przechowywanie takich metadanych przez Kubernetes udowadnia, jak kluczowa jest deklaratywna kontrola wersji, umożliwiająca administratorowi natychmiastowe wskazanie źródła awarii oraz precyzyjne wycofanie zmian do stabilnego stanu
+
+Nastepnie stowrzono skrypt `verify_deployment.sh` który weryfikuje wdrożenie aplikacji
+
+```
+#!/bin/bash
+
+DEPLOYMENT_NAME="redis-deployment"
+TIMEOUT=60
+
+echo "Rozpoczynam weryfikację wdrożenia: $DEPLOYMENT_NAME (Limit czasu: ${TIMEOUT}s)..."
+
+# Sprawdzenie statusu rolloutu z twardym limitem czasowym
+kubectl rollout status deployment/$DEPLOYMENT_NAME --timeout=${TIMEOUT}s
+
+if [ $? -eq 0 ]; then
+    echo "SUKCES: Wdrożenie zakończyło się pomyślnie w zadanym czasie!"
+    exit 0
+else
+    echo "BŁĄD: Wdrożenie przekroczyło limit czasu lub zakończyło się awarią!"
+    exit 1
+fi
+
+```
+
+Należy mu nadać również odpowiednie uprawnienia
+
+```
+chmod +x verify_deployment.sh
+```
+
+![Zdj](lab10/10_19.png)
+
+Skrypt działa
+
+
+### Strategie wdrożenia
+
+#### Recreate
+
+Plik `deployment-recreate.yaml`
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-recreate
+  labels:
+    strategy: recreate
+spec:
+  replicas: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: redis-recreate
+  template:
+    metadata:
+      labels:
+        app: redis-recreate
+    spec:
+      containers:
+      - name: redis
+        image: my-redis:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 6379
+```
+
+Aby go przetestować wdrażamy go
+
+```
+kubectl apply -f deployment-canary.yaml
+```
+
+oraz włączamy podgląd na żywo:
+
+```
+kubectl get pods -l app=redis-recreate -w
+```
+
+a w innym terminalu
+
+```
+kubectl set image deployment/redis-recreate redis=my-redis:v2
+```
+
+Wszystkie 3 pody wchodzą jednocześnie w stan Terminating (liczba działających podów spadnie do zera). Dopiero gdy całkowicie znikają, status zmienia się na Pending -> ContainerCreating -> Running dla nowej wersji
+
+#### Rolling Update
+
+Plik `deployment-rolling.yaml`
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-rolling
+  labels:
+    strategy: rolling-update
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app: redis-rolling
+  template:
+    metadata:
+      labels:
+        app: redis-rolling
+    spec:
+      containers:
+      - name: redis
+        image: my-redis:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-rolling-service
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis-rolling
+```
+
+Wyniki testów
+
+![Zdj](lab10/10_20.png)
+
+Strategia Rolling Update realizuje bezpieczną aktualizację przyrostową, która pozwala na bezprzestojową (zero-downtime) podmianę oprogramowania bez przerywania obsługi ruchu sieciowego. Zamiast jednoczesnego wygaszania wszystkich kontenerów, Kubernetes wymienia pody stopniowo, kontrolując proces za pomocą parametrów maxSurge (liczba tymczasowo nadprogramowych podów) oraz maxUnavailable (maksymalna liczba podów niedostępnych w trakcie operacji). Dzięki temu, podczas wdrożenia wersji v2, starsze repliki są usuwane dopiero w momencie, gdy nowe pody pomyślnie przejdą testy gotowości i przejmą ich zadania. Taka konfiguracja gwarantuje wysoką dostępność usług, eliminując ryzyko wystąpienia przerw w działaniu aplikacji dla użytkowników końcowych
+
+#### Canary Deployment
+
+Plik `deployment-canary.yaml`
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-stable
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-canary-mix
+  template:
+    metadata:
+      labels:
+        app: redis-canary-mix
+        version: v1
+    spec:
+      containers:
+      - name: redis
+        image: my-redis:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-canary-mix
+  template:
+    metadata:
+      labels:
+        app: redis-canary-mix
+        version: v2
+    spec:
+      containers:
+      - name: redis
+        image: my-redis:v2
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-canary-service
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis-canary-mix
+```
+
+Wyniki testów
+
+![Zdj](lab10/10_21.png)
+
+Strategia Canary Deployment umożliwia bezpieczne testowanie nowej wersji oprogramowania na produkcji poprzez skierowanie do niej jedynie niewielkiej części ruchu sieciowego. Cel ten osiągnięto za pomocą wspólnego serwisu balansującego (redis-canary-service), który dzięki selektorowi etykiet połączył w jedną pulę punktów końcowych (Endpoints) trzy stabilne pody wersji v1 oraz jeden testowy pod wersji v2. W efekcie system automatycznie dystrybuuje zapytania w bezpiecznym stosunku 75% do 25%, izolując potencjalne błędy nowego kodu od większości użytkowników. Taka architektura pozwala na bezprzestojową weryfikację stabilności aplikacji i daje możliwość natychmiastowego wycofania zmian poprzez proste usunięcie "kanarkowego" wdrożenia
+
+#### Różnice
+
+Przeprowadzone testy laboratoryjne wykazały fundamentalne różnice w sposobie zarządzania cyklem życia aplikacji przez poszczególne rozwiązania. Strategia Recreate generuje widoczny przestój (downtime), ponieważ najpierw całkowicie usuwa stare pody, a dopiero potem tworzy nowe, co gwarantuje, że różne wersje kodu nigdy nie działają jednocześnie. W opozycji do niej, Rolling Update realizuje wdrożenie bezprzestojowe (zero-downtime) poprzez stopniową, falową wymianę kontenerów, sterowaną limitami nadmiarowości (maxSurge) oraz niedostępności (maxUnavailable), przez co starsze repliki są usuwane dopiero po uruchomieniu nowych
+
+Z kolei Canary Deployment reprezentuje podejście hybrydowe i najbardziej bezpieczne z punktu widzenia produkcji. Nie modyfikuje ono istniejącej infrastruktury, lecz uruchamia pojedynczy pod nowej wersji obok stabilnego rdzenia, wykorzystując wspólny serwis sieciowy do statystycznego rozdzielenia ruchu (w tym przypadku 75% do 25%). Jeśli nowa wersja okaże się niestabilna, awaria dotyka jedynie ułamka użytkowników, a samo wycofanie zmian ogranicza się do natychmiastowego usunięcia "kanarkowego" wdrożenia bez dotykania stabilnej bazy
+
+## Lab 11 Wdrażanie na zarządzalne kontenery: Kubernetes (2)
+
+### Eksponowanie
+
+Tworzymy nowy plik wdrożenia `web.yaml`
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-web
+spec:
+  replicas: 36
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+```
+
+Wdrażamy go
+
+```
+kubectl apply -f web.yaml
+```
+
+Sprawdzamy czy pody się wdrożyły
+
+![Zdj](lab11/11_1.png)
+
+Po prawidłowym wdrożeniu wybieramy dowolnego i otwieramy na niego port 
+
+![Zdj](lab11/11_2.png)
+
+Następnie w visual studio codedodajemy port 9999
+
+![Zdj](lab11/11_3.png)
+
+i klikamy w ikonę po środku (link)
+
+![Zdj](lab11/11_4.png)
+
+Nastepnie przerywamy udostępnianie portu, po czym ustawiamy stały punkt dostępu do 36 podów
+
+![Zdj](lab11/11_5.png)
+
+Aby potem móc przekskalować wdrożenie
+
+![Zdj](lab11/11_6.png)
+
+## Wnioski
+Podczas ćwiczeń laboratoryjnych zrealizowano pełny proces automatyzacji konfiguracji systemowej przy użyciu narzędzia Ansible, co pozwoliło na całkowite wyeliminowanie błędów manualnych poprzez deklaratywne definiowanie stanu środowiska. Wykorzystanie playbooków i ról umożliwiło ujednolicenie konfiguracji maszyn orchestrator oraz target, zapewniając pełną audytowalność działań. Kluczowym aspektem okazała się idempotentność platformy Ansible, dzięki której wielokrotne uruchamianie tych samych skryptów nie wprowadzało niepożądanych zmian w systemie. Wdrożenie bezhasłowego dostępu SSH oraz mechanizmu become zagwarantowało natomiast wysoki poziom bezpieczeństwa podczas zdalnego zarządzania
+
+W obszarze provisioningu infrastruktury jako kodu (IaC) wykorzystano technologię Kickstart dla dystrybucji Fedora, co umożliwiło w pełni nienadzorowaną, błyskawiczną instalację systemów operacyjnych maszyn wirtualnych bez konieczności ingerencji człowieka. Istotnym elementem konfiguracji była sekcja %post, w której zaimplementowano automatyczne wstrzykiwanie logiki post-instalacyjnej, obejmującej m.in. konfigurację menedżera systemd oraz uruchamianie środowisk kontenerowych Docker. Podejście to udowodniło swoją efektywność, drastycznie skracając czas potrzebny na przejście od etapu czystego dysku do w pełni funkcjonalnego węzła aplikacyjnego
+
+W ramach zadań z orkiestracji kontenerów w środowisku Kubernetes (minikube) przeanalizowano mechanizmy zarządzania cyklem życia aplikacji na poziomie klastra za pomocą obiektów Deployment oraz Pods. Przetestowano w praktyce trzy kluczowe strategie wdrażania oprogramowania: bezprzestojową Rolling Update, wymagającą czasowego wyłączenia usług Recreate oraz najbardziej bezpieczną produkcyjnie Canary Deployment, która pozwoliła na kontrolowane skierowanie jedynie 25% ruchu sieciowego do nowej wersji aplikacji. Dodatkowo zweryfikowano działanie mechanizmu awaryjnego wycofywania zmian (rollout undo), który w przypadku wykrycia błędów pozwala na natychmiastowy powrót do stabilnego stanu systemu, minimalizując wskaźnik MTTR (Mean Time To Recovery)
+
+Ostatni etap prac laboratoryjnych pozwolił na zbadanie mechanizmów dynamicznego skalowania oraz abstrakcji sieciowej w Kubernetesie. Poprzez modyfikację plików YAML oraz użycie poleceń imperatywnych skutecznie przeskalowano wdrożenie do poziomu 36 replik, co zobrazowało elastyczność klastra w obszarze zarządzania zasobami. Wykorzystanie obiektów typu Service (zarówno generowanych dedykowanym poleceniem, jak i deklaratywnym plikiem konfiguracyjnym) umożliwiło stworzenie stałych punktów dostępowych (load balancerów), które automatycznie dystrybuowały ruch pomiędzy dynamicznie zmieniającą się pulą podów, eliminując potrzebę ręcznego mapowania portów dla pojedynczych kontenerów

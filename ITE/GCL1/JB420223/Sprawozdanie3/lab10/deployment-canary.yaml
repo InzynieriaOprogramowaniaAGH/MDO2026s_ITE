@@ -1,0 +1,57 @@
+# 1. STABILNA WERSJA (v1) - 3 repliki (np. 75% ruchu)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-stable
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-canary-mix
+  template:
+    metadata:
+      labels:
+        app: redis-canary-mix
+        version: v1
+    spec:
+      containers:
+      - name: redis
+        image: my-redis:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 6379
+---
+# 2. WERSJA KANARKOWA (v2) - 1 replika (np. 25% ruchu)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-canary-mix
+  template:
+    metadata:
+      labels:
+        app: redis-canary-mix
+        version: v2
+    spec:
+      containers:
+      - name: redis
+        image: my-redis:v2
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 6379
+---
+# 3. WSPÓLNY SERWIS BALANSUJĄCY RUCH
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-canary-service
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis-canary-mix
