@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+    
+    environment {
+        IMAGE_NAME = "my-redis"
+        BUILD_DIR = "ITE/GCL1/JB420223/Sprawozdanie2/lab5"
+        RUNTIME_DIR = "ITE/GCL1/JB420223/Sprawozdanie2/lab6"
+    }
+
+    stages {
+        stage('1. Clean & Checkout') {
+            steps {
+                cleanWs()
+                checkout scm
+            }
+        }
+
+        stage('2. Build (Dockerfile.Redis.Build)') {
+            steps {
+                script {
+                    sh "docker build -f ${BUILD_DIR}/Dockerfile.Redis.Build -t redis-builder:${env.BUILD_NUMBER} ${BUILD_DIR}"
+                }
+            }
+        }
+
+        stage('3. Testy (Dockerfile.Redis.Tests)') {
+            steps {
+                script {
+                    sh "docker tag redis-builder:${env.BUILD_NUMBER} redis_build:latest"
+                    sh "docker build -f ${BUILD_DIR}/Dockerfile.Redis.Tests -t redis-tester:${env.BUILD_NUMBER} ${BUILD_DIR}"
+                    echo "Testy zakonczone sukcesem."
+                }
+            }
+        }
+
+        stage('4. Deploy (Lekki Runtime)') {
+            steps {
+                script {
+                    sh "docker create --name temp_bldr_${env.BUILD_NUMBER} redis-builder:${env.BUILD_NUMBER}"
+                    sh "docker cp temp_bldr_${env.BUILD_NUMBER}:/redis/src/redis-server ./redis-server"
+                    sh "docker rm temp_bldr_${env.BUILD_NUMBER}"
+                    
+                    sh "chmod +x redis-server"
+                    sh "./redis-server --version"
+                    
+                    sh "docker build -f ${RUNTIME_DIR}/Dockerfile.Runtime -t ${IMAGE_NAME}:v1 ."
+                }
+            }
+        }
+
+        stage('5. Publish (Artefakt)') {
+            steps {
+                script {
+                    sh "tar -czvf redis-JB420223-bin.tar.gz redis-server"
+                    archiveArtifacts artifacts: 'redis-JB420223-bin.tar.gz', fingerprint: true
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            sh "docker rmi redis-builder:${env.BUILD_NUMBER} redis-tester:${env.BUILD_NUMBER} || true"
+        }
+    }
+}

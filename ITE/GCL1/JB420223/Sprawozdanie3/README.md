@@ -467,3 +467,64 @@ Sprawdzono również działanie mechanizmów postinstalacyjnych oraz statusu aut
 * `sudo cat /root/kickstart_post.log`: Potwierdza, że sekcja %post instalatora Kickstart pomyślnie utworzyła dowiązania symboliczne (symlinki) dla usłgi Docker oraz Twojej dedykowanej usługi startowej.
 
 * `sudo systemctl status run-app-once.service`: Pokazuje status active (exited) z kodem status=0/SUCCESS. Oznacza to, że przygotowana usługa systemd odpaliła skrypt, skrypt pomyślnie wykonał docker run (w logach na dole widać warstwy pobierania obrazu: Pull complete), po czym usługa zakończyła pracę, zostawiając kontener uruchomiony w tle.
+
+
+## Lab 10 Wdrażanie na zarządzalne kontenery: Kubernetes
+
+### Instalacja klastra Kubernetes
+
+Wpierw pobrano i zainstalowano minikube
+
+```
+curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
+
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+
+minikube start
+```
+
+![Zdj](lab10/10_1.png)
+
+Większość działa poprawnie ale nie ma kubectl
+
+Następnie pobieramy kubectl, instalujemy i weryfikujemy instalację 
+
+```
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+kubectl version --client
+
+kubectl cluster-info
+
+alias kubectl="minikube kubectl --"
+```
+
+![Zdj](lab10/10_2.png)
+
+![Zdj](lab10/10_3.png)
+
+Jak widać instalacje przebiegły poprawnie, możemy teraz uruchomić panel kubernetesa prz okazji weryfikując jego stan
+
+```
+minikube dashboard
+```
+
+![Zdj](lab10/10_4.png)
+
+![Zdj](lab10/10_5.png)
+
+Jak widać panel uruchamia się poprawnie
+
+Następnie zapoznano się z dokumentacją kubernetesa i jego koncepcjami
+
+
+### Analiza posiadanego kontenera
+
+Aby otryzmać obraz dla kuberentesa musimy dodać do naszego pipeline'u stage który daje nam stosowny obraz, w tym celu modyfikujemy stary plik i umieszczamy go w nowej lokacji którą również trzeba zmienić w jenkinsie
+
+![Zdj](lab10/10_6.png) 
+
+W stosownym miejscu należy stowrzyć plik JenkinsfileCloud który będzie zmodyfikowanym plikiem (plik jest w ścieżce jak na zdjęciu)
+
