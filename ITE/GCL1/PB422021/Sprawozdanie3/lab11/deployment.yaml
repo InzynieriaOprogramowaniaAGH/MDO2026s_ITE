@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab11-deployment
+spec:
+  replicas: 36
+  selector:
+    matchLabels:
+      app: moj-web-server
+  template:
+    metadata:
+      labels:
+        app: moj-web-server
+    spec:
+      containers:
+      - name: web-kontener
+        image: nginx
+        ports:
+        - containerPort: 80

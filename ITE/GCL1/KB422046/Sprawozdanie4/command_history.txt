@@ -1,0 +1,16 @@
+git clone https://github.com/STM32F439/curl_fork.git
+cd curl_fork
+git rm -rf .github/workflows/
+git commit -m "Remove upstream workflows"
+git push origin master
+git checkout -b ino_dev
+git push origin ino_dev
+mkdir -p .github/workflows
+code .github/workflows/build.yml
+git add .github/workflows/build.yml
+git commit -m "Add CI build workflow for ino_dev"
+git push origin ino_dev
+echo "# test" >> README.md
+git add README.md
+git commit -m "Test trigger"
+git push origin ino_dev

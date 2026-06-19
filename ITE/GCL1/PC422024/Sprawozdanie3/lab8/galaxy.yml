@@ -1,0 +1,6 @@
+---
+- name: Glowne wdrozenie z wykorzystaniem Roli
+  hosts: Endpoints
+  become: yes
+  roles:
+    - deploy_deb_role
