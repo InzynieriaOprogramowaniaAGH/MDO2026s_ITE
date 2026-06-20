@@ -3,7 +3,7 @@ pipeline {
     
     environment 
     {
-        SCIEZKA_ROBOCZA = 'ITE/GCL1/LC417617/Sprawozdanie2/Zajecia6'
+        SCIEZKA_ROBOCZA = 'ITE/GCL1/LC417617/Sprawozdanie2/Zajecia6/cJSON'
     }
 
     stages {
