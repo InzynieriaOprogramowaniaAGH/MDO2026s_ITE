@@ -1,14 +1,20 @@
-pipeline 
-{
+pipeline {
     agent any
     
-    stages 
+    environment 
     {
+        SCIEZKA_ROBOCZA = 'ITE/GCL1/LC417617/Sprawozdanie2/Zajecia6'
+    }
+
+    stages {
         stage('Budowa i testy') 
         {
             steps 
             {
-                sh 'docker build --target test -t cjson-app:test .'
+                dir(env.SCIEZKA_ROBOCZA) 
+                {
+                    sh 'docker build --target test -t cjson-app:test .'
+                }
             }
         }
         
@@ -16,24 +22,30 @@ pipeline
         {
             steps 
             {
-                sh 'docker build --target deploy -t cjson-app:${BUILD_NUMBER} .'
+                dir(env.SCIEZKA_ROBOCZA)
+                 {
+                    sh 'docker build --target deploy -t cjson-app:${BUILD_NUMBER} .'
+                }
             }
         }
         
-        stage('Smoke Test')
-         {
+        stage('Smoke Test') 
+        {
             steps 
             {
-                sh 'docker run --rm --name smoke_test cjson-app:${BUILD_NUMBER}'
+                sh 'docker run --rm --name smoke_test_${BUILD_NUMBER} cjson-app:${BUILD_NUMBER}'
             }
         }
         
         stage('Publikacja artefaktu')
-         {
+        {
             steps 
             {
-                sh 'docker save -o cjson-artifact-${BUILD_NUMBER}.tar cjson-app:${BUILD_NUMBER}'
-                archiveArtifacts artifacts: '*.tar', fingerprint: true
+                dir(env.SCIEZKA_ROBOCZA) 
+                {
+                    sh 'docker save -o cjson-artifact-${BUILD_NUMBER}.tar cjson-app:${BUILD_NUMBER}'
+                    archiveArtifacts artifacts: '*.tar', fingerprint: true
+                }
             }
         }
     }
