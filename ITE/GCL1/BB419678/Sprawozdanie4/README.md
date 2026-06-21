@@ -1,7 +1,9 @@
 ## Sprawozdanie numer 4
+
 Bartosz Bodulski, grupa 1, tematy 12 i 13.
 
 ### Temat 12
+
 Cel zajeć: Zapoznanie się z github Actions oraz dyrektywą "shift-left".
 
 Na początku zgodnie z poleceniem, forkuję i klonuję repozytorium mojego wcześniej wybranego oprogramowania - jest to neovim, tworzę nową gałąź lokalną ino_dev, usuwam wszystkie workflowy dla github actions ustawione przez autorów oprogramowania.
@@ -66,6 +68,7 @@ jobs:
  
 Przed spushowaniem commita z plikem konfiguracyjnym panel github actions wyglada tak:
 
+
 ![img](../screenshots/lab12/Zrzut%20ekranu%202026-06-12%20085939.png)
 
 Po spushowaniu commita pipeline jest uruchamiany i wszystko przedchodzi bez błędów:
@@ -79,7 +82,6 @@ Po spushowaniu commita pipeline jest uruchamiany i wszystko przedchodzi bez bł�
 ![img](../screenshots/lab12/Zrzut%20ekranu%202026-06-12%20090703.png)
  
 Wynikiem pipeline'u jest właśnie raport w postaci pliku tekstowego, który można normalnie sciągnąć i sprawdzić na własnej maszynie:
-
 
 ![img](../screenshots/lab12/Zrzut%20ekranu%202026-06-12%20090917.png)
 
@@ -175,6 +177,8 @@ jobs:
           retention-days: 5
 
 ```
+
+
 Po spushowaniu commita dostaje takie wyniki:
 
 ![img](../screenshots/lab12/Zrzut%20ekranu%202026-06-12%20092111.png)
@@ -221,6 +225,7 @@ Podczas pierwszej próby utworzenia kontenera na nowej subskrypcji, Azure musi z
 
 
 ![img](../screenshots/lab13/Zrzut%20ekranu%202026-06-15%20085549.png)
+
 Po około 20 minutach mogę już stworzyć mój kontener, który działa na porcie 80 z obrazem pobranym z mojego DockerHuba o nazwie `moj-app-bartbod123`, który używa 1 vCPU i 1 GB RAM w systemie Linux (Domyślam się, że jest to Apline Linux).
 
 
