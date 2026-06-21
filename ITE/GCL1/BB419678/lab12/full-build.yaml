@@ -31,7 +31,7 @@ jobs:
           cd build
           cpack -G DEB
           
-          # Zmiana nazwy wygenerowanego pliku na ta, ktorej uzywales w Jenkinsie
+          # Zmiana nazwy wygenerowanego pliku na ta, ktora byla w Jenkinsie
           mv nvim-*.deb ../neovim-final.deb
           cd ..
           
