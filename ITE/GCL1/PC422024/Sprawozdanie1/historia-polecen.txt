@@ -1,0 +1,224 @@
+ 1  quit
+    2  git clone git@github.com:InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git repo-ssh
+    3  ls
+    4  ip a
+    5  ls
+    6  ls -la
+    7  mkdir github
+    8  ls
+    9  ls .profile 
+   10  cd github/
+   11  git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+   12  ls
+   13  ssh-keygen -t ed25519 -C "piochaj@outlook.com"
+   14  ssh-keygen -t ecdsa -b 521 -f ~/.ssh/id_ecdsa
+   15  cat ~/.ssh/id_ed25519.pub
+   16  cd repo-ssh/
+   17  git pull
+   18  git checkout
+   19  git checkout git branch -a
+   20  git branch -a
+   21  git checkout GCL1
+   22  ls
+   23  git checkout -b PC422024
+   24  ls
+   25  ls ITE/
+   26  ls ITE/GCL1/
+   27  cd ITE/GCL1/
+   28  mkdir PC422024
+   29  cd .
+   30  cd ..
+   31  ls -la
+   32  ls .git/
+   33  ls .git/hooks
+   34  nano ./git/hooks/commit-msg.sample
+   35  nano .git/hooks/commit-msg.sample
+   36  cd .git
+   37  cd hooks/
+   38  nano commit-msg
+   39  cd ../..
+   40  ls
+   41  cd ITE/
+   42  cd GCL1/
+   43  cd PC422024/
+   44  nano sprawozdanie.md
+   45  git add .
+   46  git commit -m "Tworzenie brancha"
+   47  git config --global user.email "piochaj@outlook.com"
+   48  git config --global user.name "piter2519"
+   49  git commit -m "Tworzenie brancha"
+   50  cd ../../.git
+   51  cd ../../
+   52  cd ..
+   53  cd .git/hooks/
+   54  chmod +x commit-msg
+   55  cd ../../ITE/GCL1/PC422024/
+   56  git commit -m "Test hooka"
+   57  nano ../../../.git/hooks/commit-msg
+   58  git add .
+   59  git commit -m "Test hooka"
+   60  nano ../../../.git/hooks/commit-msg
+   61  git commit -m "Test hooka"
+   62  git add .
+   63  git commit -m "Test hooka"
+   64  git add .
+   65  git commit -m "PC422024: Test hooka"
+   66  git push
+   67  git push -u origin PC422024
+   68  sudo apt install docker.io
+   69  sudo usermod -aG docker $USER
+   70  sudo systemctl enable --now docker
+   71  docker images
+   72  sudo docker images
+   73  sudo usermod -aG docker $USER
+   74  docker images
+   75  ps docker images
+   76  docker run hello-world
+   77  sudo docker run hello-world
+   78  docker pull busybox
+   79  sudo docker pull busybox
+   80  sudo docker pull ubuntu
+   81  docker images
+   82  newgrp docker
+   83  docker images
+   84  docker pull fedora
+   85  docker pull mariadb
+   86  docker pull node
+   87  docker images
+   88  docker run hello-world
+   89  echo $?
+   90  docker run busybox
+   91  echo $?
+   92  docker pull mcr.microsoft.com/dotnet/runtime
+   93  docker images
+   94  docker run ubuntu
+   95  echo $?
+   96  docker pull mcr.microsoft.com/dotnet/aspnet
+   97  docker pull mcr.microsoft.com/dotnet/sdk
+   98  docker run -it busybox sh
+   99  docker images
+  100  docker run mariadb
+  101  docker ps
+  102  docker run -rm -d -tty busybox sh
+  103  docker run  -d -tty busybox sh
+  104  docker run -tty busybox sh
+  105  docker run -it ubuntu bash
+  106  ps aux | grep docker
+  107  cd ITE/
+  108  cd GCL1/
+  109  cd PC422024/
+  110  nano Dockerfile
+  111  mkdir Sprawozdanie1
+  112  mv Dockerfile Sprawozdanie1/Dockerfile
+  113  nano Dockerfile
+  114  nano Sprawozdanie1/Dockerfile 
+  115  cd Sprawozdanie1/
+  116  docker build -t repo-git .
+  117  docker run repo-git
+  118  docker run -it repo-git
+  119  docker ps -a
+  120  docker container prune
+  121  docker ps -a
+  122  docker image prune -a
+  123  docker images
+  124  docker pull hello-world
+  125  docker pull busybox
+  126  docker pull ubuntu
+  127  docker pull fedora
+  128  docker pull mariadb
+  129  docker pull node
+  130  docker pull mcr.microsoft.com/dotnet/runtime
+  131  docker pull mcr.microsoft.com/dotnet/aspnet
+  132  docker pull mcr.microsoft.com/dotnet/sdk
+  133  docker images
+  134  docker image prune
+  135  docker build repo-git .
+  136  docker build -t repo-git .
+  137  docker image prune
+  138  docker images
+  139  docker image prune
+  140  docker ps -a
+  141  cd ..
+  142  git mv
+  143  git mv 1.png Sprawozdanie1/lab1/1.png
+  144  git mv 2.png Sprawozdanie1/lab1/2.png
+  145  git mv 3.png Sprawozdanie1/lab1/3.png
+  146  git mv 4.png Sprawozdanie1/lab1/4.png
+  147  git mv 5.png Sprawozdanie1/lab1/5.png
+  148  git mv sprawozdanie.md Sprawozdanie1/sprawozdanie.md
+  149  git add .
+  150  git commit -m "PC422024: LAB2 - Instalacja i test Dockera"
+  151  git push
+  152  docker run -it ubuntu:22.04 /bin/bash
+  153  sudo docker run -it ubuntu:22.04 /bin/bash
+  154  docker run -it ubuntu:22.04 /bin/bash
+  155  docker build -t json-build -f Dockerfile.build .
+  156  docker build -t test -f Dockerfile.test .
+  157  docker run test
+  158  docker-compose up
+  159  sudo apt install docker-compose
+  160  docker-compose up
+  161  git add .
+  162  git commit -m "PC422024: LAB3 - docker:build,test,compose"
+  163  git push
+  164  cd ITE/GCL1/PC422024/Sprawozdanie1/
+  165  cd ..
+  166  docker volume create vol_in
+  167  docker volume create vol_out
+  168  docker run --rm -v vol_in:/workspace alpine/git clone --depth 1 https://github.com/nlohmann/json.git /workspace/json
+  169  docker run --rm -it -v vol_in:/workspace -v vol_out:/output ubuntu:22.04 /bin/bash
+  170  docker pull ubuntu:22.04
+  171  docker run --rm -it -v vol_in:/workspace -v vol_out:/output ubuntu:22.04 /bin/bash
+  172  docker 
+  173  date
+  174  docker ps
+  175  docker ps -aq
+  176  docker rm -f $(docker ps -aq)
+  177  docker rmi -f ubuntu:22.04
+  178  docker builder prune -a -f
+  179  docker volume rm vol_in vol_out
+  180  docker volume create vol_in
+  181  docker volume create vol_out
+  182  docker run --rm -v vol_in:/workspace alpine/git clone https://github.com/nlohmann/json.git /workspace/json
+  183  docker run --rm -v vol_in:/workspace alpine/git clone --depth 1 https://github.com/nlohmann/json.git /workspace/json
+  184  docker run --rm -it -v vol_in:/workspace -v vol_out:/output ubuntu:22.04 /bin/bash
+  185  docker run --rm -it -v vol_out:/sprawdzenie alpine sh
+  186  docker run --rm -it -v vol_out:/test_json alpine sh
+  187  git add Sprawozdanie1/lab4/.
+  188  git commit -m "PC422024: Woluminy, klonowanie buildu na wolumin wyjściowy
+  189  git commit -m "PC422024: Woluminy, klonowanie buildu na wolumin wyjściowy"
+  190  git push
+  191  docker network create siec1
+  192  docker run -d --name iperf-serwer --network siec1 -p 5201:5201 networkstatic/iperf3 -s
+  193  docker run -it -rm --network siec1 networkstatic/iperf3 -c iperf-serwer
+  194  docker run -it --rm --network siec1 networkstatic/iperf3 -c iperf-serwer
+  195  docker run -d --name serwerzewn -p 5201:5201 networkstatic/iperf3 -s
+  196  docker rm -f iperf-serwer
+  197  docker run -d --name serwerzewn -p 5201:5201 networkstatic/iperf3 -s
+  198  docker rm -f serwerzewn
+  199  docker run -d --name serwerzewn -p 5201:5201 networkstatic/iperf3 -s
+  200  iperf3 -c 127.0.0.1 -p 5202
+  201  iperf3 -c 127.0.0.1 -p 5201
+  202  sudo apt install iperf3
+  203  iperf3 -c 127.0.0.1
+  204  docker ps
+  205  sudo ufw disable
+  206  ifconfig -a
+  207  hostname -I
+  208  ip a
+  209  sudo ufw enable
+  210  docker run -it --name kontener-ssh -p 2222:22 ubuntu:22.04 /bin/bash
+  211  cd lab4
+  212  cd Sprawozdanie1/lab4
+  213  docker compose up -d
+  214  docker-compose up -d
+  215  docker ps
+  216  docker exec -it jenkins-blueocean /bin/bash
+  217  docker exec -it lab4_jenkins-blueocean_1 /bin/bash
+  218  git mv
+  219  cd ../..
+  220  git mv docker-compose.yml Sprawozdanie1/lab3
+  221  git mv Dockerfile.build Sprawozdanie1/lab3
+  222  git mv Dockerfile.test Sprawozdanie1/lab3
+  223  git mv Sprawozdanie1/Dockerfile Sprawozdanie1/lab2
+  224  history

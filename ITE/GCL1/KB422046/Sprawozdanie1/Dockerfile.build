@@ -1,0 +1,14 @@
+FROM ubuntu:latest
+
+RUN apt update && \
+    apt install -y build-essential autoconf automake libtool pkg-config git libpsl-dev
+
+WORKDIR /repository
+
+RUN git clone https://github.com/curl/curl.git
+
+WORKDIR /repository/curl
+
+RUN ./buildconf && \
+    ./configure --without-ssl && \
+    make

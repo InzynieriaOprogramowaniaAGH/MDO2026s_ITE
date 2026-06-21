@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc-yaml
+spec:
+  type: LoadBalancer
+  selector:
+    app: web-2
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80

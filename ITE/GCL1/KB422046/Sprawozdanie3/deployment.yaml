@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy-2
+spec:
+  replicas: 36
+  selector:
+    matchLabels:
+      app: web-2
+  template:
+    metadata:
+      labels:
+        app: web-2
+    spec:
+      containers:
+      - name: web-container
+        image: web-custom:v2
+        ports:
+        - containerPort: 80

@@ -1,0 +1,207 @@
+    1  quit
+    2  git clone git@github.com:InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git repo-ssh
+    3  ls
+    4  ip a
+    5  ls
+    6  ls -la
+    7  mkdir github
+    8  ls
+    9  ls .profile 
+   10  cd github/
+   11  git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+   12  ls
+   13  ssh-keygen -t ed25519 -C "piochaj@outlook.com"
+   14  ssh-keygen -t ecdsa -b 521 -f ~/.ssh/id_ecdsa
+   15  cat ~/.ssh/id_ed25519.pub
+   16  cd repo-ssh/
+   17  git pull
+   18  git checkout
+   19  git checkout git branch -a
+   20  git branch -a
+   21  git checkout GCL1
+   22  ls
+   23  git checkout -b PC422024
+   24  ls
+   25  ls ITE/
+   26  ls ITE/GCL1/
+   27  cd ITE/GCL1/
+   28  mkdir PC422024
+   29  cd .
+   30  cd ..
+   31  ls -la
+   32  ls .git/
+   33  ls .git/hooks
+   34  nano ./git/hooks/commit-msg.sample
+   35  nano .git/hooks/commit-msg.sample
+   36  cd .git
+   37  cd hooks/
+   38  nano commit-msg
+   39  cd ../..
+   40  ls
+   41  cd ITE/
+   42  cd GCL1/
+   43  cd PC422024/
+   44  nano sprawozdanie.md
+   45  git add .
+   46  git commit -m "Tworzenie brancha"
+   47  git config --global user.email "piochaj@outlook.com"
+   48  git config --global user.name "piter2519"
+   49  git commit -m "Tworzenie brancha"
+   50  cd ../../.git
+   51  cd ../../
+   52  cd ..
+   53  cd .git/hooks/
+   54  chmod +x commit-msg
+   55  cd ../../ITE/GCL1/PC422024/
+   56  git commit -m "Test hooka"
+   57  nano ../../../.git/hooks/commit-msg
+   58  git add .
+   59  git commit -m "Test hooka"
+   60  nano ../../../.git/hooks/commit-msg
+   61  git commit -m "Test hooka"
+   62  git add .
+   63  git commit -m "Test hooka"
+   64  git add .
+   65  git commit -m "PC422024: Test hooka"
+   66  git push
+   67  git push -u origin PC422024
+   68  sudo apt install docker.io
+   69  sudo usermod -aG docker $USER
+   70  sudo systemctl enable --now docker
+   71  docker images
+   72  sudo docker images
+   73  sudo usermod -aG docker $USER
+   74  docker images
+   75  ps docker images
+   76  docker run hello-world
+   77  sudo docker run hello-world
+   78  docker pull busybox
+   79  sudo docker pull busybox
+   80  sudo docker pull ubuntu
+   81  docker images
+   82  newgrp docker
+   83  docker images
+   84  docker pull fedora
+   85  docker pull mariadb
+   86  docker pull node
+   87  docker images
+   88  docker run hello-world
+   89  echo $?
+   90  docker run busybox
+   91  echo $?
+   92  docker pull mcr.microsoft.com/dotnet/runtime
+   93  docker images
+   94  docker run ubuntu
+   95  echo $?
+   96  docker pull mcr.microsoft.com/dotnet/aspnet
+   97  docker pull mcr.microsoft.com/dotnet/sdk
+   98  docker run -it busybox sh
+   99  docker images
+  100  docker run mariadb
+  101  docker ps
+  102  docker run -rm -d -tty busybox sh
+  103  docker run  -d -tty busybox sh
+  104  docker run -tty busybox sh
+  105  docker run -it ubuntu bash
+  106  ps aux | grep docker
+  107  cd ITE/
+  108  cd GCL1/
+  109  cd PC422024/
+  110  nano Dockerfile
+  111  mkdir Sprawozdanie1
+  112  mv Dockerfile Sprawozdanie1/Dockerfile
+  113  nano Dockerfile
+  114  nano Sprawozdanie1/Dockerfile 
+  115  cd Sprawozdanie1/
+  116  docker build -t repo-git .
+  117  docker run repo-git
+  118  docker run -it repo-git
+  119  docker ps -a
+  120  docker container prune
+  121  docker ps -a
+  122  docker image prune -a
+  123  docker images
+  124  docker pull hello-world
+  125  docker pull busybox
+  126  docker pull ubuntu
+  127  docker pull fedora
+  128  docker pull mariadb
+  129  docker pull node
+  130  docker pull mcr.microsoft.com/dotnet/runtime
+  131  docker pull mcr.microsoft.com/dotnet/aspnet
+  132  docker pull mcr.microsoft.com/dotnet/sdk
+  133  docker images
+  134  docker image prune
+  135  docker build repo-git .
+  136  docker build -t repo-git .
+  137  docker image prune
+  138  docker images
+  139  docker image prune
+  140  docker ps -a
+  141  cd ..
+  142  git mv
+  143  git mv 1.png Sprawozdanie1/lab1/1.png
+  144  git mv 2.png Sprawozdanie1/lab1/2.png
+  145  git mv 3.png Sprawozdanie1/lab1/3.png
+  146  git mv 4.png Sprawozdanie1/lab1/4.png
+  147  git mv 5.png Sprawozdanie1/lab1/5.png
+  148  git mv sprawozdanie.md Sprawozdanie1/sprawozdanie.md
+  149  git add .
+  150  git commit -m "PC422024: LAB2 - Instalacja i test Dockera"
+  151  git push
+  152  docker run -it ubuntu:22.04 /bin/bash
+  153  sudo docker run -it ubuntu:22.04 /bin/bash
+  154  docker run -it ubuntu:22.04 /bin/bash
+  155  docker build -t json-build -f Dockerfile.build .
+  156  docker build -t test -f Dockerfile.test .
+  157  docker run test
+  158  docker-compose up
+  159  sudo apt install docker-compose
+  160  docker-compose up
+  161  git add .
+  162  git commit -m "PC422024: LAB3 - docker:build,test,compose"
+  163  git push
+  164  ssh root@127.0.0.1 -p 2222
+  165  git status
+  166  git push
+  167  git status
+  168  git add Sprawozdanie2/lab6/
+  169  git status
+  170  ip addr
+  171  docker exec -it jenkins-blueocean /bin/bash
+  172  ps -a
+  173  docker ps -a
+  174  docker exec -it lab4_jenkins-blueocean_1 /bin/bash
+  175  git status
+  176  git add Sprawozdanie2/lab6/Dockerfile.build 
+  177  git add Sprawozdanie2/lab6/Dockerfile.deploy 
+  178  git commit -m "PC422024: deploy test" 
+  179  git push
+  180  git add Sprawozdanie2/lab6/Dockerfile.build 
+  181  git commit -m "PC422024: build fix"
+  182  git push
+  183  git Sprawozdanie2/lab6/Dockerfile.test
+  184  git add Sprawozdanie2/lab6/Dockerfile.test
+  185  git commit -m "PC422024: tests update"
+  186  git push
+  187  git add Sprawozdanie2/lab6/Dockerfile.test 
+  188  git commit -m "PC422024: fix"
+  189  git push
+  190  docker system prune -a --volumes -f
+  191  df -h
+  192  fdisk -l
+  193  sudo fdisk -l
+  194  sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
+  195  sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
+  196  git status
+  197  git add Sprawozdanie2/lab6/Jenkinsfile 
+  198  git commit -m "PC422024: Jenkinsfile"
+  199  git push
+  200  git add Sprawozdanie2/lab6/Jenkinsfile 
+  201  git commit -m "PC422024: Poprawka jenkinsfile" 
+  202  git push
+  203  git add Sprawozdanie2/lab6/Dockerfile.deploy 
+  204  git commit -m "PC422024: fix"
+  205  git push
+  206  history
+  207  history >> Sprawozdanie2/historia-polecen.txt
