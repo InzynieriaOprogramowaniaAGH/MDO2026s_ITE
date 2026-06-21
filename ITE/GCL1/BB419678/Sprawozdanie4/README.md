@@ -4,11 +4,11 @@ Bartosz Bodulski, grupa 1, tematy 12 i 13.
 ### Temat 12
 Cel zajeć: Zapoznanie się z github Actions oraz dyrektywą "shift-left".
 
-Na początku zgodnie z poleceniem, forkuje i klonuje repozytorium mojego wcześniej wybranego oprogramowania - jest to neovim, tworzę nową gałąź lokalną ino_dev, usuwam wszystkie workflowy dla github actions ustawione przez autorów oprogramowania.
+Na początku zgodnie z poleceniem, forkuję i klonuję repozytorium mojego wcześniej wybranego oprogramowania - jest to neovim, tworzę nową gałąź lokalną ino_dev, usuwam wszystkie workflowy dla github actions ustawione przez autorów oprogramowania.
 
 ![img](../screenshots/lab12/Zrzut%20ekranu%202026-06-12%20084632.png)
 
-Następnie dodaje swój plik dla Github Actions, w którym sprawdzam jakość kodu, gdyż neovim lubi się długo budować, szczególnie na 1 rdzeniu, który przydzielony jest w ramach planu darmowego.
+Następnie dodaję swój plik dla Github Actions, w którym sprawdzam jakość kodu, gdyż neovim lubi się długo budować, szczególnie na 1 rdzeniu, który przydzielony jest w ramach planu darmowego.
 
 ![img](../screenshots/lab12/Zrzut%20ekranu%202026-06-12%20085129.png)
 
@@ -195,7 +195,11 @@ Jak widać, wszytkie kroki przeszły poprawnie i bezbłędnie. Jeżeli dodałbym
 
 #### Wnioski
 
+GitHub Actions to wydajne i natywnie wbudowane w repozytorium rozwiązanie, które pozwala na łatwe zarządzanie artefaktami i szybki feedback dla programistów przy każdym nowym commit'cie.
 
+Implementacja narzędzia `shellcheck` na wczesnym etapie potoku (pipeline'u) udowadnia skuteczność podejścia Shift-Left. Pozwala to na wychwycenie błędów składniowych w skryptach powłoki w czasie poniżej kilkunastu sekund, co pozwala zaoszczędzić czas (i minuty obliczeniowe runnerów), unikając długotrwałej kompilacji kodu zawierającego błędy.
+
+Wykorzystanie tymczasowych kontenerów Docker do wdrożenia i przeprowadzenia smoke testów skompilowanej paczki .deb gwarantuje, że aplikacja będzie działać prawidłowo w czystym systemie docelowym (Ubuntu), niezależnie od konfiguracji maszyny budującej.
 
 
 ### Temat 13
@@ -213,11 +217,11 @@ Następnie publikuje kontener mojej aplikacji nginx w wersji v3 na dockerHub w c
 
 ![img](../screenshots/lab13/Zrzut%20ekranu%202026-06-15%20084955.png)
 
-Muszę trochę poczekać, gdyż niestety mamy rate limiting od strony DockerHub'a dla usług Azure.
+Podczas pierwszej próby utworzenia kontenera na nowej subskrypcji, Azure musi zarejestrować dostawcę zasobów (Resource Provider) dla usługi Container Instances (Microsoft.ContainerInstance). Proces ten jest jednorazowy i zajmuje kilka-kilkanaście minut.
 
 
 ![img](../screenshots/lab13/Zrzut%20ekranu%202026-06-15%20085549.png)
-Po około 20 minutach mogę już stworzyć mój kontener, który działa na porcie 80 z obrazem pobranym z mojego DockerHuba o nazwie `moj-app-bartbod123`, który używa 1 vCPU i 1 GB RAM w systemie Linux (Domyślam się, że jest to apline Linux).
+Po około 20 minutach mogę już stworzyć mój kontener, który działa na porcie 80 z obrazem pobranym z mojego DockerHuba o nazwie `moj-app-bartbod123`, który używa 1 vCPU i 1 GB RAM w systemie Linux (Domyślam się, że jest to Apline Linux).
 
 
 ![img](../screenshots/lab13/Zrzut%20ekranu%202026-06-21%20193239.png)
@@ -335,20 +339,30 @@ Po utworzeniu kontenera dostaje odpowiedź w postacji obiektu JSON, który daje 
   "volumes": null,
   "zones": null
 }
+
 ```
 Dodatkowo sprawdzam istnieje kontenera za pomocą powłoki - wynikiem jest adres, który mogę wpisać do przeglądarki i sprawdzić działanie mojej aplikacji statycznej.
 
 ![img](../screenshots/lab13/Zrzut%20ekranu%202026-06-21%20193601.png)
 
 Jak widać, wszystko działa zgodnie z naszą konfiguracją. Przez to, że nasze połączenie nie jest skonfigurowane pod HTTPS, dostajemy informacje "Not Secure" od firefoxa'a. Na potrzeby tego laboratorium taka konfiguracja jest wystarczająca.
+
 ![img](../screenshots/lab13/Zrzut%20ekranu%202026-06-21%20193357.png)
 
-Następnie sprawdzam logi maszyny, w której widzimy logi naszej aplikacji oraz żądania HTTP jak i błędy not found 404 na niezdefiniowanych scieżkach api.
+Następnie sprawdzam logi maszyny, w której widzimy logi naszej aplikacji oraz żądania HTTP, jak i błędy not found 404 na niezdefiniowanych scieżkach api - jest to prawdopodobnie bot wykonujący web-scraping.
 
 ![img](../screenshots/lab13/Zrzut%20ekranu%202026-06-21%20193642.png)
 
 Na koniec usuwam poleceniem `az group delete --name --yes --no-wait` moją grupe zasobów, aby nie marnować niepotrzebnie moich przydzielonych kredytów.
+
 ![img](../screenshots/lab13/Zrzut%20ekranu%202026-06-21%20193859.png)
 
 #### Wnioski
 
+Usługa Azure Container Instances to najszybsza metoda na uruchomienie skonteneryzowanej aplikacji w chmurze Azure. Nie wymaga ona konfigurowania, zarządzania, ani utrzymywania maszyn wirtualnych czy skomplikowanych klastrów Kubernetes.
+
+ Platforma Azure integruje się płynnie z publicznymi rejestrami. Do uruchomienia prostej aplikacji nie było wymagane tworzenie własnego rejestru w Azure (Azure Container Registry - ACR), co zaoszczędziło czas i koszty, pozwalając na bezpośrednie pobranie lekkiego obrazu z Docker Hub. 
+ 
+ Zgodnie z zagadnieniami z instrukcji funkcja Container Registry Cache okazała się niepotrzebna dla tak małego obrazu wdrażanego jednorazowo. Cache stosuje się komercyjnie, by ominąć limity zapytań (rate limits) do Docker Hub oraz skrócić czas pobierania ciężkich obrazów. 
+ 
+ Zamykanie środowiska testowego poprzez całkowite usunięcie grupy zasobów `az group delete` jest kluczową dobrą praktyką. Ponieważ w modelu chmurowym płaci się za zasoby na sekundę/minutę ich działania, takie podejście gwarantuje, że z budżetu nie zostaną pobrane niepożądane środki za działające w tle, nieużywane instancje.
