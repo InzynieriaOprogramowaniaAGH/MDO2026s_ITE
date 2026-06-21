@@ -1,3 +1,0 @@
-FROM express-build:latest
-WORKDIR /app
-CMD ["npm", "test"]

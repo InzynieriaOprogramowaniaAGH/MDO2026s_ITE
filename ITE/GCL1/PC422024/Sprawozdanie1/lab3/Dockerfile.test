@@ -1,5 +1,0 @@
-FROM json-build:latest
-
-WORKDIR /app/build
-
-CMD ["ctest", "--output-on-failure"]

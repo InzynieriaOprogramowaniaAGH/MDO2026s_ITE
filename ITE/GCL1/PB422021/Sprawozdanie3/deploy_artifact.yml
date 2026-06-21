@@ -1,6 +1,0 @@
----
-- name: Zarządzanie stworzonym artefaktem
-  hosts: Endpoints
-  become: yes
-  roles:
-    - app_deploy

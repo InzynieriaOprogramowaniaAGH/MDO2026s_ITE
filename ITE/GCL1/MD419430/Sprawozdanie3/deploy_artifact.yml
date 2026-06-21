@@ -1,6 +1,0 @@
----
-- name: Manage artifact on endpoints
-  hosts: Endpoints
-  become: true
-  roles:
-    - deploy_artifact

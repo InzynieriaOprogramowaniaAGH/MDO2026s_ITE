@@ -1,2 +1,0 @@
-FROM petclinic-build:latest
-CMD ["./mvnw", "test"]

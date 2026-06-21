@@ -1,4 +1,0 @@
-FROM ubuntu:22.04
-COPY nlohmann-json-lib.deb /tmp/
-RUN dpkg -i /tmp/nlohmann-json-lib.deb
-CMD ["sample-app"]

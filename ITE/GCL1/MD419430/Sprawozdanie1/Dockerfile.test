@@ -1,5 +1,0 @@
-FROM md419430-nest-build:latest
-
-WORKDIR /app
-
-CMD ["bash", "-lc", "npm test"]
