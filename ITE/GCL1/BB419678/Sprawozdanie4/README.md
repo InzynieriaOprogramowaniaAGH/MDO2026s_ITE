@@ -1,8 +1,8 @@
 ## Sprawozdanie numer 4
-Bartosz Bodulski, grupa 1
+Bartosz Bodulski, grupa 1, tematy 12 i 13.
 
 ### Temat 12
-Cel zajeć: zapoznanie się z github Actions oraz dyrektywą "shift-left".
+Cel zajeć: Zapoznanie się z github Actions oraz dyrektywą "shift-left".
 
 
 
