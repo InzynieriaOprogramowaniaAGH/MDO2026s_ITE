@@ -1,5 +1,9 @@
 ## Lab 12: Shift-left (GitHub Actions)
 
+autor: Mikołaj Bednarczyk 
+423178 ITE
+
+
 Celem ostatnich zajęć było zapoznanie się z koncepcją przenoszenia procesów CI/CD bliżej kodu źródłowego (tzw. podejście *Shift-left*) z wykorzystaniem natywnego narzędzia GitHub Actions. 
 
 Przed przystąpieniem do pracy zapoznałem się z cennikiem i limitami darmowego planu GitHuba. Przewidziane 2000 darmowych minut na wykonanie akcji było wartością w zupełności wystarczającą do zrealizowania naszego projektu.
