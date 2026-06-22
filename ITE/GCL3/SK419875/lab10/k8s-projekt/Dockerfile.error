@@ -1,0 +1,2 @@
+FROM alpine
+CMD ["/bin/sh", "-c", "echo 'To jest wadliwy obraz - awaria!'; exit 1"]

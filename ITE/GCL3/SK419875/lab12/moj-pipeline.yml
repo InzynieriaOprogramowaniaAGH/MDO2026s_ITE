@@ -1,0 +1,42 @@
+name: Pipeline CI/CD (Lab 12)
+
+# WYZWALACZ na gałęzi ino_dev
+on:
+  push:
+    branches:
+      - ino_dev
+
+jobs:
+  odtworzenie-jenkinsa:
+    runs-on: ubuntu-latest # Darmowy runner GitHuba
+
+    steps:
+      - name: 📥 Pobranie kodu
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Build Builder
+        run: docker build -t marked-build:latest -f Dockerfile .
+
+      - name: 🧪 Test
+        run: |
+          docker build -t marked-test:latest -f Dockerfile.test .
+          docker run --rm marked-test:latest
+
+      - name: 🚀 Deploy Smoke Test
+        run: |
+          docker build -t marked-deploy:latest -f Dockerfile.deploy .
+          docker run --rm marked-deploy:latest
+
+      - name: 📦 Pakowanie Artefaktu
+        run: |
+          docker create --name extract-container marked-deploy:latest
+          docker cp extract-container:/app ./marked-production
+          docker rm extract-container
+          tar -czvf marked-artifact.tar.gz ./marked-production
+
+      - name: 💾 Publikacja gotowego Artefaktu
+        uses: actions/upload-artifact@v4
+        with:
+          name: paczka-produkcyjna-tar
+          path: marked-artifact.tar.gz
+          retention-days: 5

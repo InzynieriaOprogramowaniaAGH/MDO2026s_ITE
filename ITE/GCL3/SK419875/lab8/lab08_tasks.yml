@@ -1,0 +1,35 @@
+---
+- name: Realizacja zadan z Laboratorium 08
+  hosts: all
+  # UWAGA: Usunelismy stąd globalne become: yes
+
+  tasks:
+    - name: 1. Wyslij zadanie ping do wszystkich maszyn
+      ansible.builtin.ping:
+
+    - name: 2. Kopiowanie pliku inwentaryzacji na maszyny Endpoints
+      ansible.builtin.copy:
+        src: ./inventory.ini
+        dest: /home/ansible/inventory_backup.ini
+        owner: ansible
+        mode: '0644'
+      when: "'Endpoints' in group_names"
+      # Tutaj nie trzeba become, bo ansible ma uprawnienia do swojego folderu domowego
+
+    - name: 3. Aktualizacja pakietow (apt update & upgrade)
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: dist
+        cache_valid_time: 3600
+      become: yes  # Sudo tylko dla aktualizacji
+      when: "'Endpoints' in group_names"
+
+    - name: 4. Zrestartuj uslugi ssh i systemd-journald
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - ssh
+        - systemd-journald
+      become: yes  # Sudo potrzebne do restartu uslug
+      when: "'Endpoints' in group_names"

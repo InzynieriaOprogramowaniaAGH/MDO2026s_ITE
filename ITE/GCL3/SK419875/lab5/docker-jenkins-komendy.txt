@@ -12,3 +12,5 @@ docker run --name jenkins-server --rm --detach \
   --volume jenkins-docker-certs:/certs/client:ro \
   --publish 8080:8080 --publish 50000:50000 \
   moj-jenkins-docker
+
+w przeglądarce: http://<adres_ip>:8080

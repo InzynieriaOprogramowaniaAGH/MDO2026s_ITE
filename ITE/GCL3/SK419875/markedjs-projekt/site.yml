@@ -1,0 +1,6 @@
+---
+- name: Wywolanie roli wdrozeniowej
+  hosts: Endpoints
+  become: yes
+  roles:
+    - deployment_role
