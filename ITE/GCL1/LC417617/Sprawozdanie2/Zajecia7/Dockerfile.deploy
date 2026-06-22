@@ -7,12 +7,14 @@ FROM ubuntu:24.04
 LABEL description="Deployable cJSON artifact prepared during Jenkins pipeline"
 LABEL author="LC417617"
 
-COPY --from=source /artifact/install /opt/cjson
+COPY --from=source /artifact/usr/local /opt/cjson
 COPY --from=source /artifact/meta /opt/cjson-meta
 COPY --from=source /artifact/cjson-smoke /usr/local/bin/cjson-smoke
 
 RUN useradd --system --uid 10001 appuser && \
-    chmod +x /usr/local/bin/cjson-smoke
+    chmod +x /usr/local/bin/cjson-smoke && \
+    ls -la /opt/cjson && \
+    ls -la /opt/cjson-meta
 
 USER appuser
 

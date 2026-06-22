@@ -31,7 +31,7 @@ RUN cmake -S . -B build \
 
 RUN cmake --build build --parallel "$(nproc)"
 
-RUN cmake --install build --prefix /artifact/install
+RUN DESTDIR=/artifact cmake --install build
 
 RUN printf '%s\n' \
     '#include <stdio.h>' \
@@ -47,3 +47,5 @@ RUN printf '%s\n' \
     '}' \
     > /tmp/cjson_smoke.c && \
     gcc -Wall -Wextra -O2 /tmp/cjson_smoke.c cJSON.c -I. -o /artifact/cjson-smoke
+
+RUN find /artifact -maxdepth 5 -type f -print
