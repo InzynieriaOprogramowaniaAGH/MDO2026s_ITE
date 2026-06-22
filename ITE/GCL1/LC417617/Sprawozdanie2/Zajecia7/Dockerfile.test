@@ -1,0 +1,7 @@
+ARG BUILD_IMAGE=lc417617-cjson-bldr:latest
+
+FROM ${BUILD_IMAGE}
+
+WORKDIR /src/cJSON/build
+
+CMD ["ctest", "--output-on-failure"]

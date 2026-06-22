@@ -1,0 +1,49 @@
+FROM ubuntu:24.04 AS build
+
+ARG CJSON_REPO=https://github.com/DaveGamble/cJSON.git
+ARG CJSON_REF=master
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        git \
+        cmake \
+        build-essential \
+        ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+
+RUN git clone --depth 1 --branch "$CJSON_REF" "$CJSON_REPO" cJSON || \
+    git clone --depth 1 "$CJSON_REPO" cJSON
+
+WORKDIR /src/cJSON
+
+RUN mkdir -p /artifact/meta && \
+    git rev-parse HEAD > /artifact/meta/cjson-commit.txt && \
+    git remote get-url origin > /artifact/meta/cjson-repository.txt
+
+RUN cmake -S . -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_CJSON_TEST=On \
+    -DBUILD_SHARED_LIBS=On
+
+RUN cmake --build build --parallel "$(nproc)"
+
+RUN cmake --install build --prefix /artifact/install
+
+RUN printf '%s\n' \
+    '#include <stdio.h>' \
+    '#include "cJSON.h"' \
+    'int main(void) {' \
+    '    cJSON *json = cJSON_Parse("{\"ok\":true}");' \
+    '    if (json == NULL) return 1;' \
+    '    cJSON *ok = cJSON_GetObjectItemCaseSensitive(json, "ok");' \
+    '    int status = cJSON_IsTrue(ok) ? 0 : 1;' \
+    '    cJSON_Delete(json);' \
+    '    if (status == 0) puts("cJSON deploy smoke test passed");' \
+    '    return status;' \
+    '}' \
+    > /tmp/cjson_smoke.c && \
+    gcc -Wall -Wextra -O2 /tmp/cjson_smoke.c cJSON.c -I. -o /artifact/cjson-smoke

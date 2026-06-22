@@ -1,0 +1,164 @@
+pipeline {
+    agent any
+
+    options {
+        skipDefaultCheckout(true)
+        timestamps()
+    }
+
+    environment {
+        BUILD_IMAGE = "lc417617-cjson-bldr:${BUILD_NUMBER}"
+        TEST_IMAGE = "lc417617-cjson-test:${BUILD_NUMBER}"
+        DEPLOY_IMAGE = "lc417617-cjson-deploy:${BUILD_NUMBER}"
+        DEPLOY_LATEST = "lc417617-cjson-deploy:latest"
+        CONTAINER_NAME = "lc417617-cjson-deploy-check"
+        ARTIFACT_CONTAINER = "lc417617-cjson-artifact-${BUILD_NUMBER}"
+        CJSON_REPO = "https://github.com/DaveGamble/cJSON.git"
+        CJSON_REF = "master"
+    }
+
+    stages {
+        stage('Clean workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+
+                sh '''
+                    set -eux
+                    git reset --hard HEAD
+                    git clean -xfd
+                    git rev-parse --short HEAD
+                    git log -1 --oneline
+                '''
+            }
+        }
+
+        stage('Detect project path') {
+            steps {
+                script {
+                    env.REPORT_DIR = sh(
+                        script: '''
+                            if [ -d "ITE/GCL1/LC417617/Sprawozdanie2" ]; then
+                                echo "ITE/GCL1/LC417617/Sprawozdanie2"
+                            elif [ -d "Sprawozdanie2" ]; then
+                                echo "Sprawozdanie2"
+                            else
+                                echo "."
+                            fi
+                        ''',
+                        returnStdout: true
+                    ).trim()
+                }
+
+                sh '''
+                    set -eux
+                    echo "REPORT_DIR=$REPORT_DIR"
+                    ls -la "$REPORT_DIR/Zajecia7"
+                    find "$REPORT_DIR/Zajecia7" -maxdepth 2 -type f -print
+                '''
+            }
+        }
+
+        stage('Docker info') {
+            steps {
+                sh '''
+                    set -eux
+                    docker version
+                    docker info
+                '''
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh '''
+                    set -eux
+                    docker build --pull --no-cache \
+                        --build-arg CJSON_REPO="$CJSON_REPO" \
+                        --build-arg CJSON_REF="$CJSON_REF" \
+                        -f "$REPORT_DIR/Zajecia7/Dockerfile.build" \
+                        -t "$BUILD_IMAGE" \
+                        "$REPORT_DIR"
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh '''
+                    set -eux
+                    docker build --no-cache \
+                        --build-arg BUILD_IMAGE="$BUILD_IMAGE" \
+                        -f "$REPORT_DIR/Zajecia7/Dockerfile.test" \
+                        -t "$TEST_IMAGE" \
+                        "$REPORT_DIR"
+
+                    docker run --rm "$TEST_IMAGE"
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    set -eux
+                    docker build --no-cache \
+                        --build-arg BUILD_IMAGE="$BUILD_IMAGE" \
+                        -f "$REPORT_DIR/Zajecia7/Dockerfile.deploy" \
+                        -t "$DEPLOY_IMAGE" \
+                        "$REPORT_DIR"
+
+                    docker rm -f "$CONTAINER_NAME" || true
+
+                    docker run --rm \
+                        --name "$CONTAINER_NAME" \
+                        "$DEPLOY_IMAGE"
+
+                    docker tag "$DEPLOY_IMAGE" "$DEPLOY_LATEST"
+                '''
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                sh '''
+                    set -eux
+                    rm -rf artifacts
+                    mkdir -p artifacts
+
+                    docker create --name "$ARTIFACT_CONTAINER" "$BUILD_IMAGE" /bin/true
+                    docker cp "$ARTIFACT_CONTAINER:/artifact" artifacts/cjson-artifact
+                    docker rm "$ARTIFACT_CONTAINER"
+
+                    tar -czf "artifacts/lc417617-cjson-artifact-${BUILD_NUMBER}.tar.gz" \
+                        -C artifacts cjson-artifact
+
+                    docker inspect "$DEPLOY_IMAGE" \
+                        > "artifacts/lc417617-cjson-deploy-${BUILD_NUMBER}-inspect.json"
+
+                    docker save "$DEPLOY_IMAGE" | gzip \
+                        > "artifacts/lc417617-cjson-deploy-image-${BUILD_NUMBER}.tar.gz"
+
+                    rm -rf artifacts/cjson-artifact
+                '''
+
+                archiveArtifacts artifacts: 'artifacts/*', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        always {
+            sh '''
+                docker rm -f "$CONTAINER_NAME" || true
+                docker rm -f "$ARTIFACT_CONTAINER" || true
+            '''
+        }
+    }
+}
+

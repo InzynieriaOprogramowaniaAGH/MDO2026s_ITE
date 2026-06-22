@@ -1,0 +1,19 @@
+ARG BUILD_IMAGE=lc417617-cjson-bldr:latest
+
+FROM ${BUILD_IMAGE} AS source
+
+FROM ubuntu:24.04
+
+LABEL description="Deployable cJSON artifact prepared during Jenkins pipeline"
+LABEL author="LC417617"
+
+COPY --from=source /artifact/install /opt/cjson
+COPY --from=source /artifact/meta /opt/cjson-meta
+COPY --from=source /artifact/cjson-smoke /usr/local/bin/cjson-smoke
+
+RUN useradd --system --uid 10001 appuser && \
+    chmod +x /usr/local/bin/cjson-smoke
+
+USER appuser
+
+ENTRYPOINT ["/usr/local/bin/cjson-smoke"]
