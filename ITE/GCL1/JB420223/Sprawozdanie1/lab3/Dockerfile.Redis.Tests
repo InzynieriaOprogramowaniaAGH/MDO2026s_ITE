@@ -1,0 +1,5 @@
+FROM redis_build
+
+WORKDIR /redis
+
+RUN bash runtest

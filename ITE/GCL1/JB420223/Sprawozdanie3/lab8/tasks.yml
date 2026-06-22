@@ -1,0 +1,35 @@
+---
+- name: Laboratorium - Zdalne wywoływanie procedur
+  hosts: all
+  become: no
+
+  tasks:
+    - name: 1. Pingowanie maszyn przez moduł Ansible
+      ansible.builtin.ping:
+
+    - name: 2. Kopiowanie pliku inwentaryzacji na Endpoints
+      ansible.builtin.copy:
+        src: inventory.ini
+        dest: /home/ansible/inventory_backup.ini
+        mode: '0644'
+      when: "'Endpoints' in group_names"
+
+    - name: 3. Aktualizacja listy pakietów (apt update)
+      ansible.builtin.apt:
+        update_cache: yes
+      become: yes
+      ignore_errors: yes
+
+    - name: 4. Restart usługi SSH (Ubuntu)
+      ansible.builtin.systemd:
+        name: ssh
+        state: restarted
+      become: yes
+      ignore_errors: yes
+
+    - name: 4b. Restart usługi RNGD
+      ansible.builtin.systemd:
+        name: rngd
+        state: restarted
+      become: yes
+      ignore_errors: yes

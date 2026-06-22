@@ -1,0 +1,11 @@
+galaxy_info:
+  author: Jakub Bednarczyk
+  description: decs
+  license: MIT
+  min_ansible_version: 2.1
+  platforms:
+    - name: Ubuntu
+      versions:
+        - plucky
+
+dependencies: []

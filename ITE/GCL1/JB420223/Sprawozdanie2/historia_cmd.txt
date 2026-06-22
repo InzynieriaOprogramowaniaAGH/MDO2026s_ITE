@@ -1,0 +1,956 @@
+    1  who
+    2  scp test.txt username@172.19.222.228:/home/username
+    3  touch test.txt
+    4  scp test.txt username@172.19.222.228:/home/username
+    5  ls
+    6  clear
+    7  ls
+    8  clear
+    9  ip a
+   10  ls
+   11  ls a
+   12  ls -a
+   13  system ctl status docker
+   14  docker
+   15  sudo apt update
+   16  sudo apt install docker.io
+   17  sudo systemctl enable --now docker
+   18  sudo usermod -aG docker $USER
+   19  ip -a
+   20  cls
+   21  clear
+   22  ip
+   23  ip -a
+   24  ip -aa
+   25  ip -all
+   26  clear
+   27  ip a
+   28  docker --version
+   29  docker info
+   30  clear
+   31  docker info
+   32  clear
+   33  docker login
+   34  clear
+   35  docker login
+   36  docker pull hello-world
+   37  docker pull busybox
+   38  docker pull ubuntu
+   39  docker pull fedora
+   40  docker pull mariadb
+   41  docker pull node
+   42  docker pull mcr.microsoft.com/dotnet/runtime
+   43  docker pull mcr.microsoft.com/dotnet/aspnet
+   44  docker pull mcr.microsoft.com/dotnet/sdk
+   45  clear
+   46  docker images
+   47  docker run hello-world
+   48  echo $?
+   49  docker run busybox
+   50  docker run -it busybox sh
+   51  docker run busybox echo$
+   52  docker run busybox echo $
+   53  docker run busybox echo $?
+   54  ls
+   55  docker run 
+   56  docker run ubuntu echo $?
+   57  clear
+   58  docker run hello-world
+   59  clear
+   60  docker run helloworld echo $?
+   61  docker images
+   62  docker run hello-world echo $?
+   63  docker run hello-world
+   64  echo $?
+   65  docker run hello-world
+   66  echo $?
+   67  docker images
+   68  docker run hello-world
+   69  echo $?
+   70  docker run busybox
+   71  echo $?
+   72  username@servername:~$ docker run mariadb    
+   73  echo $?
+   74  2026-03-13 08:17:23+00:00 [Note] [Entrypoint]: Entrypoint script for MariaDB Server 1:12.2.2+maria~ubu2404 started.
+   75  2026-03-13 08:17:23+00:00 [Warn] [Entrypoint]: /sys/fs/cgroup///memory.pressure not writable, functionality unavailable to MariaDB
+   76  2026-03-13 08:17:23+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+   77  2026-03-13 08:17:23+00:00 [Note] [Entrypoint]: Entrypoint script for MariaDB Server 1:12.2.2+maria~ubu2404 started.
+   78  2026-03-13 08:17:23+00:00 [ERROR] [Entrypoint]: Database is uninitialized and password option is not specified
+   79          You need to specify one of MARIADB_ROOT_PASSWORD, MARIADB_ROOT_PASSWORD_HASH, MARIADB_ALLOW_E
+   80  echo $?
+   81  docker run ubuntu
+   82  echo $?
+   83  docker run mariadb
+   84  echo $?
+   85  docker run -e MARIADB_ROOT_PASSWORD=abc mariadb
+   86  clear
+   87  docker run node
+   88  echo $?
+   89  docker run runtime
+   90  echo $?
+   91  docker images
+   92  docker run node
+   93  echo $?
+   94  docker run mcr.microsoft.com/dotnet/runtime
+   95  docker run docker run hello-world
+   96  echo $?
+   97  echo $?
+   98  docker run mcr.microsoft.com/dotnet/runtime
+   99  docker run node
+  100  echo $?
+  101  docker run mcr.microsoft.com/dotnet/runtime
+  102  echo $?
+  103  docker run mcr.microsoft.com/dotnet/aspnet
+  104  echo $?
+  105  docker run mcr.microsoft.com/dotnet/sdk
+  106  echo $?
+  107  clear
+  108  docker run -it busybox sh
+  109  docker run -it ubuntu bash
+  110  ls
+  111  cd repos
+  112  ls
+  113  cd MDO2026s_ITE/
+  114  ls
+  115  cd ITE/
+  116  ls
+  117  cd GCL1/
+  118  ls
+  119  cd JB420223/
+  120  ls
+  121  touch Dokcerfile
+  122  rm Dokcerfile Dockerfile
+  123  mv Dokcerfile Dockerfile
+  124  ls
+  125  touch Dockerfile
+  126  ls
+  127  docker build -t MyImage .
+  128  docker build -t my_image .
+  129  docker image
+  130  docker images
+  131  docker run -it my_image
+  132  docker ps
+  133  docker ps -a
+  134  docker image prune
+  135  docker ps -a
+  136  clear
+  137  docker ps -a
+  138  docker container prune
+  139  docker ps -a
+  140  docker stop mariadb
+  141  docker stop 32d359777eb7
+  142  docker ps -a
+  143  docker container prune
+  144  docker ps -a
+  145  ls
+  146  git add Dockerfile 
+  147  ls
+  148  git add '1_docker_info.png' 
+  149  git add *.png
+  150  git status
+  151  git branch
+  152  git commit -m "lab 2 docker file and images"
+  153  git pull
+  154  git push origin JB420223
+  155  git fetch
+  156  git pull
+  157  ls
+  158  cd repos
+  159  ls
+  160  cd MDO2026s_ITE/
+  161  ls
+  162  cd ITE/
+  163  ls
+  164  cd GCL1/
+  165  ls
+  166  cd JB420223/
+  167  ls
+  168  git clone https://github.com/goldbergyoni/javascript-testing-best-practices
+  169  ls
+  170  rm javascript-testing-best-practices/ -r
+  171  rm -r javascript-testing-best-practices/
+  172  rm -rf javascript-testing-best-practices/
+  173  ls
+  174  mkdir lab1
+  175  mkdir lab2
+  176  mkdir lab3
+  177  mv Zaj_1_SS.png lab1
+  178  mv Dockerfile lab2
+  179  ls
+  180  mv 1_docker_info.png lab2
+  181  mv 2_success_docker_login.png lab2
+  182  mv 3_images_sizes.png lab2
+  183  mv 4_codes.png lab2
+  184  ls
+  185  mv *.png lab2/
+  186  ls
+  187  clear
+  188  ls
+  189  cd lab3
+  190  git clone https://github.com/goldbergyoni/javascript-testing-best-practices
+  191  docker
+  192  ls
+  193  rmdir -rf javascript-testing-best-practices/
+  194  rm -rf javascript-testing-best-practices/
+  195  ls
+  196  clear
+  197  docker build fedora
+  198  docker run -it fedora bash
+  199  ls
+  200  docker conteners
+  201  docker containers
+  202  docker ps
+  203  docker images
+  204  ls
+  205  touch Dockerfile.requests.setup
+  206  touch Dockerfile.requests.tests
+  207  ls
+  208  cd repos
+  209  ls
+  210  cd MDO2026s_ITE/
+  211  ls
+  212  cd ITE/
+  213  ls
+  214  cd GCL1/
+  215  ls
+  216  cd JB420223/
+  217  ls
+  218  cd lab3
+  219  ls
+  220  rm Dockerfile.requests.setup
+  221  rm Dockerfile.requests.tests
+  222  ls
+  223  touch Dockerfile.Flask.setup
+  224  ls
+  225  rm Dockerfile.Flask.setup 
+  226  ls
+  227  clear
+  228  git clone git@github.com:pallets/flask.git
+  229  sudo apt install python3 python3-venv python3-pip
+  230  pip install --no-cache-dir -r requirements.txt
+  231  ls
+  232  rm -rf flask
+  233  ls
+  234  docker ps
+  235  docker images
+  236  docker run fedora
+  237  docker run fedora -it
+  238  docker run fedora -tty
+  239  docker run ubuntu -it
+  240  docker run -it ubuntu bash
+  241  ls
+  242  touch Dockerfile.Flask.Setup
+  243  ls
+  244  docker run -it ubuntu bash
+  245  docker ps
+  246  docker run -it ubuntu bash
+  247  docker run -it fedora bash
+  248  docker images
+  249  docker run -it fedora bash
+  250  clear
+  251  docker run -it fedora bash
+  252  docker run -it python:3.12 bash
+  253  docker run -it python:3.11 bash
+  254  docker ps
+  255  docker images
+  256  docker delete e1388005fc3d
+  257  docker rmi e1388005fc3d
+  258  docker ps -a
+  259  docker clear containers
+  260  docker rm -f
+  261  docker rm -f $(docker ps -aq)
+  262  docker ps -a
+  263  docker images
+  264  docker rmi e1388005fc3d
+  265  docker rmi e9e99168705e
+  266  docker rmi b0ff3a23738c
+  267  docker imaegs
+  268  docker images
+  269  docker run -it fedora bash
+  270  docker run -it python3.11
+  271  docker run -it python:3.11 bash
+  272  docker run -it fedora bash
+  273  clear
+  274  docker ps -a
+  275  docker rm fedora
+  276  docker container rm fedora
+  277  docker container rm jovial_easley 
+  278  docker container rm clever_cartwright 
+  279  docker container rm stoic_ride 
+  280  docker ps -a
+  281  git clone https://github.com/redis/redis.git
+  282  ls
+  283  docker run -it apline bash
+  284  docker run -it alpine bash
+  285  docker run -it alpine
+  286  ls
+  287  docker ps -a
+  288  touch Dockerfile.Redis.Build
+  289  ls
+  290  docker run -it alpine:3.18
+  291  docker build -t redis_build .
+  292  ls
+  293  rm Dockerfile.Redis.Build 
+  294  cd repos
+  295  cd MDO2026s_ITE/
+  296  cd ITE/
+  297  cd GCL1/
+  298  cd JB420223/
+  299  ls
+  300  cd lab3
+  301  ls
+  302  rm Dockerfile.Flask.Setup 
+  303  touch Docker.Redis.Build
+  304  ls
+  305  docker build -t redis_build .
+  306  ls
+  307  docker build -t redis_build -f Docker.Redis.Build .
+  308  clear
+  309  docker build -t redis_build -f Docker.Redis.Build .
+  310  clear
+  311  docker build -t redis_build -f Docker.Redis.Build .
+  312  ex(cd hdr_histogram && make clean) > /dev/null || true
+  313  (cd fpconv && make clean) > /dev/null || true
+  314  (cd fast_float && make clean) > /dev/null || true
+  315  (cd xxhash && make clean) > /dev/null || true
+  316  make[4]: *** tests: No such file or directory.  Stop.
+  317  make[3]: *** [Makefile:189: clean] Error 2
+  318  (rm -f .make-*)
+  319  (echo "" > .make-cflags)
+  320  (echo "" > .make-ldflags)cl
+  321  docker build -t redis_build -f Docker.Redis.Build .
+  322  touch Dockerfile.Redis.Tests
+  323  ls
+  324  docker build -t redis_tests -f Docker.Redis.Tests .
+  325  docker build -t redis_tests -f Dockerfile.Redis.Tests .
+  326  docker ps
+  327  docker images
+  328  docker prune 1b0ce290347d
+  329  docker rm 1b0ce290347d
+  330  docker ps -a
+  331  docker rm aa826a39a4fc
+  332  docker rm 802c91d52981
+  333  docker rm 5c973aa2d519
+  334  docker rm alpine:3.18
+  335  docker rm alpine
+  336  dcoker rm stoic_jennings
+  337  docker rm stoic_jennings
+  338  docker rm
+  339  docker rm nifty_lamarr
+  340  docker rm upbeat_lamport
+  341  docker rm silly_grothendieck
+  342  docker rm boring_curie
+  343  docker rm beautiful_jennings
+  344  docker images
+  345  docker ps -a
+  346  ls
+  347  clear
+  348  ls
+  349  mv Docker.Redis.Build Dockerfile.Redis.Build
+  350  ls
+  351  docker build -t redis_tests -f Dockerfile.Redis.Tests .
+  352  docker build -t redis_build -f Dockerfile.Redis.Build .
+  353  docker run -it redis_build bash
+  354  ls
+  355  docker run -it redis_build bash
+  356  docker build -t redis_build -f Dockerfile.Redis.Build .
+  357  docker build -t redis_tests -f Dockerfile.Redis.Tests .
+  358  docker run -it redis_build bash
+  359  docker run -it redis_tests bash
+  360  docker build -t redis_build -f Dockerfile.Redis.Build .
+  361  docker build -t redis_tests -f Dockerfile.Redis.Tests .
+  362  docker run -it redis_tests bash
+  363  docker ps -a
+  364  docker container prune
+  365  docker build -t redis_build -f Dockerfile.Redis.Build .
+  366  docker run -it redis_build bash
+  367  docker run -it redis_tests bash
+  368  docker build -t redis_build -f Dockerfile.Redis.Build .
+  369  docker run -it redis_tests bash
+  370  docker build -t redis_tests -f Dockerfile.Redis.Tests .
+  371  docker run -it redis_tests bash
+  372  ls
+  373  git add .
+  374  git add -u
+  375  git status
+  376  cd ..
+  377  ls
+  378  git add .
+  379  git status
+  380  git add -u
+  381  git status
+  382  git pull origin
+  383  git commit -m "Dodane dockerfile dla testow i builda, zmiana repoz flaska na redisa"
+  384  git push origin JB420223
+  385  ls
+  386  l
+  387  docker images
+  388  docker ps
+  389  docker ps a
+  390  docker ps -a
+  391  docker redis_env
+  392  docker run redis_env
+  393  docker ps
+  394  ls
+  395  cd repos
+  396  ls
+  397  cd MDO2026s_ITE
+  398  ls
+  399  cd ITE/
+  400  ls
+  401  cd GCL1/
+  402  ls
+  403  cd JB420223/
+  404  ls
+  405  cd lab4
+  406  ls
+  407  docker exec -it redis_env sh
+  408  docker ps -a
+  409  docker start -i redis_env
+  410  docker run -it   -v input:/app/src   -v output:/app/build   --name redis_env   redis_env:latest
+  411  docker ps
+  412  docker run -it   -v input:/app/src   -v output:/app/build   --name redis_env   redis_env:latest
+  413  docker ps -a
+  414  docker remove 84722852e118
+  415  docker ps -a
+  416  docker run -it   -v input:/app/src   -v output:/app/build   --name redis_env   redis_env:latest
+  417  docker start -i redis_env
+  418  docker run --rm -it -v output:/data alpine ls -R /data
+  419  docker volume ls
+  420  docker volume remove ac0464dc6a2e78b33be658c7d16f3b3bd082e9b86c418848edeb3419dba61020
+  421  docker volume remove d949b0c71745c8e88674ddecb1ddf7b3e12b4f3bdc1875bcf550125454bc60b3
+  422  docker volume ls
+  423  docker run --rm -it -v input:/data alpine ls -R /data
+  424  clear
+  425  docker run --rm -it -v input:/data alpine ls -R /datash
+  426  docker run --rm -it -v input:/data alpine sh
+  427  clear
+  428  docker volume ls
+  429  docker run --rm -it -v input:/data alpine sh
+  430  docker run --rm -it -v output:/data alpine sh
+  431  docker volume ls
+  432  docker run --rm -it -v input:/data alpine sh
+  433  docker run --rm -it -v output:/data alpine sh
+  434  ls
+  435  cd ..
+  436  ls
+  437  clear
+  438  ls
+  439  cd ..
+  440  ls
+  441  cd ..
+  442  ls
+  443  cd ..
+  444  ls
+  445  cd ..
+  446  ls
+  447  cd repos
+  448  ls
+  449  cd MDO2026s_ITE/
+  450  ls
+  451  ls -a
+  452  cd .git
+  453  ls
+  454  cd hooks
+  455  ls
+  456  cd .
+  457  cd ..
+  458  ls
+  459  cd repos
+  460  ls
+  461  cd MDO2026s_ITE/
+  462  git branch
+  463  git checkout main
+  464  git fetch
+  465  git pull
+  466  git checkout JB420223
+  467  git fetch
+  468  git pull
+  469  git push main
+  470  git push origin
+  471  ls
+  472  git changes
+  473  git status
+  474  ls
+  475  cd ITE/
+  476  ;s
+  477  l
+  478  cd GCL1/
+  479  ls
+  480  cd JB420223/
+  481  ls
+  482  cd lab1
+  483  ls
+  484  clear
+  485  ls
+  486  git push origin
+  487  git push main
+  488  git push origin main
+  489  git status
+  490  git checkout main
+  491  git status
+  492  git add .
+  493  git status
+  494  cd ..
+  495  git add .
+  496  git status
+  497  git checkout main
+  498  git commit -m Commit przed próbą merge
+  499  git commit -m "Aktualizacja sprawozdanie o część z labolatorium nr 1"
+  500  git commit -m "Aktualizacja sprawozdanie o część z labolatorium nr 1"ls
+  501  ls
+  502  git ..
+  503  cd ..
+  504  ls
+  505  cd ..
+  506  cd repos
+  507  cd ./repos
+  508  cd ..
+  509  ls
+  510  ls -a
+  511  cd MDO2026s_ITE/
+  512  ls -a
+  513  cd .git
+  514  ls -a
+  515  cd hooks
+  516  ls
+  517  mv commit-msg.sample commit-msg
+  518  ls
+  519  cd ..
+  520  ls
+  521  cd ITE/
+  522  cd GCL1/
+  523  cd JB420223/
+  524  ls
+  525  cd lab1
+  526  ls
+  527  cd ..
+  528  git add .
+  529  git statis
+  530  git status 
+  531  git status
+  532  git commit -m "Test hooka"
+  533  git add .
+  534  git commit -m "Test hooka"
+  535  git fetch origin
+  536  git push origin main
+  537  git push --dry-run origin JB420223
+  538  git status
+  539  clear
+  540  git branch -a
+  541  git checkout main
+  542  git status
+  543  git add .
+  544  ls
+  545  git status
+  546  git checkout main
+  547  git commit -m "JB420223 Zapis przed checkout'em"
+  548  git checkout main
+  549  git fetch origin
+  550  git pull oirigin
+  551  git pull origin
+  552  git merge JB420223
+  553  git merge JB420223 -m "Merge test"
+  554  git status
+  555  git branch
+  556  git reverse
+  557  git revert
+  558  git revert main
+  559  git commits
+  560  git commit -a
+  561  git status
+  562  git restore .
+  563  git status
+  564  git restore .
+  565  git status
+  566  git merge --abort
+  567  git status
+  568  git fetch
+  569  clear
+  570  git fetch origin
+  571  git pull origin
+  572  git merge JB420223 -m "JB420223 Test merge"
+  573  sa
+  574  s
+  575  as
+  576  clear
+  577  git branch
+  578  git status
+  579  git checkout JB420223 
+  580  git status
+  581  git branch
+  582  git status
+  583  ls
+  584  rm a.out
+  585  ls
+  586  git status
+  587  ls
+  588  cd lab3
+  589  ls
+  590  docker run -it --name con2 fedora:40
+  591  docker inspect iperf-server
+  592  docker ps
+  593  docker inspect -f '{{ .NetworkSettings.IPAddress }}' con1
+  594  docker inspect -f '{{ .NetworkSettings.IPAddress }}' con2
+  595  cd repos
+  596  cd G
+  597  ls
+  598  cd MDO2026s_ITE/
+  599  cd G
+  600  ls
+  601  cd ITE/
+  602  ls
+  603  cd GCL1/
+  604  cd JB420223/
+  605  ls
+  606  clear
+  607  ls
+  608  cd lab3
+  609  ls
+  610  git status
+  611  cd ..
+  612  git add .
+  613  git status
+  614  cd lab3
+  615  ls
+  616  clear
+  617  ls
+  618  cd ..
+  619  ls
+  620  cd lab3
+  621  ls
+  622  docker build -f Dockerfile.Redis.Build -t redis_build .
+  623  docker images
+  624  docker prune images
+  625  docker images prune
+  626  docker image prune
+  627  docker ps prune
+  628  docker container prune
+  629  docker build -f Dockerfile.Redis.Build -t redis_build .
+  630  docker ps -a
+  631  docker image
+  632  docker images
+  633  docker image prune
+  634  docker image
+  635  docker images 
+  636  docker image prune -a
+  637  docker build -f Dockerfile.Redis.Build -t redis_build .
+  638  ls
+  639  docker build -f Dockerfile.Redis.Tests -t redis_tests .
+  640  docker images prune -a
+  641  docker image prune -a
+  642  docker container prune -a
+  643  docker containers prune -a
+  644  docker containers prune
+  645  docker container prune
+  646  docker build -f Dockerfile.Redis.Build -t redis_build .
+  647  docker ps
+  648  docker ps -a
+  649  docker docker images
+  650  docker images
+  651  docker build -f Dockerfile.Redis.Tests -t redis_tests .
+  652  docker ps -a
+  653  docker images
+  654  docker build -f Dockerfile.Redis.Tests -t redis_tests .
+  655  docker images
+  656  docker run -it redis_tests /bin/bash
+  657  docker run -it redis_build /bin/bash
+  658  volume ls
+  659  docker volume ls
+  660  cd ..
+  661  ls
+  662  cd lab4
+  663  ls
+  664  docker run --rm -v input:/data alpine sh -c "rm -rf /data/*
+  665  docker run --rm -v input:/data alpine sh -c "rm -rf /data/*"
+  666  docker run --rm -v output:/data alpine sh -c "rm -rf /data/*"
+  667  docker run -it --name redis_with_git -v input:/data redis_env:latest bash
+  668  docker run -it --name redis_with_git -v input:/data redis_env bash
+  669  docker images
+  670  docker build -f Dockerfile.Redis.Env -t redis_env .
+  671  docker run -it --name redis_with_git -v input:/data redis_env:latest bash
+  672  clear
+  673  docker container prune
+  674  docker image prune -a
+  675  clear
+  676  docker run -it delfinek
+  677  clear
+  678  docker run -it --name con1 fedora:40
+  679  dcoekr container prune -a
+  680  docker container prune -a
+  681  docker containers prune -a
+  682  docker containers prune a
+  683  docker containers prune
+  684  docker container prune
+  685  ls
+  686  docker run -it --name con1 fedora:40
+  687  docker rm -f iperf-serwer iperf-client
+  688  docker run -it --name con1 fedora:40
+  689  docker containers prune 
+  690  docker container prune 
+  691  docker run -it --name con1 fedora:40
+  692  docker run -it --name con2 fedora:40
+  693  docker network create my_net
+  694  docker run -d --name server1 --network my_net fedora:40 iperf3 -s
+  695  docker ps
+  696  docker network
+  697  docker networks
+  698  docker network -a
+  699  docker networks -a
+  700  clear
+  701  docker network create --driver bridge my_net
+  702  docker network prune
+  703  docker network create --driver bridge my_net
+  704  docker conainers prune
+  705  docker containers prune
+  706  docker container prune
+  707  clear
+  708  docker network ls
+  709  docker run -d --name server --network my_net -p 5201:5201 networkstatic/iperf3 -s
+  710  docker run --rm --network my_net networkstatic/iperf3 -c server
+  711  iperf3 -c localhost -p 5201
+  712  sudo apt install iperf3
+  713  iperf3 -c localhost -p 5201
+  714  ipconfig
+  715  ip a
+  716  docker logs iperf_server
+  717  docker ps -a
+  718  docker logs server
+  719  clear
+  720  docker network create jenkins_net
+  721  docker run --name jenkins-blueocean --rm --detach   --network jenkins --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1   --publish 8080:8080 --publish 50000:50000   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   jenkins/jenkins:lts
+  722  docker ps -a
+  723  docker ps
+  724  docker container prune
+  725  docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind --storage-driver overlay2
+  726  docker run --name jenkins-docker --rm --detach   --privileged --network jenkins_net --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   --publish 2376:2376   docker:dind --storage-driver overlay2
+  727  docker run --name jenkins-blueocean --rm --detach   --network jenkins --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1   --publish 8080:8080 --publish 50000:50000   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   jenkins/jenkins:lts
+  728  docker run --name jenkins-blueocean --rm --detach   --network jenkins_net --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1   --publish 8080:8080 --publish 50000:50000   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   jenkins/jenkins:lts
+  729  docker ps
+  730  docker rm server
+  731  docker stop server
+  732  docker rm server
+  733  docker ps\
+  734  docker ps
+  735  cat /var/jenkins_home/secrets/initialAdminPassword
+  736  cd /var/jenkins_home/secrets/
+  737  docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+  738  docker exec jenkins-dcoker cat /var/jenkins_home/secrets/initialAdminPassword
+  739  docker exec jenkins-docker cat /var/jenkins_home/secrets/initialAdminPassword
+  740  docker container prune 
+  741  docker container prune -a
+  742  docker ps
+  743  docker stop jenkins-blueocean 
+  744  docker stop jenkins-docker 
+  745  docker run -dit --name ssh_container -p 2222:22 ubuntu
+  746  apt update
+  747  apt install -y openssh-server
+  748  docker exec -it ssh_container
+  749  docker exec -it ssh_container bash
+  750  ssh root@localhost -p 2222
+  751  docker ps
+  752  docker stop ssh_container 
+  753  docker exec -it ssh_container bash
+  754  docker ps
+  755  docker ps -a
+  756  docker containers prune
+  757  docker container prune
+  758  clear
+  759  docker exec -it ssh_container bash
+  760  docker run -dit --name ssh_container -p 2222:22 ubuntu bash
+  761  docker exec -it ssh_container bash
+  762  ssh root@localhost -p 2222
+  763  ssh-keygen -f '/home/username/.ssh/known_hosts' -R '[localhost]:2222'
+  764  ssh root@localhost -p 2222
+  765  pwd
+  766  history > historia.txt
+  767  ls
+  768  git status
+  769  ls
+  770  cd repos
+  771  ls
+  772  cd MDO2026s_ITE/
+  773  cd G
+  774  cd ITE/
+  775  cd GCL1/
+  776  cd JB420223/
+  777  ls
+  778  git status
+  779  git add .
+  780  git status
+  781  git commit -m "Zakonczenie 1-4 plus sprawozdanie"
+  782  git commit -m "JB420223 Zakonczenie 1-4 plus sprawozdanie"
+  783  git push JB420223
+  784  git push origin  JB420223
+  785  ls
+  786  cd Sprawozdanie1/
+  787  ls
+  788  git status
+  789  cd ..
+  790  git add .
+  791  git status
+  792  git commit -m "Zmiana struktury plików"
+  793  git commit -m "JB420223: Zmiana struktury plików"
+  794  git push origin  JB420223
+  795  git pull origin
+  796  git push origin  JB420223
+  797  git status
+  798  git push origin  JB420223
+  799  git status
+  800  git pull origin
+  801  git pull origin main
+  802  git branch
+  803  git config pull.rebase false
+  804  git pull origin main
+  805  git status
+  806  git add .
+  807  git commit -m "JB420223 pull"
+  808  git push origin  JB420223
+  809  ls
+  810  cd repos/
+  811  cd MDO2026s_ITE/
+  812  cd G
+  813  ls
+  814  cd ITE/
+  815  cd GCL1/
+  816  ls
+  817  cd JB420223/
+  818  ls
+  819  cd Sprawozdanie2
+  820  ls
+  821  cd lab5
+  822  ls
+  823  cd ..
+  824  git add .
+  825  git status
+  826  git commit -m "JB420223: diagramy lab5"
+  827  git push origin JB420223
+  828  ls
+  829  cd repos
+  830  ls
+  831  git status
+  832  cd MDO2026s_ITE/
+  833  git status
+  834  git pull origin 
+  835  git fetch
+  836  git fetch origin
+  837  git pull origin 
+  838  git fetch
+  839  git pull origin JB420223
+  840  git status
+  841  git push JB420223
+  842  git checkout
+  843  git pull main
+  844  git pull origin main
+  845  git status
+  846  git commit -m "JB420223 pull"
+  847  git status
+  848  git push origin JB420223
+  849  clear
+  850  ls
+  851  cd ITE
+  852  ls
+  853  cd GCL
+  854  cd GCL1/
+  855  ls
+  856  cd JB420
+  857  cd JB420223/
+  858  ls
+  859  cd Sprawozdanie1
+  860  ls
+  861  cd ..
+  862  cd Sprawozdanie2
+  863  ls
+  864  docker ps
+  865  docker ps a
+  866  clear
+  867  docker ps -a
+  868  docker images
+  869  docker containers
+  870  cd lab6
+  871  ls
+  872  touch Dockerfile.Runtime
+  873  ls
+  874  docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+  875  docker ps
+  876  docker exec myjenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+  877  docker ps
+  878  docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+  879  docker logs jenkins-blueocean
+  880  docker exec -u 0 jenkins-blueocean cp /var/jenkins_home/config.xml /var/jenkins_home/config.xml.bak
+  881  docker exec -u 0 jenkins-blueocean sed -i 's/<useSecurity>true<\/useSecurity>/<useSecurity>false<\/useSecurity>/' /var/jenkins_home/config.xml
+  882  docker restart jenkins-blueocean
+  883  docker exec -u 0 jenkins-blueocean cp /var/jenkins_home/config.xml.bak /var/jenkins_home/config.xml
+  884  docker restart jenkins-blueocean
+  885  docker exec -u 0 jenkins-blueocean sed -i 's/<useSecurity>true<\/useSecurity>/<useSecurity>false<\/useSecurity>/' /var/jenkins_home/config.xml
+  886  docker restart jenkins-blueocean
+  887  docker exec -u 0 jenkins-blueocean sed -i 's/<useSecurity>false<\/useSecurity>/<useSecurity>true<\/useSecurity>/' /var/jenkins_home/config.xml
+  888  docker restart jenkins-blueocean
+  889  docker exec -u 0 jenkins-blueocean cp /var/jenkins_home/config.xml.bak /var/jenkins_home/config.xml
+  890  docker restart jenkins-blueocean
+  891  docker exec -u 0 jenkins-blueocean sed -i 's/<useSecurity>false<\/useSecurity>/<useSecurity>true<\/useSecurity>/' /var/jenkins_home/config.xml
+  892  docker restart jenkins-blueocean
+  893  docker exec jenkins-blueocean ls /var/jenkins_home/users/
+  894  clear
+  895  ls
+  896  touch Jenkinsfile
+  897  ls
+  898  cd ..
+  899  ls 
+  900  cd lab5
+  901  ls
+  902  git status
+  903  cd ..
+  904  git status
+  905  git commit -m "JB420223: Commit for jenkins"
+  906  git add
+  907  git add .
+  908  git commit -m "JB420223: Commit for jenkins"
+  909  git push origin JB420223
+  910  clear
+  911  ls
+  912  cd Sprawozdanie2
+  913  ls
+  914  cd lab6
+  915  ls
+  916  docker ps
+  917  docker ps a
+  918  docker ps -a
+  919  docker image
+  920  docker images
+  921  docker network
+  922  docker network ls
+  923  clear
+  924  docker run --privileged --name jenkins-docker --rm --detach   --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume jenkins-data:/var/jenkins_home   docker:dind
+  925  docker ps
+  926  docker network connect jenkins jenkins-blueocean
+  927  git add Jenkinsfile
+  928  git commit -m "JB420223: Naprawa nazwy Dockerfile w etapie Deploy"
+  929  git push origin JB420223
+  930  git add Jenkinsfile
+  931  git commit -m "JB420223: Naprawa nazwy Dockerfile w etapie Deploy 2"
+  932  git push origin JB420223
+  933  git status
+  934  ls
+  935  git add Jenkinsfile
+  936  git commit -m "JB420223: Naprawa nazwy Dockerfile w etapie Deploy 3"
+  937  git push origin JB420223
+  938  cd ..
+  939  git add .
+  940  git commit -m "JB420223: Surowe sprawozdanie"
+  941  git push origin JB420223
+  942  ls
+  943  git add .
+  944  git pull origin
+  945  git push JB420223
+  946  git push origin JB420223
+  947  git commit -m "JB420223: Edycja sprawka"
+  948  git push origin JB420223
+  949  history > historia_polecen.txt
+  950  ls
+  951  rm historia_polecen.txt 
+  952  ls
+  953  cd Sprawozdanie2
+  954  ls
+  955  rm historia_cmd.txt 
+  956  history > historia_cmd.txt
