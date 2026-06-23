@@ -1,0 +1,10 @@
+#!/bin/bash
+
+WIADOMOSC_PLIK=$1
+WIADOMOSC=$(cat "$WIADOMOSC_PLIK")
+WYMOG="JG422045"
+
+if [[ ! "$WIADOMOSC" =~ ^"$WYMOG" ]]; then
+  echo "BLAD: Wiadomosc commita musi zaczynac sie od: '$WYMOG'."
+  exit 1
+fi

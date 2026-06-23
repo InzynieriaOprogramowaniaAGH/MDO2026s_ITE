@@ -1,0 +1,10 @@
+﻿2026-06-23T18:29:45.7102804Z ##[group]Run cppcheck --enable=all --suppress=missingIncludeSystem -I inc/ --error-exitcode=1 src/ inc/
+2026-06-23T18:29:45.7103700Z [36;1mcppcheck --enable=all --suppress=missingIncludeSystem -I inc/ --error-exitcode=1 src/ inc/[0m
+2026-06-23T18:29:45.7137315Z shell: /usr/bin/bash -e {0}
+2026-06-23T18:29:45.7137600Z ##[endgroup]
+2026-06-23T18:29:45.7348833Z Checking src/display.cpp ...
+2026-06-23T18:29:45.7355778Z 1/2 files checked 61% done
+2026-06-23T18:29:45.7356337Z Checking src/main.cpp ...
+2026-06-23T18:29:45.7360890Z 2/2 files checked 100% done
+2026-06-23T18:29:45.7362700Z nofile:0:0: information: Active checkers: 161/592 (use --checkers-report=<filename> to see details) [checkersReport]
+2026-06-23T18:29:45.7363387Z 

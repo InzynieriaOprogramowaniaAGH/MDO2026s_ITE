@@ -1,0 +1,113 @@
+﻿2026-06-23T18:17:58.0293357Z ##[group]Run sudo apt-get update
+2026-06-23T18:17:58.0293999Z [36;1msudo apt-get update[0m
+2026-06-23T18:17:58.0294808Z [36;1msudo apt-get install -y cmake g++ cppcheck[0m
+2026-06-23T18:17:58.0453126Z shell: /usr/bin/bash -e {0}
+2026-06-23T18:17:58.0453689Z ##[endgroup]
+2026-06-23T18:17:58.1566091Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-06-23T18:17:58.2071664Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-06-23T18:17:58.2088677Z Hit:6 https://packages.microsoft.com/repos/azure-cli noble InRelease
+2026-06-23T18:17:58.2090659Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-06-23T18:17:58.2102188Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-06-23T18:17:58.2129925Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-06-23T18:17:58.2162401Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-06-23T18:17:58.2438267Z Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
+2026-06-23T18:17:58.4216207Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [153 kB]
+2026-06-23T18:17:58.4365169Z Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [182 kB]
+2026-06-23T18:17:58.4717319Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1031 kB]
+2026-06-23T18:17:58.4781984Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [259 kB]
+2026-06-23T18:17:58.4829438Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
+2026-06-23T18:17:58.4840585Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.4 kB]
+2026-06-23T18:17:58.4847999Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1656 kB]
+2026-06-23T18:17:58.4944235Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [326 kB]
+2026-06-23T18:17:58.4971696Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+2026-06-23T18:17:58.5028016Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.8 kB]
+2026-06-23T18:17:58.5036879Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+2026-06-23T18:17:58.5299572Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5744 B]
+2026-06-23T18:17:58.5752165Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
+2026-06-23T18:17:58.6192500Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [780 kB]
+2026-06-23T18:17:58.6250299Z Get:23 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [178 kB]
+2026-06-23T18:17:58.6264571Z Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.8 kB]
+2026-06-23T18:17:58.6272467Z Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.5 kB]
+2026-06-23T18:17:58.6320402Z Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1170 kB]
+2026-06-23T18:17:58.6369423Z Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [229 kB]
+2026-06-23T18:17:58.6374898Z Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.2 kB]
+2026-06-23T18:17:58.6395650Z Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.1 kB]
+2026-06-23T18:17:58.6970208Z Get:30 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1211 B]
+2026-06-23T18:18:03.3786466Z Fetched 7145 kB in 1s (6661 kB/s)
+2026-06-23T18:18:04.0350569Z Reading package lists...
+2026-06-23T18:18:04.0683396Z Reading package lists...
+2026-06-23T18:18:04.2261949Z Building dependency tree...
+2026-06-23T18:18:04.2269349Z Reading state information...
+2026-06-23T18:18:04.3742821Z g++ is already the newest version (4:13.2.0-7ubuntu1).
+2026-06-23T18:18:04.3743795Z The following additional packages will be installed:
+2026-06-23T18:18:04.3760093Z   cmake-data libjsoncpp25 librhash0
+2026-06-23T18:18:04.3760668Z Suggested packages:
+2026-06-23T18:18:04.3761384Z   cmake-doc cmake-format elpa-cmake-mode ninja-build cppcheck-gui clang
+2026-06-23T18:18:04.3763678Z   clang-tidy
+2026-06-23T18:18:04.3940755Z The following NEW packages will be installed:
+2026-06-23T18:18:04.3947263Z   cmake cmake-data cppcheck libjsoncpp25 librhash0
+2026-06-23T18:18:04.4138836Z 0 upgraded, 5 newly installed, 0 to remove and 27 not upgraded.
+2026-06-23T18:18:04.4139719Z Need to get 15.7 MB of archives.
+2026-06-23T18:18:04.4140328Z After this operation, 58.6 MB of additional disk space will be used.
+2026-06-23T18:18:04.4141023Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-06-23T18:18:04.4352568Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libjsoncpp25 amd64 1.9.5-6build1 [82.8 kB]
+2026-06-23T18:18:04.4393011Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 librhash0 amd64 1.4.3-3build1 [129 kB]
+2026-06-23T18:18:04.4423258Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 cmake-data all 3.28.3-1build7 [2155 kB]
+2026-06-23T18:18:04.4587027Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 cmake amd64 3.28.3-1build7 [11.2 MB]
+2026-06-23T18:18:04.5505920Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 cppcheck amd64 2.13.0-2ubuntu3 [2136 kB]
+2026-06-23T18:18:04.8230487Z Fetched 15.7 MB in 0s (95.0 MB/s)
+2026-06-23T18:18:04.8450070Z Selecting previously unselected package libjsoncpp25:amd64.
+2026-06-23T18:18:04.8711893Z (Reading database ... 
+2026-06-23T18:18:04.8712365Z (Reading database ... 5%
+2026-06-23T18:18:04.8712771Z (Reading database ... 10%
+2026-06-23T18:18:04.8713246Z (Reading database ... 15%
+2026-06-23T18:18:04.8713687Z (Reading database ... 20%
+2026-06-23T18:18:04.8714158Z (Reading database ... 25%
+2026-06-23T18:18:04.8714711Z (Reading database ... 30%
+2026-06-23T18:18:04.8715164Z (Reading database ... 35%
+2026-06-23T18:18:04.8715630Z (Reading database ... 40%
+2026-06-23T18:18:04.8716050Z (Reading database ... 45%
+2026-06-23T18:18:04.8716452Z (Reading database ... 50%
+2026-06-23T18:18:04.8758854Z (Reading database ... 55%
+2026-06-23T18:18:04.9691474Z (Reading database ... 60%
+2026-06-23T18:18:05.1749326Z (Reading database ... 65%
+2026-06-23T18:18:05.3639783Z (Reading database ... 70%
+2026-06-23T18:18:05.4756208Z (Reading database ... 75%
+2026-06-23T18:18:05.5342756Z (Reading database ... 80%
+2026-06-23T18:18:05.6813965Z (Reading database ... 85%
+2026-06-23T18:18:05.8174568Z (Reading database ... 90%
+2026-06-23T18:18:05.9831377Z (Reading database ... 95%
+2026-06-23T18:18:05.9831818Z (Reading database ... 100%
+2026-06-23T18:18:05.9832186Z (Reading database ... 202324 files and directories currently installed.)
+2026-06-23T18:18:05.9879653Z Preparing to unpack .../libjsoncpp25_1.9.5-6build1_amd64.deb ...
+2026-06-23T18:18:05.9919369Z Unpacking libjsoncpp25:amd64 (1.9.5-6build1) ...
+2026-06-23T18:18:06.0168374Z Selecting previously unselected package librhash0:amd64.
+2026-06-23T18:18:06.0299990Z Preparing to unpack .../librhash0_1.4.3-3build1_amd64.deb ...
+2026-06-23T18:18:06.0310288Z Unpacking librhash0:amd64 (1.4.3-3build1) ...
+2026-06-23T18:18:06.0552222Z Selecting previously unselected package cmake-data.
+2026-06-23T18:18:06.0685013Z Preparing to unpack .../cmake-data_3.28.3-1build7_all.deb ...
+2026-06-23T18:18:06.0841670Z Unpacking cmake-data (3.28.3-1build7) ...
+2026-06-23T18:18:06.5964851Z Selecting previously unselected package cmake.
+2026-06-23T18:18:06.6120169Z Preparing to unpack .../cmake_3.28.3-1build7_amd64.deb ...
+2026-06-23T18:18:06.6130846Z Unpacking cmake (3.28.3-1build7) ...
+2026-06-23T18:18:06.7735440Z Selecting previously unselected package cppcheck.
+2026-06-23T18:18:06.7876127Z Preparing to unpack .../cppcheck_2.13.0-2ubuntu3_amd64.deb ...
+2026-06-23T18:18:06.7885491Z Unpacking cppcheck (2.13.0-2ubuntu3) ...
+2026-06-23T18:18:06.8746461Z Setting up libjsoncpp25:amd64 (1.9.5-6build1) ...
+2026-06-23T18:18:06.8756493Z Setting up cppcheck (2.13.0-2ubuntu3) ...
+2026-06-23T18:18:06.8781180Z Setting up librhash0:amd64 (1.4.3-3build1) ...
+2026-06-23T18:18:06.8803471Z Setting up cmake-data (3.28.3-1build7) ...
+2026-06-23T18:18:06.8872005Z Setting up cmake (3.28.3-1build7) ...
+2026-06-23T18:18:06.8897863Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-06-23T18:18:06.8919323Z Not building database; man-db/auto-update is not 'true'.
+2026-06-23T18:18:06.8932895Z Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+2026-06-23T18:18:07.5626568Z 
+2026-06-23T18:18:07.5627186Z Running kernel seems to be up-to-date.
+2026-06-23T18:18:07.5627470Z 
+2026-06-23T18:18:07.5627580Z No services need to be restarted.
+2026-06-23T18:18:07.5627784Z 
+2026-06-23T18:18:07.5627917Z No containers need to be restarted.
+2026-06-23T18:18:07.5628110Z 
+2026-06-23T18:18:07.5628240Z No user sessions are running outdated binaries.
+2026-06-23T18:18:07.5628508Z 
+2026-06-23T18:18:07.5628716Z No VM guests are running outdated hypervisor (qemu) binaries on this host.

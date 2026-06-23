@@ -1,0 +1,25 @@
+﻿2026-06-23T18:29:51.2932105Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-23T18:29:51.2934058Z ##[group]Run actions/upload-artifact@v4
+2026-06-23T18:29:51.2934339Z with:
+2026-06-23T18:29:51.2934564Z   name: simple-app-executable
+2026-06-23T18:29:51.2934829Z   path: build/simple.out
+2026-06-23T18:29:51.2935062Z   retention-days: 5
+2026-06-23T18:29:51.2935277Z   if-no-files-found: warn
+2026-06-23T18:29:51.2935511Z   compression-level: 6
+2026-06-23T18:29:51.2935727Z   overwrite: false
+2026-06-23T18:29:51.2935941Z   include-hidden-files: false
+2026-06-23T18:29:51.2936178Z ##[endgroup]
+2026-06-23T18:29:51.4603585Z (node:2925) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-06-23T18:29:51.4604592Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-06-23T18:29:51.4658696Z With the provided path, there will be 1 file uploaded
+2026-06-23T18:29:51.4665074Z Artifact name is valid!
+2026-06-23T18:29:51.4665962Z Root directory input is valid!
+2026-06-23T18:29:51.8299927Z Beginning upload of artifact content to blob storage
+2026-06-23T18:29:51.8504335Z (node:2925) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-06-23T18:29:52.1388689Z Uploaded bytes 2874
+2026-06-23T18:29:52.2184786Z Finished uploading artifact content to blob storage!
+2026-06-23T18:29:52.2185763Z SHA256 digest of uploaded artifact zip is 667f7df803726bec172e2a93d4fe303e0c3720caddae1d21af66d89367026f6f
+2026-06-23T18:29:52.2187619Z Finalizing artifact upload
+2026-06-23T18:29:52.4759686Z Artifact simple-app-executable.zip successfully finalized. Artifact ID 7829875199
+2026-06-23T18:29:52.4761850Z Artifact simple-app-executable has been successfully uploaded! Final size is 2874 bytes. Artifact ID is 7829875199
+2026-06-23T18:29:52.4768813Z Artifact download URL: https://github.com/Jarimino/SIMPLE-fork/actions/runs/28047990040/artifacts/7829875199

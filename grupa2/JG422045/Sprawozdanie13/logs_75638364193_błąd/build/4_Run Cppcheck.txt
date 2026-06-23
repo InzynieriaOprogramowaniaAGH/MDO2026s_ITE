@@ -1,0 +1,17 @@
+﻿2026-06-23T18:18:08.3997854Z ##[group]Run cppcheck --enable=all --suppress=missingIncludeSystem --error-exitcode=1 src/ inc/
+2026-06-23T18:18:08.3998583Z [36;1mcppcheck --enable=all --suppress=missingIncludeSystem --error-exitcode=1 src/ inc/[0m
+2026-06-23T18:18:08.4034855Z shell: /usr/bin/bash -e {0}
+2026-06-23T18:18:08.4035129Z ##[endgroup]
+2026-06-23T18:18:08.4222896Z Checking src/display.cpp ...
+2026-06-23T18:18:08.4226138Z src/display.cpp:2:0: information: Include file: "display.hpp" not found. [missingInclude]
+2026-06-23T18:18:08.4226667Z #include "display.hpp"
+2026-06-23T18:18:08.4226900Z ^
+2026-06-23T18:18:08.4231035Z 1/2 files checked 61% done
+2026-06-23T18:18:08.4231414Z Checking src/main.cpp ...
+2026-06-23T18:18:08.4233890Z src/main.cpp:1:0: information: Include file: "display.hpp" not found. [missingInclude]
+2026-06-23T18:18:08.4234562Z #include "display.hpp"
+2026-06-23T18:18:08.4234770Z ^
+2026-06-23T18:18:08.4236913Z 2/2 files checked 100% done
+2026-06-23T18:18:08.4238423Z nofile:0:0: information: Active checkers: 161/592 (use --checkers-report=<filename> to see details) [checkersReport]
+2026-06-23T18:18:08.4239517Z 
+2026-06-23T18:18:08.4259595Z ##[error]Process completed with exit code 1.

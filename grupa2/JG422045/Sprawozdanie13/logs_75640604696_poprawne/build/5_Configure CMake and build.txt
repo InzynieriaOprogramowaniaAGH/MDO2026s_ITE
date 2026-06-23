@@ -1,0 +1,35 @@
+﻿2026-06-23T18:29:45.7404753Z ##[group]Run mkdir build
+2026-06-23T18:29:45.7405062Z [36;1mmkdir build[0m
+2026-06-23T18:29:45.7405270Z [36;1mcd build[0m
+2026-06-23T18:29:45.7405470Z [36;1mcmake ..[0m
+2026-06-23T18:29:45.7405700Z [36;1mcmake --build . --config Release[0m
+2026-06-23T18:29:45.7438067Z shell: /usr/bin/bash -e {0}
+2026-06-23T18:29:45.7438323Z ##[endgroup]
+2026-06-23T18:29:46.1807719Z CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+2026-06-23T18:29:46.1808852Z   Compatibility with CMake < 3.10 will be removed from a future version of
+2026-06-23T18:29:46.1809432Z   CMake.
+2026-06-23T18:29:46.1809638Z 
+2026-06-23T18:29:46.1810111Z   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+2026-06-23T18:29:46.1811062Z   to tell CMake that the project requires at least <min> but has been updated
+2026-06-23T18:29:46.1812356Z   to work with policies introduced by <max> or earlier.
+2026-06-23T18:29:46.1812774Z 
+2026-06-23T18:29:46.1812782Z 
+2026-06-23T18:29:47.8747930Z -- The C compiler identification is GNU 13.3.0
+2026-06-23T18:29:48.9675624Z -- The CXX compiler identification is GNU 13.3.0
+2026-06-23T18:29:49.1563054Z -- Detecting C compiler ABI info
+2026-06-23T18:29:49.5424159Z -- Detecting C compiler ABI info - done
+2026-06-23T18:29:49.5609502Z -- Check for working C compiler: /usr/bin/cc - skipped
+2026-06-23T18:29:49.5661537Z -- Detecting C compile features
+2026-06-23T18:29:49.5715466Z -- Detecting C compile features - done
+2026-06-23T18:29:49.6104304Z -- Detecting CXX compiler ABI info
+2026-06-23T18:29:49.7144116Z -- Detecting CXX compiler ABI info - done
+2026-06-23T18:29:49.7335566Z -- Check for working CXX compiler: /usr/bin/c++ - skipped
+2026-06-23T18:29:49.7339053Z -- Detecting CXX compile features
+2026-06-23T18:29:49.7346836Z -- Detecting CXX compile features - done
+2026-06-23T18:29:49.7492586Z -- Configuring done (3.6s)
+2026-06-23T18:29:49.7526099Z -- Generating done (0.0s)
+2026-06-23T18:29:49.7529593Z -- Build files have been written to: /home/runner/work/SIMPLE-fork/SIMPLE-fork/build
+2026-06-23T18:29:49.7752283Z [ 33%] Building CXX object CMakeFiles/simple.out.dir/src/main.cpp.o
+2026-06-23T18:29:49.7977606Z [ 66%] Building CXX object CMakeFiles/simple.out.dir/src/display.cpp.o
+2026-06-23T18:29:51.2277241Z [100%] Linking CXX executable simple.out
+2026-06-23T18:29:51.2831737Z [100%] Built target simple.out

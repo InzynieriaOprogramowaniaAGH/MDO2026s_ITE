@@ -1,0 +1,2 @@
+FROM hiredis-base:latest
+CMD ["./hiredis-test"]
