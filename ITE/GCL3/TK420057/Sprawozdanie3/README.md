@@ -8,11 +8,12 @@ Utworzono drugą maszynę wirtualną z systemem fedora. Zapewniono obecność pr
 Nadano maszynie hostname ansible-target oraz utworzono w systemie użytkownika ansible.
 
 Następnie na głównej maszynie wirtualnej zainstalowano oprogramowanie Ansible z repozytorium dystrybucji.
+
 ![alt text](Obraz1.png)
 
 Wygenerowano i wymieniono klucze SSH między użytkownikiem w głównej maszynie wirtualnej, a użytkownikiem ansible tak, by logowanie było bezhasłowe.
-![alt text](Obraz2.png)
 
+![alt text](Obraz2.png)
 
 ## Konfiguracja DNS i sprawdzenie łączności
 
@@ -59,7 +60,7 @@ Ostatecznym testem poprawności konfiguracji było wywołanie modułu `ping` z p
 
 ## Zdalne wywoływanie procedur
 
-W pierwszej kolejności uruchomiono uproszczoną wersję `playbook.yaml`, która jedynie wykonywała jedynie ping do wszytkich maszyn oraz kopiowanie pliki inwentaryzacji na maszynę `Endpoints`.
+W pierwszej kolejności uruchomiono uproszczoną wersję `playbook.yaml`, która jedynie wykonywała jedynie ping do wszytkich maszyn oraz kopiowanie pliku inwentaryzacji na maszynę `Endpoints`.
 
 ![alt text](Obraz8.png)
 
@@ -73,11 +74,11 @@ Następnie ponownie wywołano playbooka oraz rozszerzono go o wykonanie aktualiz
 
 ![alt text](Obraz10.png)
 
-Wszystkie operacje zakończyły się sukcesem i poprawnie się wykonały. Następnie wykonano test w którym ta samą operacje spróbowano wykonać z wyłączonym serwerem SSH.
+Wszystkie operacje zakończyły się sukcesem i poprawnie się wykonały. Następnie wykonano test w którym tą samą operacje spróbowano wykonać z wyłączonym serwerem SSH.
 
 ![alt text](Obraz11.png)
 
-Podczas uruchomienia playbooka, na etapie zbierania faktów Ansible zgłosił krytyczny błąd połączenia. Mechanizm poprawnie przerwał dalsze wykonywnaie działań dla niedostępnego hosta.
+Podczas uruchomienia playbooka, na etapie zbierania faktów Ansible zgłosił krytyczny błąd połączenia. Mechanizm poprawnie przerwał dalsze wykonywanie działań dla niedostępnego hosta.
 
 ## Zarządzanie stworzonym artefaktem
 
@@ -219,8 +220,11 @@ fi
 ## Strategie wdrożeń
 
 Przygotowano wersje wdrożeń stosujące różne strategie.
+
 -Recreate: Wszytkie pody starej wersji były jednocześnie usuwane, a dopiero po ich całkowitym zamknięciu klastry uruchamiały nową wersję.
+
 -Rolling Update: Nowa wersja była wdrażana partiami przy jednoczesnym powolnym wygaszaniu starej wersji.
+
 -Canary: Nowa wersja jest wprowadzana tylko dla pojedynczych przypadków.
 
 ![alt text](Obraz36.png)
