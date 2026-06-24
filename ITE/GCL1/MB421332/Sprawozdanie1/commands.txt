@@ -46,3 +46,76 @@ git commit -m "TEST"
 git commit -m "MB421332: TEST git hooka"
 git push
 
+
+LAB2: Git, Docker
+sudo apt docker
+sudo apt install docker.io docker-compose-v2 -y
+sudo usermod -aG docker $USER
+docker --version
+docker-compose --version
+groups
+docker ps
+docker container prune
+docker ps -a
+docker pull hello-world:linux
+docker run hello-world:linux
+docker ps -as
+docker images
+docker pull busybox:unstable-uclibc
+docker run busybox:unstable-uclibc
+docker ps -as
+docker images
+docker pull ubuntu:stonking
+docker run ubuntu:stonking
+docker ps -as
+docker images
+docker pull mariadb:13.0.1-rc
+docker run mariadb:13.0.1-rc
+docker ps -as
+docker images
+docker pull node:trixie
+docker run node:trixie
+docker ps -as
+docker images
+docker pull jetbrains/runtime:oraclelinux8_x64
+docker run jetbrains/runtime:oraclelinux8_x64
+docker ps -as
+docker images
+docker pull eclipse/aspnet:latest
+docker run eclipse/aspnet:latest
+docker ps -as
+docker images
+docker inspect --format='{{.State.ExitCode}}' d54c52d3a4f9
+docker pull oryd/sdk:latest
+docker run oryd/sdk:latest
+docker ps -as
+docker images
+docker ps
+docker stop d54c52d3a4f9
+sudo dmesg | grep -i apparmor
+docker inspect --format='{{.State.Pid}}' d54c52d3a4f9
+kill -9 11200
+docker ps
+docker inspect --format='{{.State.Pid}}' fecabe593739
+kill -9 11608
+docker inspect --format='{{.State.Pid}}' 0f0d124b13ee 
+kill -9 11200
+docker run busybox:unstable-uclibc 
+docker ps -a
+docker run -it busybox:unstable-uclibc sh
+busybox --version
+exit
+cd ../
+mkdir lab2
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/Dockerfile ./lab2/Dockerfile
+cd lab2
+docker build -t moj-kontener .
+docker run --rm -it moj-kontener
+git --version
+ls -la
+docker ps -a
+exit
+docker container prune
+docker ps -a
+
+LAB3: Dockerfiles, kontener jako definicja etapu
