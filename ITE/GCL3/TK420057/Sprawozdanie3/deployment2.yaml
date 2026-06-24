@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: flask-deployment
+  name: flask-deployment2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-deployment
+  template:
+    metadata:
+      labels:
+        app: flask-deployment
+        track: canary
+    spec:
+      containers:
+      - image: flask-prod:v2
+        name: flask-prod
+        ports:
+        - containerPort: 5000
+        imagePullPolicy: Never
+        resources: {}
+status: {}
