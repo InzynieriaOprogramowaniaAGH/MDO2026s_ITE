@@ -1,0 +1,50 @@
+---
+- name: Operacje endpoint
+  hosts: Endpoints
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Skopiowanie pliku inventory na endpoint
+      ansible.builtin.copy:
+        src: ../inventory.ini
+        dest: /tmp/inventory.ini
+        owner: ansible
+        group: ansible
+        mode: "0644"
+
+    - name: Aktualizacja cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Bezpieczna aktualizacja
+      ansible.builtin.apt:
+        upgrade: safe
+
+    - name: Instalacja pakietów
+      ansible.builtin.apt:
+        name:
+          - tar
+          - openssh-server
+          - rng-tools5
+        state: present
+
+    - name: Pobranie info o usługach
+      ansible.builtin.service_facts:
+
+    - name: Restart SSH UBuntu
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+
+    - name: Restart usługi rng (jak jest)
+      ansible.builtin.service:
+        name: rngd
+        state: restarted
+      register: rngd_restart
+      failed_when: false
+
+    - name: Pokazanie wyniku rngd
+      ansible.builtin.debug:
+        var: rngd_restart

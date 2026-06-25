@@ -1,0 +1,8 @@
+---
+- name: Ping wszystkich maszyn z inventory
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Sprawdzenie odpowiedzi ping Ansible
+      ansible.builtin.ping:

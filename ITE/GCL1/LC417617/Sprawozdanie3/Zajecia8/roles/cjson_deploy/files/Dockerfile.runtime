@@ -1,0 +1,10 @@
+FROM ubuntu:24.04
+
+LABEL description="Kontainer dla cJSON - smoke artifact"
+LABEL author="LC417617"
+
+COPY cjson-artifact /opt/cjson-artifact
+
+RUN chmod +x /opt/cjson-artifact/cjson-smoke
+
+ENTRYPOINT ["/opt/cjson-artifact/cjson-smoke"]

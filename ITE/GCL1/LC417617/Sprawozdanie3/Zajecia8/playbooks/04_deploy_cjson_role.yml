@@ -1,0 +1,6 @@
+---
+- name: Wdrożenie artefaktu cJSON na endpointach
+  hosts: Endpoints
+  become: true
+  roles:
+    - cjson_deploy

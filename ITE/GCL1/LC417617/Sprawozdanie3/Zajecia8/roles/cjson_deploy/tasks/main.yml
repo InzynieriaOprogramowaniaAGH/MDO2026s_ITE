@@ -1,0 +1,108 @@
+---
+- name: sprawdzenie systemu
+  ansible.builtin.command: uname -a
+  register: sanity_uname
+  changed_when: false
+  failed_when: false
+
+- name: prawdzenie programu tar
+  ansible.builtin.command: tar --version
+  register: sanity_tar
+  changed_when: false
+  failed_when: false
+
+- name: sprawdzenie miejsca na dysku
+  ansible.builtin.command: df -h /
+  register: sanity_disk
+  changed_when: false
+  failed_when: false
+
+- name: Pokazanie wyniku
+  ansible.builtin.debug:
+    msg:
+      - "{{ sanity_uname.stdout | default('brak wyniku uname') }}"
+      - "{{ sanity_tar.stdout_lines[0] | default('brak wyniku tar') }}"
+      - "{{ sanity_disk.stdout_lines | default([]) }}"
+
+- name: Aktualizacja cache APT przed instalacją Dockera
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Instalacja Dockera na maszynie docelowej
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - tar
+    state: present
+
+- name: Uruchomienie i włączenie usługi Docker
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Utworzenie katalogu dla wdrożenia
+  ansible.builtin.file:
+    path: /opt/cjson-demo
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Skopiowanie artefaktu cJSON na endpoint
+  ansible.builtin.copy:
+    src: cjson-artifact.tar.gz
+    dest: /opt/cjson-demo/cjson-artifact.tar.gz
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Rozpakowanie artefaktu na endpoint
+  ansible.builtin.unarchive:
+    src: /opt/cjson-demo/cjson-artifact.tar.gz
+    dest: /opt/cjson-demo
+    remote_src: true
+
+- name: Skopiowanie Dockerfile runtime
+  ansible.builtin.copy:
+    src: Dockerfile.runtime
+    dest: /opt/cjson-demo/Dockerfile
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Sprawdzenie wersji Dockera
+  ansible.builtin.command: docker version
+  register: docker_version
+  changed_when: false
+
+- name: Zbudowanie obrazu runtime dla artefaktu cJSON
+  ansible.builtin.command: docker build -t lc417617-cjson-deploy:s08 /opt/cjson-demo
+  register: docker_build
+
+- name: Usunięcie starego kontenera, jeżeli istnieje
+  ansible.builtin.command: docker rm -f cjson-demo
+  register: docker_rm_old
+  failed_when: false
+  changed_when: docker_rm_old.rc == 0
+
+- name: Uruchomienie kontenera z artefaktem cJSON
+  ansible.builtin.command: docker run --name cjson-demo lc417617-cjson-deploy:s08
+  register: docker_run
+
+- name: Pobranie logów
+  ansible.builtin.command: docker logs cjson-demo
+  register: container_logs
+  changed_when: false
+
+- name: Weryfikacja poprawnego uruchomienia artefaktu
+  ansible.builtin.assert:
+    that:
+      - "'cJSON deploy smoke test passed' in container_logs.stdout"
+    success_msg: "Artefakt cJSON uruchomił się poprawnie w kontenerze."
+    fail_msg: "Artefakt cJSON nie uruchomił się poprawnie."
+
+- name: Pokazanie logów kontenera
+  ansible.builtin.debug:
+    var: container_logs.stdout_lines

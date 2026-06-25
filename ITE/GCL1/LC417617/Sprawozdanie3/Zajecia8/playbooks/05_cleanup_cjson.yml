@@ -1,0 +1,31 @@
+---
+- name: Czyszczenie środowiska po wdrożeniu cJSON
+  hosts: Endpoints
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Usunięcie cjson-demo
+      ansible.builtin.command: docker rm -f cjson-demo
+      register: cleanup_container
+      failed_when: false
+      changed_when: cleanup_container.rc == 0
+
+    - name: Usunięcie runtime
+      ansible.builtin.command: docker rmi lc417617-cjson-deploy:s08
+      register: cleanup_image
+      failed_when: false
+      changed_when: cleanup_image.rc == 0
+
+    - name: Usunięcie katalogu wdrożeniowego
+      ansible.builtin.file:
+        path: /opt/cjson-demo
+        state: absent
+
+    - name: Wynik czyszczenia kontenera
+      ansible.builtin.debug:
+        var: cleanup_container.stdout_lines
+
+    - name: Wynik czyszczenia obrazu
+      ansible.builtin.debug:
+        var: cleanup_image.stdout_lines
