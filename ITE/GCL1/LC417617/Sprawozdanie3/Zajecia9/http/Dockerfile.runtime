@@ -1,0 +1,7 @@
+FROM fedora:44
+
+COPY cjson-artifact /opt/cjson-artifact
+
+RUN chmod +x /opt/cjson-artifact/cjson-smoke
+
+CMD ["/bin/bash", "-lc", "/opt/cjson-artifact/cjson-smoke && sleep infinity"]
