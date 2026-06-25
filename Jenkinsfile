@@ -11,7 +11,7 @@ pipeline {
             agent {
                 docker { 
                     image 'docker:latest'
-                    args '-e DOCKER_HOST=tcp://docker:2375'
+                    args '--network jenkins-net -e DOCKER_HOST=tcp://docker:2375'
                 }
             }
             steps {
