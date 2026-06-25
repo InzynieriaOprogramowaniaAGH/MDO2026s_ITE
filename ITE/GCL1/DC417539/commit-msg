@@ -1,0 +1,8 @@
+#!/bin/bash
+
+message=$(cat $1)
+
+if [[ $message != DC417539* ]]; then
+ echo "Commit message must start with DC417539"
+ exit 1
+fi
