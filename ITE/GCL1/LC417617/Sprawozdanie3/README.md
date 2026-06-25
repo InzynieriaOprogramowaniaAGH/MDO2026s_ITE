@@ -601,3 +601,391 @@ Odpowiedzi modelu zostały zweryfikowane praktycznie podczas wykonywania zadania
 * wdrożenie artefaktu sprawdzono przez uruchomienie kontenera i odczyt logów,
 * poprawne działanie artefaktu potwierdzono komunikatem `cJSON deploy smoke test passed`,
 * czyszczenie środowiska potwierdzono przez playbook usuwający kontener, obraz oraz katalog wdrożeniowy.
+
+
+
+
+## Zajęcia 09 - Pliki odpowiedzi dla wdrożeń nienadzorowanych
+
+Celem zajęć było przygotowanie pliku odpowiedzi dla instalacji nienadzorowanej systemu Fedora. Instalacja miała zostać wykonana z użyciem pliku Kickstart znajdującego się w repozytorium, a po pierwszym uruchomieniu system miał automatycznie przygotować środowisko do uruchomienia artefaktu `cJSON`.
+
+W ramach zadania wykorzystano maszynę główną `devops-vm`, która udostępniała plik Kickstart i artefakt przez prosty serwer HTTP, oraz nową maszynę wirtualną `fedora-cjson-auto`, na której przeprowadzono instalację Fedory.
+
+---
+
+### 1. Przygotowanie maszyny wirtualnej Fedora
+
+Utworzono nową maszynę wirtualną w Hyper-V przeznaczoną do instalacji Fedory. Maszyna została utworzona jako maszyna drugiej generacji, czyli z obsługą UEFI.
+
+Przyjęte ustawienia:
+
+```text
+Nazwa maszyny: fedora-cjson-auto
+Generacja: Generation 2 / UEFI
+Pamięć RAM: 2048 MB
+Dysk: 20 GB
+Sieć: ten sam przełącznik Hyper-V co maszyna devops-vm
+Obraz ISO: Fedora Server 44
+```
+
+![Maszyna Fedora UEFI](./img/S09_02_fedora_vm_uefi.png)
+
+*Rys. 21. Konfiguracja maszyny wirtualnej Fedora w Hyper-V.*
+
+---
+
+### 2. Pierwsza ręczna instalacja Fedory
+
+Najpierw wykonano ręczną instalację Fedory. Było to potrzebne do uzyskania bazowego pliku odpowiedzi wygenerowanego przez instalator Anaconda.
+
+Podczas instalacji ustawiono między innymi:
+
+```text
+hostname: fedora-cjson-auto
+użytkownik: deploy
+typ instalacji: Fedora Server Edition
+partycjonowanie: automatyczne
+```
+
+![Ręczna instalacja Fedory](./img/S09_03_instalacja_fedora_reczna.png)
+
+*Rys. 22. Pierwsza ręczna instalacja Fedory.*
+
+Po zakończeniu instalacji zalogowano się do systemu i skopiowano wygenerowany plik Kickstart z katalogu `/root`:
+
+```bash
+sudo cp /root/anaconda-ks.cfg /home/deploy/anaconda-ks-source.cfg
+sudo chown deploy:deploy /home/deploy/anaconda-ks-source.cfg
+ls -l /home/deploy/anaconda-ks-source.cfg
+head -40 /home/deploy/anaconda-ks-source.cfg
+```
+
+![Plik anaconda-ks.cfg](./img/S09_04_anaconda_ks_cfg.png)
+
+*Rys. 23. Bazowy plik odpowiedzi `anaconda-ks.cfg` wygenerowany przez instalator.*
+
+Plik został następnie skopiowany na maszynę `devops-vm` do katalogu:
+
+```text
+Sprawozdanie3/Zajecia9/kickstart/anaconda-ks-source.cfg
+```
+
+---
+
+### 3. Przygotowanie właściwego pliku Kickstart
+
+Na podstawie pliku `anaconda-ks.cfg` przygotowano docelowy plik odpowiedzi:
+
+```text
+Sprawozdanie3/Zajecia9/kickstart/ks-fedora-cjson.cfg
+```
+
+Ten sam plik został również skopiowany do katalogu udostępnianego przez HTTP:
+
+```text
+Sprawozdanie3/Zajecia9/http/ks-fedora-cjson.cfg
+```
+
+Plik Kickstart zawierał między innymi:
+
+```kickstart
+text
+reboot
+
+lang en_US.UTF-8
+keyboard --xlayouts='pl'
+timezone Europe/Warsaw --utc
+
+network --bootproto=dhcp --device=link --activate --hostname=fedora-cjson-auto
+
+url --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-44&arch=x86_64
+repo --name=updates --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f44&arch=x86_64
+
+rootpw --lock
+user --name=deploy --groups=wheel --password=HASLO_W_POSTACI_HASH --iscrypted --gecos="Deploy User"
+
+zerombr
+clearpart --all --initlabel
+autopart --type=lvm
+
+services --enabled=sshd,docker
+```
+
+Zastosowano `clearpart --all --initlabel`, aby instalacja mogła być wykonywana wielokrotnie na tej samej maszynie i za każdym razem czyściła dysk przed ponowną instalacją.
+
+W sekcji `%packages` dodano pakiety potrzebne do działania systemu oraz kontenera:
+
+```kickstart
+%packages
+@core
+openssh-server
+moby-engine
+curl
+tar
+ca-certificates
+%end
+```
+
+W sekcji `%post` dodano mechanizm pobierania artefaktu `cJSON` oraz pliku `Dockerfile.runtime` z serwera HTTP uruchomionego na maszynie `devops-vm`. Dodatkowo utworzono usługę systemd `cjson-firstboot.service`, której zadaniem było zbudowanie obrazu kontenera i uruchomienie aplikacji po pierwszym starcie systemu.
+
+---
+
+### 4. Udostępnienie pliku odpowiedzi i artefaktu przez HTTP
+
+Na maszynie `devops-vm` uruchomiono prosty serwer HTTP w katalogu:
+
+```text
+Sprawozdanie3/Zajecia9/http
+```
+
+W katalogu znajdowały się pliki:
+
+```text
+ks-fedora-cjson.cfg
+cjson-artifact.tar.gz
+Dockerfile.runtime
+```
+
+Serwer uruchomiono poleceniem:
+
+```bash
+cd ~/MDO2026s_ITE/ITE/GCL1/LC417617/Sprawozdanie3/Zajecia9/http
+python3 -m http.server 8000 --bind 0.0.0.0
+```
+
+Dostępność plików sprawdzono poleceniami `curl`:
+
+```bash
+curl http://ADRES_IP_DEVOPS:8000/ks-fedora-cjson.cfg | head
+curl -I http://ADRES_IP_DEVOPS:8000/cjson-artifact.tar.gz
+curl -I http://ADRES_IP_DEVOPS:8000/Dockerfile.runtime
+```
+
+![Serwer HTTP](./img/S09_06_http_server.png)
+
+*Rys. 24. Udostępnienie pliku Kickstart oraz artefaktu przez prosty serwer HTTP.*
+
+---
+
+### 5. Uruchomienie instalacji nienadzorowanej
+
+Następnie uruchomiono maszynę `fedora-cjson-auto` z obrazu ISO Fedory. Na ekranie bootowania Fedory wybrano opcję instalacji i przejście do edycji parametrów startowych GRUB.
+
+Do linii startowej dopisano parametr `inst.ks`, wskazujący na plik Kickstart udostępniany przez maszynę `devops-vm`:
+
+```text
+inst.ks=http://ADRES_IP_DEVOPS:8000/ks-fedora-cjson.cfg ip=dhcp
+```
+
+W praktyce użyto adresu IP maszyny `devops-vm`, odczytanego z pola `src` polecenia:
+
+```bash
+ip route get 1.1.1.1
+```
+
+![Parametr inst.ks](./img/S09_07_boot_inst_ks.png)
+
+*Rys. 25. Dopisanie parametru `inst.ks` w ekranie bootowania Fedory.*
+
+Po uruchomieniu instalatora plik odpowiedzi został pobrany z serwera HTTP. Instalator nie wymagał ręcznego wybierania użytkownika, partycjonowania, hostname ani pakietów.
+
+![Instalacja bez pytań](./img/S09_08_instalacja_bez_pytan.png)
+
+*Rys. 26. Instalacja nienadzorowana Fedory z użyciem pliku Kickstart.*
+
+Na końcu instalacji system został automatycznie zrestartowany dzięki dyrektywie:
+
+```kickstart
+reboot
+```
+
+![Restart po instalacji](./img/S09_09_reboot_po_instalacji.png)
+
+*Rys. 27. Automatyczny restart maszyny po zakończeniu instalacji.*
+
+---
+
+### 6. Pierwsze uruchomienie systemu po instalacji
+
+Po restarcie maszyna uruchomiła już zainstalowany system Fedora. Sprawdzono nazwę hosta oraz wersję systemu:
+
+```bash
+hostname
+whoami
+cat /etc/fedora-release
+```
+
+![Pierwsze uruchomienie Fedory](./img/S09_10_pierwsze_uruchomienie.png)
+
+*Rys. 28. Pierwsze uruchomienie systemu po instalacji nienadzorowanej.*
+
+---
+
+### 7. Sprawdzenie usługi Docker
+
+Plik Kickstart instalował pakiet `moby-engine`, który zapewnia działanie silnika kontenerowego zgodnego z Dockerem. Po pierwszym uruchomieniu sprawdzono usługę Docker:
+
+```bash
+sudo systemctl status docker --no-pager
+sudo docker version
+```
+
+![Usługa Docker](./img/S09_11_docker_service.png)
+
+*Rys. 29. Sprawdzenie działania usługi Docker po instalacji systemu.*
+
+---
+
+### 8. Automatyczne uruchomienie artefaktu cJSON
+
+W sekcji `%post` pliku Kickstart utworzono usługę systemd `cjson-firstboot.service`. Jej zadaniem było wykonanie działań po pierwszym uruchomieniu systemu, ponieważ polecenia `docker run` nie powinny być wykonywane bezpośrednio z poziomu instalatora.
+
+Usługa wykonywała skrypt:
+
+```text
+/usr/local/sbin/cjson-firstboot.sh
+```
+
+Skrypt po pierwszym starcie systemu:
+
+```text
+1. rozpakowywał artefakt cJSON,
+2. czekał na dostępność Dockera,
+3. budował obraz kontenera,
+4. uruchamiał kontener cjson-demo,
+5. zapisywał logi do /var/log/cjson-demo.log.
+```
+
+Sprawdzono status kontenera:
+
+```bash
+sudo docker ps -a
+sudo docker logs cjson-demo
+```
+
+![Kontener cJSON](./img/S09_12_cjson_container_running.png)
+
+*Rys. 30. Kontener `cjson-demo` uruchomiony po pierwszym starcie systemu.*
+
+---
+
+### 9. Weryfikacja działania programu
+
+Poprawność działania programu zweryfikowano przez odczyt logów kontenera oraz pliku `/var/log/cjson-demo.log`:
+
+```bash
+sudo docker logs cjson-demo
+cat /var/log/cjson-demo.log
+```
+
+W logach znajdował się komunikat:
+
+```text
+cJSON deploy smoke test passed
+```
+
+Oznacza to, że artefakt przygotowany w poprzednich zadaniach został poprawnie pobrany, umieszczony w kontenerze i uruchomiony po pierwszym starcie systemu.
+
+![Logi cJSON](./img/S09_13_cjson_logs.png)
+
+*Rys. 31. Logi kontenera potwierdzające poprawne uruchomienie programu.*
+
+---
+
+### 10. Log sekcji `%post`
+
+Dodatkowo sprawdzono log sekcji `%post`, zapisany w pliku:
+
+```text
+/root/ks-post.log
+```
+
+Wykonano:
+
+```bash
+sudo cat /root/ks-post.log
+```
+
+![Log ks-post](./img/S09_14_ks_post_log.png)
+
+*Rys. 32. Log działań wykonanych w sekcji `%post` pliku Kickstart.*
+
+---
+
+### 11. Pliki przygotowane w repozytorium
+
+W repozytorium umieszczono pliki potrzebne do odtworzenia instalacji nienadzorowanej:
+
+```text
+Sprawozdanie3/Zajecia9/http/cjson-artifact.tar.gz
+Sprawozdanie3/Zajecia9/http/Dockerfile.runtime
+Sprawozdanie3/Zajecia9/http/ks-fedora-cjson.cfg
+Sprawozdanie3/Zajecia9/kickstart/anaconda-ks-source.cfg
+Sprawozdanie3/Zajecia9/kickstart/ks-fedora-cjson.cfg
+```
+
+Plik `anaconda-ks-source.cfg` jest bazowym plikiem odpowiedzi wygenerowanym przez ręczną instalację Fedory. Plik `ks-fedora-cjson.cfg` jest zmodyfikowaną wersją używaną do instalacji nienadzorowanej.
+
+---
+
+### 12. Listing najważniejszych poleceń
+
+Poniżej przedstawiono najważniejsze polecenia użyte podczas wykonywania zadania. Listing nie zawiera haseł ani tokenów.
+
+```bash
+cd ~/MDO2026s_ITE/ITE/GCL1/LC417617
+
+mkdir -p Sprawozdanie3/Zajecia9/kickstart
+mkdir -p Sprawozdanie3/Zajecia9/http
+mkdir -p Sprawozdanie3/img
+
+cp Sprawozdanie3/Zajecia8/artifacts/cjson-artifact.tar.gz Sprawozdanie3/Zajecia9/http/
+
+scp deploy@IP_FEDORY:/home/deploy/anaconda-ks-source.cfg Sprawozdanie3/Zajecia9/kickstart/anaconda-ks-source.cfg
+
+nano Sprawozdanie3/Zajecia9/http/Dockerfile.runtime
+nano Sprawozdanie3/Zajecia9/kickstart/ks-fedora-cjson.cfg
+
+DEVOPS_IP=$(ip route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}')
+echo "$DEVOPS_IP"
+
+sed -i "s#__DEVOPS_IP__#${DEVOPS_IP}#g" Sprawozdanie3/Zajecia9/kickstart/ks-fedora-cjson.cfg
+
+cp Sprawozdanie3/Zajecia9/kickstart/ks-fedora-cjson.cfg Sprawozdanie3/Zajecia9/http/
+
+cd Sprawozdanie3/Zajecia9/http
+python3 -m http.server 8000 --bind 0.0.0.0
+
+curl http://${DEVOPS_IP}:8000/ks-fedora-cjson.cfg | head
+curl -I http://${DEVOPS_IP}:8000/cjson-artifact.tar.gz
+curl -I http://${DEVOPS_IP}:8000/Dockerfile.runtime
+
+git add Sprawozdanie3/Zajecia9
+git add Sprawozdanie3/img/S09_*.png
+git commit -m "LC417617 Zajecia 09 - Kickstart"
+git push origin LC417617
+```
+
+---
+
+### 13. Użycie narzędzi generatywnej AI
+
+Podczas realizacji zadania wykorzystano model LLM jako pomoc przy uporządkowaniu kolejności działań, przygotowaniu pliku Kickstart, analizie błędów z pobieraniem pliku odpowiedzi oraz opracowaniu opisu do sprawozdania.
+
+#### Treść głównego zapytania
+
+> Chcę przygotować instalację Fedory z użyciem pliku Kickstart z repozytorium. System po instalacji ma pobrać artefakt cJSON z repozytorium Gita lub ode mnie, zainstalować Dockera i po pierwszym uruchomieniu automatycznie uruchomić kontener z programem. Jak ogarnąć Fedorę z instalacją ręczną oraz z nienadzarowaną?
+
+#### Metoda weryfikacji odpowiedzi
+
+Odpowiedzi modelu zostały zweryfikowane praktycznie podczas wykonywania zadania:
+
+* bazowy plik odpowiedzi potwierdzono przez obecność `/root/anaconda-ks.cfg`,
+* poprawność udostępnienia pliku Kickstart sprawdzono przez `curl`,
+* instalację nienadzorowaną potwierdzono przez uruchomienie instalatora z parametrem `inst.ks`,
+* brak ręcznego uzupełniania danych potwierdził poprawność pliku odpowiedzi,
+* automatyczny restart potwierdził działanie dyrektywy `reboot`,
+* instalację Dockera sprawdzono przez `systemctl status docker` oraz `docker version`,
+* uruchomienie artefaktu potwierdzono przez `docker ps -a`,
+* poprawność działania programu potwierdzono komunikatem `cJSON deploy smoke test passed`,
+* działania sekcji `%post` sprawdzono w pliku `/root/ks-post.log`.
