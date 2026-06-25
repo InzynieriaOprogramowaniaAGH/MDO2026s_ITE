@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker { 
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
     stages {
         stage('Zadanie 1 - Uname') {
             steps {
