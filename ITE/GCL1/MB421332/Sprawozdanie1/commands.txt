@@ -119,3 +119,35 @@ docker container prune
 docker ps -a
 
 LAB3: Dockerfiles, kontener jako definicja etapu
+mkdir lab3
+cd lab3
+git clone https://github.com/stleary/JSON-java.git
+cd JSON-java
+docker run --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.9.6-eclipse-temurin-17 mvn compile
+docker run --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.9.6-eclipse-temurin-17 mvn test
+docker run -it --name json-java maven:3.9.6-eclipse-temurin-17 bash
+apt-get update && apt-get install -y git
+git clone https://github.com/stleary/JSON-java.git
+cd JSON-java
+mvn compile
+mvn test
+exit
+cd ../
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/Dockerfile.build ./Dockerfile.build
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/Dockerfile.test ./Dockerfile.test
+docker build -f Dockerfile.build -t json-java-build .
+docker build -f Dockerfile.test -t json-java-test .
+docker run --rm json-java-test
+mkdir dyskusja
+cd dyskusja
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/dyskusja/Dockerfile ./Dockerfile
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/dyskusja/docker-compose.yml ./docker-compose.yml
+docker-compose up --build
+
+LAB4: Dodatkowa terminologia w konteneryzacji, instancja Jenkins
+mkdir lab4
+cd lab4
+mkdir wolumin_we
+cd wolumin_we
+git clone https://github.com/stleary/JSON-java.git
+docker volume create wolumin-wy

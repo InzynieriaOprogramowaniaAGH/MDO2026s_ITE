@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  tester:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: mvn test
+  
+  app-deploy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: docker-compose/json-java-app:latest
