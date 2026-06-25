@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lc417617-web
+  labels:
+    app: lc417617-web
+spec:
+  replicas: 4
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: lc417617-web
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 50%
+  template:
+    metadata:
+      labels:
+        app: lc417617-web
+    spec:
+      containers:
+        - name: web
+          image: lc417617-k8s-demo:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
