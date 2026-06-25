@@ -151,3 +151,44 @@ mkdir wolumin_we
 cd wolumin_we
 git clone https://github.com/stleary/JSON-java.git
 docker volume create wolumin-wy
+docker run -it --rm -v "$(pwd)/wolumin_we/JSON-java":/app -v wolumin_wy:/app/target -w /app maven:3.9.6-eclipse-temurin-17 bash
+git --version
+apt-get remove -y git git-man && apt-get autoremove -y
+git --version
+mvn package -DskipTests
+exit
+docker run --rm -v wolumin_wy:/target alpine ls -la /target
+docker volume create wolumin_we
+docker run -it -v wolumin_we:/app -v wolumin_wy:/app/target -w /app maven:3.9.6-eclipse-temurin-17 bash
+git --version
+mvn package -DskipTests
+exit
+docker run -d --name iperf-server networkstatic/iperf3 -s
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf-server
+docker run --rm networkstatic/iperf3 -c 172.17.0.2
+docker network create my-network
+docker run -d --name iperf-net-server --network my-network networkstatic/iperf3 -s
+docker run --rm --network my-network networkstatic/iperf3 -c iperf-net-server
+docker run -d --name iperf-public-server -p 5201:5201 networkstatic/iperf3 -s
+iperf3 -c 127.0.0.1
+sudo apt install iperf3
+iperf3 -c 127.0.0.1
+iperf3 -c 172.22.165.111
+- Hyper-v
+ip a
+iperf3 -c 172.22.165.111
+- VS Code SSH
+docker logs iperf-public-server  > logi_iperf.txt
+cat logi_iperf.txt
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/Dockerfile ./Dockerfile
+docker build -t ssh-container .
+docker run -d --name my-ssh -p 2222:22 ssh-container
+ssh root@127.0.0.1 -p 2222
+exit
+docker network create jenkins-net
+docker volume create jenkins-docker-certs
+docker volume create jenkins-data
+docker run -d --name jenkins-docker --rm --privileged --network jenkins-net --network-alias docker --env DOCKER_TLS_CERTDIR=/certs -v jenkins-docker-certs:/certs/client -v jenkins-data:/var/jenkins_home docker:dind --storage-driver overlay2
+docker run -d --name jenkins-server --rm --network jenkins-net -p 8080:8080 -p 50000:50000 -e DOCKER_HOST=tcp://docker:2376 -e DOCKER_TLS_VERIFY=1 -e DOCKER_CERT_PATH=/certs/client -v jenkins-data:/var/jenkins_home -v jenkins-docker-certs:/certs/client:ro jenkins/jenkins:lts
+docker ps
+docker logs jenkins-server

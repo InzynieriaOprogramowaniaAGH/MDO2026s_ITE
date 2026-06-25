@@ -220,10 +220,76 @@ Utworzyłam wolumin na pliki wynikowe.
 
 ![wolumin_wy](<Lab4/Zrzut ekranu 2026-06-25 023637.png>)  
 
+Upewniłam się, że w kontenerze nie ma zainstalowanego gita i skompilowałam oraz spakowałam do JAR pliki.  
 
+![mvn package](<Lab4/Zrzut ekranu 2026-06-25 025536.png>)  
 
+Po wyjściu z kontenera pliki nadal pozostały na woluminie wyjściowym.  
 
+![wolumin_wy pliki zapisane](<Lab4/Zrzut ekranu 2026-06-25 030226.png>)  
 
+Następnie utworzyłam wolumin wejściowy *wolumin_we* i sklonowałam pliki na niego wewnątrz kontenera.  
+
+![wolumin_we wewnątrz kontenera](<Lab4/Zrzut ekranu 2026-06-25 031144.png>)  
+
+![sukces mvn package](<Lab4/Zrzut ekranu 2026-06-25 031331.png>)  
+
+### Dyskusja
+Polecenie przy użyciu woluminów znacznie się wydłuża, przez co jest uciążliwe do wpisywania. Dlatego utworzenie Dockerfile'a znacznie ułatwiłoby sprawę i pomogło z automatyzacją procesu. Podczas budowania projektów w Javie Maven za każdym razem pobiera biblioteki. Dlatego też należy użyć instrukcji *RUN -- mount=type=cache*, aby drobna zmiana nie wymagała ponownego ściągania już zainstalowanych plików.  
+
+Uruchomiłam kontener serwerowy IPerf3 i następnie sprawdziłam jakie IP Docker mu przydzielił. Dzięki podaniu IP serwera mogłam uruchomić kolejny kontener jako klient. W terminalu pojawił się raport testu przepustowości generowany przez IPerf3.  
+
+![iperf3 IP](<Lab4/Zrzut ekranu 2026-06-25 140150.png>)  
+
+Utworzyłam własną sieć mostkową, uruchomiłam w niej serwer i dzięki temu bez sprawdzenia IP uruchomiłam klienta i sprawdziłam przepustowość.  
+
+![iperf3 net](<Lab4/Zrzut ekranu 2026-06-25 141305.png>)  
+
+Uruchomiłam serwer publiczny z flagą *-p* i po zainstalowaniu iperfa miałam możliwość uruchomienia klienta bez kontenera.  
+
+![iperf3 public](<Lab4/Zrzut ekranu 2026-06-25 141842.png>)  
+
+![klienci -p](<Lab4/Zrzut ekranu 2026-06-25 142459.png>)  
+
+Połączyłam się też spoza hosta na serwerze hyper-v.  
+
+![hyper-v iperf3](<Lab4/Zrzut ekranu 2026-06-25 142833.png>)  
+
+Na koniec wyciągnęłam logi z publicznego serwera, test #1 komunikujący się po localhoście ma nieznacznie większą przepustowość od testów #2 i #3, które komunikowały się spoza hosta. Wynika to z tego, że komunikacja przebiegła w sieci mostkowej Dockera i nie opuszcza pamięci RAM ani procesora maszyny, co gwarantuje dużą prędkość transferu i niewielkie opóźnienia.  
+
+![logi iperf3](<Lab4/Zrzut ekranu 2026-06-25 143243.png>)  
+
+![testy](<Lab4/Zrzut ekranu 2026-06-25 143254.png>)  
+
+Aby było prościej, napisałam Dockerfile'a by postawić SSH w kontenerze. Wybrałam ubuntu, zbudowałam i uruchomiłam hosta.  
+
+![build ssh](<Lab4/Zrzut ekranu 2026-06-25 144849.png>)  
+
+Na koniec połączyłam się z poziomu hosta, używając klienta SSH i portu 2222.  
+
+![ssh 2222](<Lab4/Zrzut ekranu 2026-06-25 145002.png>)  
+
+Zaletą używania SSH z kontenerem jest kompatybilność ze starymi narzędziami i izolacja dla użytkowników trzecich (mamy pewność, że "nie ucieknie" ona z kontenera). Wad jest za to więcej, dlatego też we współczesnym DevOps taki kontner jest uznawany za anti-pattern. Marnuje on zasoby (demon SSH cały czas działa w tle), łamie zasadę *one procces per container* i wymusza konto root, co zwiększa podatność kontenera na włamania.  
+
+Aby uruchomić Jenkinsa, potrzebowałam kontenera z serwerm CI oraz kontenera z demonem Dockera (DinD) działających w tej samej sieci mostkowej, aby bezpiecznie wymieniały dane za pomocą certyfikatów TLS. Przygotowałam więc sobie dedykowną sieć, wolumin na certyfikaty TLS oraz na dane Jenkinsa.  
+
+![wolminy i sieć](<Lab4/Zrzut ekranu 2026-06-25 150804.png>)  
+
+Uruchomiłam kontener DinD (wewnętrzny silnik dla Jenkinsa).  
+
+![dind](<Lab4/Zrzut ekranu 2026-06-25 151432.png>)  
+
+Uruchomiłam kontener Jenkinsa i sprawdziłam czy środowisko działa prawidłowo.  
+
+![jenkins](<Lab4/Zrzut ekranu 2026-06-25 151527.png>)  
+
+W logach serwera sprawdziłam hasło i zalogowałam się do Jenkinsa w przeglądarce na moim laptopie z Windowsem.  
+
+![first jenkins](<Lab4/Zrzut ekranu 2026-06-25 152212.png>)  
+
+Utworzyłam pierwszego użytkownika i zapoznałam się z interfejsem Jenkinsa.  
+
+![jenkins panel](<Lab4/Zrzut ekranu 2026-06-25 152822.png>)
 
 
 
