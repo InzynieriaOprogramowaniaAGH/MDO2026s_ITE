@@ -2,3 +2,6 @@ docker ps
 docker inspect --format='{{.State.Pid}}' 75bd40c70529
 kill -9 75bd40c70529
 docker run -d --name jenkins-blueocean --rm --network jenkins-net -p 8080:8080 -p 50000:50000 -e DOCKER_HOST=tcp://docker:2376 -e DOCKER_TLS_VERIFY=1 -e DOCKER_CERT_PATH=/certs/client -v jenkins-data:/var/jenkins_home -v jenkins-docker-certs:/certs/client:ro jenkins/jenkins:lts
+docker exec -it -u root jenkins-blueocean bash
+apt-get update && apt-get install -y docker.io
+exit
