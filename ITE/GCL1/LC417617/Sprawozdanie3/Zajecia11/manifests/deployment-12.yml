@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lc417617-z11-web
+  labels:
+    app: lc417617-z11-web
+spec:
+  replicas: 12
+  selector:
+    matchLabels:
+      app: lc417617-z11-web
+  template:
+    metadata:
+      labels:
+        app: lc417617-z11-web
+    spec:
+      containers:
+        - name: web
+          image: lc417617-z11-web:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 64Mi
