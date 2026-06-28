@@ -8,7 +8,7 @@ pipeline {
         }
         stage('Zadanie 3 - Docker Pull') {
             steps {
-                sh 'docker -H tcp://docker:2375 pull ubuntu:latest'
+                sh 'docker pull ubuntu:latest'
             }
         }
     }

@@ -192,3 +192,17 @@ docker run -d --name jenkins-docker --rm --privileged --network jenkins-net --ne
 docker run -d --name jenkins-server --rm --network jenkins-net -p 8080:8080 -p 50000:50000 -e DOCKER_HOST=tcp://docker:2376 -e DOCKER_TLS_VERIFY=1 -e DOCKER_CERT_PATH=/certs/client -v jenkins-data:/var/jenkins_home -v jenkins-docker-certs:/certs/client:ro jenkins/jenkins:lts
 docker ps
 docker logs jenkins-server
+docker ps
+docker inspect --format='{{.State.Pid}}' 692369043b46
+kill -9 20059
+docker inspect --format='{{.State.Pid}}' 70df8cccbe6f
+kill -9 15067
+docker inspect --format='{{.State.Pid}}' af9af3a40881
+kill -9 3859
+docker inspect --format='{{.State.Pid}}' a91eae2bb9dc
+kill -9 5920
+docker inspect --format='{{.State.Pid}}' 763c3e9c0040
+kill -9 13296
+docker inspect --format='{{.State.Pid}}' b8a9ff4edefa
+kill -9 5139
+docker logs jenkins-server
