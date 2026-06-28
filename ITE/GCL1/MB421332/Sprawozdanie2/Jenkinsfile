@@ -1,16 +1,20 @@
 pipeline {
     agent any
     stages {
-        steps('Collect') {
+        stage('Collect') {
             steps {
                 checkout scm
             }
         }
-        steps('Build') {
-            sh 'docker build -t json-java-build:latest -f Dockerfile.builder .'
+        stage('Build') {
+            steps{
+                sh 'docker build -t json-java-build:latest -f Dockerfile.builder .'
+            }
         }
-        steps('Test'){
-
+        stage('Test'){
+            steps{
+                echo 'test'
+            }
         }
     }
 }
