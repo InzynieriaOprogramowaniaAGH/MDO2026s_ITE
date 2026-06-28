@@ -1,0 +1,95 @@
+---
+# 1. Przygotowanie środowiska
+- name: Sanity Check - Sprawdzenie dostepnego RAMu na maszynie docelowej
+  ansible.builtin.shell: free -m | awk '/^Mem:/{print $4}'
+  register: free_memory
+  failed_when: free_memory.stdout | int < 150
+  ignore_errors: true
+
+- name: Czyszczenie starego kontenera produkcyjnego przed nowym wdrozeniem
+  ansible.builtin.shell: docker rm -f flask-app-prod
+  ignore_errors: true
+
+# 2. Instalacja i uruchomienie dockera i gita
+- name: Instalacja dnf-plugins-core oraz git
+  ansible.builtin.shell: dnf install -y dnf-plugins-core git
+
+- name: Dodanie oficjalnego repozytorium Docker CE (Wymuszenie nadpisania)
+  ansible.builtin.shell: dnf config-manager addrepo --overwrite --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+
+- name: Instalacja silnika Docker na Fedorze
+  ansible.builtin.shell: dnf install -y docker-ce docker-ce-cli containerd.io
+
+- name: Upewnienie sie, ze Docker jest uruchomiony i startuje z systemem
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+# 3. Transfer plików klonowanie repozytorium
+- name: Usuniecie starego katalogu budowania (czyszczenie przed klonowaniem)
+  ansible.builtin.file:
+    path: /home/ansible/app_build
+    state: absent
+
+- name: Utworzenie czystego katalogu na kod aplikacji na maszynie docelowej
+  ansible.builtin.file:
+    path: /home/ansible/app_build
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: '0755'
+
+- name: Klonowanie sforkowanego repozytorium Flaska z GitHuba na target
+  ansible.builtin.git:
+    repo: 'https://github.com/Chudybyk333/flask.git'
+    dest: /home/ansible/app_build
+    clone: yes
+    update: yes
+
+# 4. Implementacja kroków z jenkinsfile
+- name: STAGE Build - Budowanie obrazu flask-build
+  ansible.builtin.shell:
+    cmd: docker build -t flask-build -f Dockerfile.build .
+    chdir: /home/ansible/app_build
+
+- name: STAGE Test - Budowanie obrazu i uruchomienie testow pytest
+  ansible.builtin.shell:
+    cmd: |
+      docker build -t flask-test -f Dockerfile.test .
+      docker run --name flask-test-container flask-test
+    chdir: /home/ansible/app_build
+  failed_when: false
+
+- name: STAGE Publish - Wyciagniecie zbudowanego artefaktu .whl
+  ansible.builtin.shell:
+    cmd: |
+      mkdir -p dist
+      docker run --rm -v $(pwd)/dist:/app/dist flask-build python -m build
+    chdir: /home/ansible/app_build
+
+- name: STAGE Deploy - Budowanie obrazu produkcyjnego i uruchomienie aplikacji
+  ansible.builtin.shell:
+    cmd: |
+      docker build -t flask-production -f Dockerfile.deploy .
+      docker run -d --name flask-app-prod -p 5000:5000 flask-production
+    chdir: /home/ansible/app_build
+
+# 5. Smoke test
+- name: STAGE Smoke Test - Oczekiwanie na pelne wstanie aplikacji Flask
+  ansible.builtin.pause:
+    seconds: 10
+
+- name: STAGE Smoke Test - Weryfikacja rzeczywistej lacznosci z aplikacja (HTTP 200)
+  ansible.builtin.uri:
+    url: http://localhost:5000/
+    status_code: 200
+  register: smoke_test_result
+  failed_when: smoke_test_result.status != 200
+
+# 6. Czyszczenie środowiska
+- name: Czyszczenie srodowiska - Usuniecie kontenera testowego i produkcyjnego
+  ansible.builtin.shell: |
+    docker rm -f flask-test-container
+    docker rm -f flask-app-prod
+  ignore_errors: true
