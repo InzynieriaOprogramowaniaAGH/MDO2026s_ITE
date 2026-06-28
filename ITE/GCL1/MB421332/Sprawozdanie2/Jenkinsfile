@@ -6,5 +6,11 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Build') {
+            sh 'docker build -t json-java-build:latest -f Dockerfile.builder .'
+        }
+        stage('Test'){
+
+        }
     }
 }
