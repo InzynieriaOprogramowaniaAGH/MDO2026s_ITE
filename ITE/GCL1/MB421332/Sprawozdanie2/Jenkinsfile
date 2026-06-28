@@ -8,7 +8,7 @@ pipeline {
         }
         stage('Build') {
             steps{
-                sh 'docker build -t json-java-build:latest -f Dockerfile.builder .'
+                sh 'docker build -t json-java-build:latest -f ITE/GCL1/MB421332/Sprawozdanie2/Dockerfile.builder .'
             }
         }
         stage('Test'){
