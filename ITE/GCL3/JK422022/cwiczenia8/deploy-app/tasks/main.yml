@@ -1,0 +1,41 @@
+---
+- name: CHECK PORT
+  ansible.builtin.wait_for:
+    port: 3000
+    state: stopped
+    timeout: 3
+  ignore_errors: yes
+
+- name: INSALL
+  ansible.builtin.apt:
+    name: ['apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common']
+    state: present
+    update_cache: yes
+
+- name: DOCKER
+  ansible.builtin.apt:
+    name: docker.io
+    state: present
+
+- name: SEND TAR
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/getting-started-app.tar"
+    dest: /tmp/getting-started-app.tar
+
+- name: LOAD TAR IN DOCKER
+  ansible.builtin.command: docker load -i /tmp/getting-started-app.tar
+
+- name: RUN
+  ansible.builtin.command: docker run -d --name aplikacja-na-artefakcie -p 3000:3000 getting-started-app:1.0.26
+
+- name: WAITING
+  ansible.builtin.pause:
+    seconds: 5
+
+- name: TEST
+  ansible.builtin.uri:
+    url: http://localhost:3000
+    status_code: 200
+
+- name: CLEANING
+  ansible.builtin.command: docker rm -f aplikacja-na-artefakcie

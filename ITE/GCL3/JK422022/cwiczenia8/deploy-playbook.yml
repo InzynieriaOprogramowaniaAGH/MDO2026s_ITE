@@ -1,0 +1,6 @@
+---
+- name: RUN APLICATION TO DO LIST
+  hosts: Endpoints
+  become: yes
+  roles:
+    - deploy-app

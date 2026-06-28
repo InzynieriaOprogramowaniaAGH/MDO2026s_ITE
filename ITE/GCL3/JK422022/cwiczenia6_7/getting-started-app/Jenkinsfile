@@ -1,0 +1,96 @@
+pipeline {
+	agent any
+
+	environment {
+
+	APP_NAME = "getting-started-app"
+	VERSION = "1.0.${env.BUILD_NUMBER}"
+	APP_PATH ="ITE/GCL3/JK422022/cwiczenia6_7/getting-started-app"
+	}
+
+	stages {
+		stage('Cleanup') {
+		steps {
+			echo 'START CLEANUP'
+			sh 'docker system prune -af || true'
+			sh 'docker rm -f czy-dziala || true'
+			}
+		}
+		stage('Build') {
+		steps {
+			echo 'START BUILD'
+			dir("${APP_PATH}") {
+			sh "docker build --target builder -t ${APP_NAME}:tester ."
+				}
+			}
+		}
+		stage('Test') {
+		steps {
+			echo 'START TEST'
+			sh "docker run --rm ${APP_NAME}:tester npx jest spec"
+			}
+		}
+		stage('Deploy') {
+    steps {
+        dir("${APP_PATH}") {
+
+            echo 'START DEPLOY'
+            echo 'BUDOWANIE KONTENERA'
+            sh "docker build -t ${APP_NAME}:${VERSION} ."
+
+            echo 'START KONTENERA'
+            sh "docker run -d --name czy-dziala -p 3000:3000 ${APP_NAME}:${VERSION}"
+
+            sh '''
+        
+                CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' czy-dziala)
+                echo "Prawdziwe IP kontenera to: $CONTAINER_IP"
+
+                 for i in $(seq 1 20); do
+                  echo "WYKONUJE $i probe"
+                  echo "CURL NA STRONE"
+                      
+                  if curl -f http://$CONTAINER_IP:3000; then 
+                    echo "APLIKACJA DZIALA"
+                    exit 0
+                  fi
+
+                  sleep 2
+                 done
+
+                  echo "APLIKACJA NIE DZIALA"
+                  docker logs czy-dziala
+                 docker rm -f czy-dziala
+                exit 1
+             '''
+            
+
+            echo 'SPRZATANIE'
+            sh "docker rm -f czy-dziala || true"
+        }
+    }
+}
+
+		stage('Publish') {
+		steps { 
+			echo 'START PUBLISH'
+				dir("${APP_PATH}") {
+                    sh "docker save ${APP_NAME}:${VERSION} > ${APP_NAME}-${VERSION}.tar"
+                    archiveArtifacts artifacts: '*.tar', fingerprint: true
+                }
+			}
+		}
+	}
+	post {
+		always {
+			cleanWs()
+		}
+		failure {
+			echo 'NIE POWODZENIE PIPELINU'
+		}
+		success {
+			echo 'POWODZENIE PIPELINU'
+		}
+	}
+}
+			
