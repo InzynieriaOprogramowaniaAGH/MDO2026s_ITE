@@ -105,7 +105,8 @@ Za drugim uruchomieniem tylko 3.4 s. Związane jest to z cachem - Docker ma wbud
 ![drugi pipeline](<Lab5/Zrzut ekranu 2026-06-28 192157.png>)  
 
 
-Opracowałam pdf z wymaganym wstępnym środowiskiemm diagramem aktywności oraz wdrożeniowym. ([pdf](vscode-local:/c%3A/Users/User/AppData/Roaming/Code/remote-clipboard/3215e392-1bcb-49bd-8629-e4bf668f2ea7/3dfdc3a5-74a5-4a92-8edd-2bcb86018b32/json_java_CI.pdf))  
+Opracowałam pdf z wymaganym wstępnym środowiskiemm diagramem aktywności oraz wdrożeniowym -> json_java_CI.pdf.  
+ 
 
 
 

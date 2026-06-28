@@ -1,14 +1,9 @@
 pipeline {
     agent any
     stages {
-        stage('Zadanie 1 - Uname') {
+        stage('Collect') {
             steps {
-                sh 'uname -a'
-            }
-        }
-        stage('Zadanie 3 - Docker Pull') {
-            steps {
-                sh 'docker pull ubuntu:latest'
+                checkout scm
             }
         }
     }
