@@ -1,0 +1,29 @@
+---
+- name: ANSIBLE
+  hosts: all
+  become: yes
+  tasks:
+    - name: PING
+      ansible.builtin.ping:
+
+    - name: COPY
+      ansible.builtin.copy:
+        src: inventory.ini
+        dest: /tmp/inventory.ini
+      when: "'Endpoints' in group_names"
+
+    - name: UPDATE
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: dist
+    
+    - name: RESET SSH
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+    - name: RESET RNGD
+
+      ansible.builtin.service:
+        name: rngd
+        state: restarted
+      ignore_errors: yes
