@@ -40,7 +40,7 @@ pipeline {
                             docker rm extract-container
 
                             mkdir -p target
-                            docker run --rm -v $(pwd):/app -w /app eclipse-temurin:17-jdk jar cvfe target/aplikacja.jar Main -C target/classes . -C target/classes org
+                            docker run --rm -v $(pwd):/app -w /app eclipse-temurin:17-jdk jar cvfe target/aplikacja.jar Main -C target/classes .
 
                             docker build -t app-deploy:latest -f Dockerfile.deploy .
                         
