@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    stages
+    {
+        stage('Checkout') 
+        {
+            steps 
+            {
+                git branch: 'LC417617', url: 'https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git'
+            }
+        }
+        stage('Build - Uname') 
+        {
+            steps
+            {
+                sh 'uname -a'
+            }
+        }
+        stage('Test - Godzina') 
+        {
+            steps 
+            {
+                sh '''
+                    HOUR=$(date +%H)
+                    echo "Aktualna godzina: $HOUR"
+                    if [ $((HOUR % 2)) -ne 0 ]; then
+                        echo "BŁĄD: Godzina jest nieparzysta, przerywam!"
+                        exit 1
+                    fi
+                '''
+            }
+        }
+        stage('Deploy - Docker Pull')
+        {
+            steps
+            {
+                sh 'docker pull ubuntu'
+            }
+        }
+    }
+}

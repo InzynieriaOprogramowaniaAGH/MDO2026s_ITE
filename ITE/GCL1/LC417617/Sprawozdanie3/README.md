@@ -989,3 +989,624 @@ Odpowiedzi modelu zostały zweryfikowane praktycznie podczas wykonywania zadania
 * uruchomienie artefaktu potwierdzono przez `docker ps -a`,
 * poprawność działania programu potwierdzono komunikatem `cJSON deploy smoke test passed`,
 * działania sekcji `%post` sprawdzono w pliku `/root/ks-post.log`.
+
+
+## Zajęcia 10 — Wdrażanie na zarządzalne kontenery: Kubernetes
+
+Celem zajęć było uruchomienie lokalnego klastra Kubernetes, przygotowanie obrazu kontenerowego aplikacji i wdrożenie jej w klastrze. Do wykonania zadania użyłem `minikube`, czyli prostego środowiska Kubernetes działającego lokalnie.
+
+W ramach zadania przygotowałem prostą aplikację HTTP opartą o `nginx`. Aplikacja miała dwie działające wersje oraz jedną wersję celowo błędną. Dzięki temu mogłem sprawdzić zwykłe wdrożenie, skalowanie, aktualizację obrazu, błąd wdrożenia oraz rollback.
+
+---
+
+### 1. Instalacja minikube
+
+Na początku zainstalowałem `minikube`, czyli lokalną implementację klastra Kubernetes. Klaster został uruchomiony z użyciem drivera Docker. Jest to wygodne rozwiązanie, ponieważ Docker był już dostępny w środowisku.
+
+Po instalacji sprawdziłem wersję minikube:
+
+```bash
+minikube version
+```
+
+Przygotowałem też alias do używania `kubectl` przez minikube:
+
+```bash
+alias minikubectl="minikube kubectl --"
+```
+
+Dzięki temu zamiast pisać za każdym razem:
+
+```bash
+minikube kubectl --
+```
+
+mogłem używać krótszej komendy:
+
+```bash
+minikubectl
+```
+
+![Instalacja minikube](./img/S10_02_instalacja_minikube.png)
+
+---
+
+### 2. Uruchomienie klastra Kubernetes
+
+Klaster Kubernetes uruchomiłem poleceniem:
+
+```bash
+minikube start --driver=docker --cpus=2 --memory=2200mb --disk-size=20g
+```
+
+W tym poleceniu ograniczyłem zasoby używane przez klaster:
+
+* `--cpus=2` — klaster korzysta z 2 rdzeni CPU,
+* `--memory=2200mb` — klaster ma przydzielone około 2,2 GB RAM,
+* `--disk-size=20g` — klaster ma dysk o rozmiarze 20 GB.
+
+Takie ustawienia pomagają ograniczyć problemy wynikające z wymagań sprzętowych. Kubernetes potrafi zużywać sporo zasobów, dlatego dobrze było od razu ustawić konkretne limity.
+
+![Uruchomienie minikube](./img/S10_03_minikube_start.png)
+
+Po uruchomieniu sprawdziłem stan klastra:
+
+```bash
+minikube status
+minikubectl get nodes -o wide
+minikubectl get pods -A
+```
+
+Polecenie `get nodes` pokazało działający węzeł klastra, a `get pods -A` pokazało pody systemowe uruchomione w Kubernetesie.
+
+![Węzły i pody systemowe](./img/S10_04_kubectl_nodes_pods.png)
+
+---
+
+### 3. Kubernetes Dashboard
+
+Następnie uruchomiłem Kubernetes Dashboard:
+
+```bash
+minikube dashboard --url
+```
+
+Dashboard został otwarty w przeglądarce. W panelu można było zobaczyć zasoby klastra, takie jak namespace, pody, deploymenty i serwisy.
+
+![Kubernetes Dashboard](./img/S10_05_dashboard.png)
+
+Dashboard był przydatny do graficznego sprawdzania, czy deploymenty i pody faktycznie działają w klastrze.
+
+---
+
+### 4. Przygotowanie obrazów aplikacji
+
+Na potrzeby zadania przygotowałem prostą aplikację HTTP. Aplikacja została oparta o `nginx:alpine` i wyświetlała prostą stronę HTML.
+
+Przygotowałem trzy wersje obrazu:
+
+* `lc417617-k8s-demo:v1` — pierwsza działająca wersja aplikacji,
+* `lc417617-k8s-demo:v2` — druga działająca wersja aplikacji,
+* `lc417617-k8s-demo:bad` — wersja celowo błędna, która kończy działanie błędem.
+
+Dla wersji `v1` i `v2` przygotowałem osobne pliki `index.html`. Różniły się one tekstem informującym o wersji aplikacji.
+
+Przykład zawartości strony dla wersji `v1`:
+
+```html
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>LC417617 Kubernetes v1</title>
+</head>
+<body>
+  <h1>LC417617 Kubernetes demo</h1>
+  <p>Wersja aplikacji: v1</p>
+  <p>Kontener dziala poprawnie w Kubernetes.</p>
+</body>
+</html>
+```
+
+Obrazy zostały zbudowane bezpośrednio w środowisku minikube:
+
+```bash
+minikube image build -t lc417617-k8s-demo:v1 Sprawozdanie3/Zajecia10/app/v1
+minikube image build -t lc417617-k8s-demo:v2 Sprawozdanie3/Zajecia10/app/v2
+minikube image build -t lc417617-k8s-demo:bad Sprawozdanie3/Zajecia10/app/bad
+```
+
+Następnie sprawdziłem listę obrazów:
+
+```bash
+minikube image ls | grep lc417617
+```
+
+![Lokalne obrazy w minikube](./img/S10_06_obrazy_lokalne.png)
+
+---
+
+### 5. Ręczne uruchomienie aplikacji jako pod
+
+Najpierw uruchomiłem aplikację ręcznie za pomocą `kubectl run`. Kubernetes automatycznie uruchomił kontener jako pod.
+
+```bash
+minikubectl run lc417617-manual \
+  --image=lc417617-k8s-demo:v1 \
+  --port=80 \
+  --labels app=lc417617-manual \
+  --image-pull-policy=Never
+```
+
+Użyłem `imagePullPolicy=Never`, ponieważ obraz był zbudowany lokalnie w minikube i nie musiał być pobierany z Docker Huba.
+
+Następnie sprawdziłem stan poda:
+
+```bash
+minikubectl get pods -o wide
+minikubectl describe pod lc417617-manual
+```
+
+![Manualnie uruchomiony pod](./img/S10_07_manualny_pod_run.png)
+
+Aby sprawdzić, czy aplikacja odpowiada, wykonałem przekierowanie portu:
+
+```bash
+minikubectl port-forward pod/lc417617-manual 8080:80
+```
+
+W drugim terminalu wykonałem test:
+
+```bash
+curl http://127.0.0.1:8080
+```
+
+W odpowiedzi pojawił się kod HTML strony z informacją:
+
+```html
+<p>Wersja aplikacji: v1</p>
+```
+
+To potwierdziło, że kontener działa poprawnie.
+
+![Port-forward do poda](./img/S10_08_port_forward_pod.png)
+
+---
+
+### 6. Deployment zapisany w pliku YAML
+
+Po ręcznym uruchomieniu aplikacji przygotowałem deployment zapisany w pliku YAML:
+
+```text
+Sprawozdanie3/Zajecia10/manifests/deployment-v1.yml
+```
+
+Deployment opisywał oczekiwany stan aplikacji. Początkowo ustawiłem 4 repliki:
+
+```yaml
+replicas: 4
+```
+
+oraz obraz:
+
+```yaml
+image: lc417617-k8s-demo:v1
+```
+
+Plik został zastosowany poleceniem:
+
+```bash
+minikubectl apply -f Sprawozdanie3/Zajecia10/manifests/deployment-v1.yml
+```
+
+Następnie sprawdziłem stan wdrożenia:
+
+```bash
+minikubectl rollout status deployment/lc417617-web
+minikubectl get deployment
+minikubectl get pods -l app=lc417617-web -o wide
+```
+
+![Deployment z pliku YAML](./img/S10_09_kubectl_apply_deployment.png)
+
+Deployment został też sprawdzony w Kubernetes Dashboard. Widać tam było deployment `lc417617-web` i jego pody.
+
+![Deployment w Dashboardzie](./img/S10_10_dashboard_deployment.png)
+
+---
+
+### 7. Service i przekierowanie portu
+
+Aby aplikacja była dostępna przez stabilny adres wewnątrz klastra, przygotowałem serwis w pliku:
+
+```text
+Sprawozdanie3/Zajecia10/manifests/service.yml
+```
+
+Serwis wybierał pody z etykietą:
+
+```yaml
+app: lc417617-web
+```
+
+Plik został zastosowany poleceniem:
+
+```bash
+minikubectl apply -f Sprawozdanie3/Zajecia10/manifests/service.yml
+```
+
+Następnie sprawdziłem serwis:
+
+```bash
+minikubectl get svc
+```
+
+Aby dostać się do aplikacji z lokalnej maszyny, wykonałem przekierowanie portu do serwisu:
+
+```bash
+minikubectl port-forward service/lc417617-web-service 8082:80
+```
+
+Test aplikacji:
+
+```bash
+curl http://127.0.0.1:8082
+```
+
+Aplikacja odpowiedziała stroną HTML, więc serwis działał poprawnie.
+
+![Service i port-forward](./img/S10_11_service_i_port_forward.png)
+
+---
+
+### 8. Skalowanie deploymentu
+
+Następnie sprawdziłem skalowanie aplikacji. Najpierw zwiększyłem liczbę replik do 8.
+
+Po zmianie wartości `replicas` w pliku YAML wykonałem:
+
+```bash
+minikubectl apply -f Sprawozdanie3/Zajecia10/manifests/deployment-v1.yml
+minikubectl rollout status deployment/lc417617-web
+minikubectl get deployment lc417617-web
+minikubectl get pods -l app=lc417617-web -o wide
+```
+
+Kubernetes uruchomił 8 replik aplikacji.
+
+![Skalowanie do 8 replik](./img/S10_12_scale_8_replik.png)
+
+Potem wykonałem kolejne zmiany liczby replik:
+
+* zmniejszenie do 1 repliki,
+* zmniejszenie do 0 replik,
+* ponowne zwiększenie do 4 replik.
+
+Po każdej zmianie używałem:
+
+```bash
+minikubectl apply -f Sprawozdanie3/Zajecia10/manifests/deployment-v1.yml
+minikubectl get deployment lc417617-web
+minikubectl get pods -l app=lc417617-web -o wide
+```
+
+Przy `0` replikach Kubernetes usunął pody aplikacji. Po powrocie do 4 replik pody zostały ponownie uruchomione.
+
+![Skalowanie 1, 0 i 4 repliki](./img/S10_13_scale_1_0_4.png)
+
+---
+
+### 9. Aktualizacja obrazu do wersji v2
+
+Kolejnym krokiem była aktualizacja aplikacji z wersji `v1` do `v2`.
+
+W pliku deploymentu zmieniłem obraz:
+
+```yaml
+image: lc417617-k8s-demo:v2
+```
+
+Następnie zastosowałem zmianę:
+
+```bash
+minikubectl apply -f Sprawozdanie3/Zajecia10/manifests/deployment-v1.yml
+minikubectl rollout status deployment/lc417617-web
+```
+
+Po zakończeniu rollouta ponownie wykonałem test przez `curl`. Aplikacja zwróciła stronę z informacją:
+
+```html
+<p>Wersja aplikacji: v2</p>
+```
+
+![Aktualizacja obrazu do v2](./img/S10_14_update_do_v2.png)
+
+Potem sprawdziłem również powrót do starszej wersji obrazu `v1`.
+
+![Powrót do wersji v1](./img/S10_23_powrot_do_v1.png)
+
+---
+
+### 10. Wdrożenie wadliwego obrazu
+
+Następnie przetestowałem wdrożenie błędnej wersji obrazu. W pliku deploymentu ustawiłem:
+
+```yaml
+image: lc417617-k8s-demo:bad
+```
+
+Ten obraz został przygotowany tak, aby kontener kończył działanie błędem. Dzięki temu można było zobaczyć, jak Kubernetes reaguje na wadliwy rollout.
+
+Po zastosowaniu pliku uruchomiłem:
+
+```bash
+minikubectl rollout status deployment/lc417617-web --timeout=60s
+```
+
+Następnie sprawdziłem stan deploymentu, podów i zdarzeń:
+
+```bash
+minikubectl get deployment lc417617-web
+minikubectl get pods -l app=lc417617-web -o wide
+minikubectl get events --sort-by=.lastTimestamp | tail -30
+```
+
+Wyniki pokazały, że nowa wersja ma problem z uruchomieniem. Był to oczekiwany efekt, ponieważ obraz `bad` był celowo błędny.
+
+![Wadliwy obraz](./img/S10_15_wadliwy_obraz.png)
+
+---
+
+### 11. Historia wdrożenia i rollback
+
+Po sprawdzeniu błędnej wersji użyłem historii rolloutów:
+
+```bash
+minikubectl rollout history deployment/lc417617-web
+```
+
+Następnie przywróciłem poprzednią działającą wersję:
+
+```bash
+minikubectl rollout undo deployment/lc417617-web
+minikubectl rollout status deployment/lc417617-web
+```
+
+Po rollbacku deployment wrócił do poprawnego stanu.
+
+![Historia rolloutów i rollback](./img/S10_16_rollout_history_undo.png)
+
+---
+
+### 12. Skrypt sprawdzający wdrożenie
+
+Przygotowałem prosty skrypt, który sprawdza, czy deployment zdążył się wdrożyć w ciągu 60 sekund.
+
+Plik skryptu:
+
+```text
+Sprawozdanie3/Zajecia10/scripts/wait-for-deployment.sh
+```
+
+Skrypt przyjmuje nazwę deploymentu, namespace i timeout. Domyślnie sprawdza deployment `lc417617-web` w namespace `default`.
+
+Najważniejsze polecenie w skrypcie to:
+
+```bash
+minikube kubectl -- -n "${NAMESPACE}" rollout status "deployment/${DEPLOYMENT}" --timeout="${TIMEOUT}"
+```
+
+Po pozytywnym zakończeniu skrypt pokazuje też stan deploymentu i listę podów.
+
+Uruchomienie:
+
+```bash
+Sprawozdanie3/Zajecia10/scripts/wait-for-deployment.sh
+```
+
+![Skrypt weryfikujący wdrożenie](./img/S10_17_skrypt_weryfikujacy.png)
+
+---
+
+### 13. Strategie wdrożenia: Recreate i RollingUpdate
+
+Przygotowałem dwa osobne pliki YAML pokazujące różne strategie wdrożenia.
+
+Pierwszy plik:
+
+```text
+Sprawozdanie3/Zajecia10/manifests/deployment-recreate.yml
+```
+
+używa strategii:
+
+```yaml
+strategy:
+  type: Recreate
+```
+
+W strategii `Recreate` Kubernetes najpierw usuwa stare pody, a dopiero potem uruchamia nowe. Jest to proste, ale może spowodować krótką przerwę w działaniu aplikacji.
+
+Drugi plik:
+
+```text
+Sprawozdanie3/Zajecia10/manifests/deployment-rolling.yml
+```
+
+używa strategii:
+
+```yaml
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 2
+    maxSurge: 50%
+```
+
+W strategii `RollingUpdate` Kubernetes stopniowo zastępuje stare pody nowymi. Dzięki temu aplikacja może działać podczas aktualizacji. Parametr `maxUnavailable: 2` pozwala, aby część podów była chwilowo niedostępna, a `maxSurge: 50%` pozwala utworzyć dodatkowe pody w czasie aktualizacji.
+
+Stan obu deploymentów został sprawdzony poleceniami:
+
+```bash
+minikubectl rollout status deployment/lc417617-recreate
+minikubectl rollout status deployment/lc417617-rolling
+minikubectl get deployment lc417617-recreate lc417617-rolling
+```
+
+![Strategie Recreate i RollingUpdate](./img/S10_18_strategie_recreate_rolling.png)
+
+---
+
+### 14. Canary Deployment
+
+Na końcu przygotowałem prosty wariant Canary Deployment. Został on zapisany w pliku:
+
+```text
+Sprawozdanie3/Zajecia10/manifests/canary.yml
+```
+
+Canary zostało wykonane jako dwa osobne deploymenty:
+
+* `lc417617-canary-stable` — 3 repliki wersji `v1`,
+* `lc417617-canary-new` — 1 replika wersji `v2`.
+
+Oba deploymenty miały wspólną etykietę:
+
+```yaml
+app: lc417617-canary
+```
+
+Dzięki temu jeden serwis mógł kierować ruch do obu wersji aplikacji.
+
+Dodatkowo pody miały etykietę z wersją:
+
+```yaml
+version: stable
+```
+
+albo:
+
+```yaml
+version: canary
+```
+
+Po zastosowaniu pliku sprawdziłem rollout obu deploymentów:
+
+```bash
+minikubectl rollout status deployment/lc417617-canary-stable
+minikubectl rollout status deployment/lc417617-canary-new
+```
+
+Następnie sprawdziłem pody i endpointy serwisu:
+
+```bash
+minikubectl get pods -l app=lc417617-canary -o wide --show-labels
+minikubectl get endpoints lc417617-canary-service
+```
+
+Test wykonany z wnętrza klastra pokazał odpowiedzi z obu wersji aplikacji, czyli `v1` i `v2`. Oznacza to, że prosty canary deployment działał poprawnie.
+
+![Canary Deployment](./img/S10_19_canary_deployment.png)
+
+---
+
+### 15. Przygotowane pliki
+
+W ramach zajęć przygotowałem następujące pliki:
+
+```text
+Sprawozdanie3/Zajecia10/app/bad/Dockerfile
+Sprawozdanie3/Zajecia10/app/v1/Dockerfile
+Sprawozdanie3/Zajecia10/app/v1/index.html
+Sprawozdanie3/Zajecia10/app/v2/Dockerfile
+Sprawozdanie3/Zajecia10/app/v2/index.html
+Sprawozdanie3/Zajecia10/manifests/canary.yml
+Sprawozdanie3/Zajecia10/manifests/deployment-recreate.yml
+Sprawozdanie3/Zajecia10/manifests/deployment-rolling.yml
+Sprawozdanie3/Zajecia10/manifests/deployment-v1.yml
+Sprawozdanie3/Zajecia10/manifests/service.yml
+Sprawozdanie3/Zajecia10/scripts/wait-for-deployment.sh
+```
+
+---
+
+### 16. Wnioski
+
+W ramach zajęć uruchomiłem lokalny klaster Kubernetes za pomocą minikube. Następnie przygotowałem prostą aplikację działającą w kontenerze i wdrożyłem ją w klastrze.
+
+Najważniejsze wykonane elementy to:
+
+* instalacja i uruchomienie minikube,
+* użycie `kubectl` przez minikube,
+* uruchomienie Kubernetes Dashboard,
+* przygotowanie własnego obrazu aplikacji,
+* ręczne uruchomienie poda,
+* przygotowanie deploymentu w pliku YAML,
+* wystawienie aplikacji przez service,
+* przekierowanie portu do poda i serwisu,
+* skalowanie liczby replik,
+* aktualizacja obrazu do nowej wersji,
+* test wadliwego obrazu,
+* rollback do poprzedniej wersji,
+* skrypt sprawdzający wdrożenie,
+* sprawdzenie strategii Recreate, RollingUpdate i Canary.
+
+Kubernetes różni się od zwykłego Dockera tym, że nie uruchamia tylko pojedynczego kontenera. W Kubernetesie opisuje się oczekiwany stan aplikacji, a klaster stara się ten stan utrzymać. Jeśli na przykład deployment ma mieć 4 repliki, Kubernetes pilnuje, aby tyle podów działało.
+
+---
+
+### 17. Użycie LLM
+
+Podczas wykonywania zadania korzystałem z pomocy LLM jako wsparcia przy części problemów technicznych i przy porządkowaniu opisu do sprawozdania. Odpowiedzi modelu nie były traktowane jako gotowe rozwiązanie bez sprawdzenia. Komendy były uruchamiane ręcznie w środowisku laboratoryjnym, a ich wyniki sprawdzałem w terminalu i w Kubernetes Dashboard.
+
+Przykładowe prompty, które mogły pojawić się podczas pracy:
+
+```text
+Jak zainstalować minikube na Ubuntu i uruchomić go z driverem Docker?
+```
+
+Ten prompt pomógł uporządkować początkową instalację minikube oraz sposób uruchomienia lokalnego klastra.
+
+```text
+Jak używać kubectl przez minikube, jeśli nie mam osobno zainstalowanego kubectl?
+```
+
+Tutaj pomocne było wskazanie wariantu `minikube kubectl --` oraz przygotowanie prostego aliasu `minikubectl`.
+
+```text
+Dlaczego kubectl port-forward pokazuje błąd address already in use i jak sprawdzić, co zajmuje port?
+```
+
+Ten prompt był przydatny przy problemach z zajętymi portami, między innymi `8081`, `8083` i `8084`. Pomógł dobrać komendy do sprawdzenia procesów i zwolnienia portów.
+
+```text
+Jak przygotować prosty obraz nginx z własnym plikiem index.html do testu w Kubernetes?
+```
+
+Ten prompt pomógł przy przygotowaniu prostej aplikacji HTTP w dwóch wersjach: `v1` i `v2`. Aplikacja działała jako serwer WWW, więc nadawała się do testu w Kubernetesie.
+
+```text
+Jak sprawdzić, czy deployment w Kubernetes poprawnie się wdrożył?
+```
+
+Tutaj pomocne były polecenia `kubectl rollout status`, `kubectl get deployment` i `kubectl get pods`.
+
+```text
+Jak zasymulować wadliwą wersję obrazu i potem wrócić do poprzedniej wersji deploymentu?
+```
+
+Ten prompt pomógł przy teście obrazu `bad`, analizie błędu i użyciu poleceń `kubectl rollout history` oraz `kubectl rollout undo`.
+
+```text
+Czym różni się Recreate od RollingUpdate w prostych słowach?
+```
+
+Ten prompt pomógł opisać różnice między strategiami wdrożenia prostym językiem.
+
+```text
+Jak zrobić prosty canary deployment w Kubernetes z dwiema wersjami aplikacji?
+```
+
+Ten prompt pomógł uporządkować canary deployment jako dwa deploymenty: stabilny `v1` i testowy `v2`, połączone jednym serwisem.
+
+LLM pomógł głównie w dobraniu kolejności kroków, wyjaśnieniu błędów i przygotowaniu prostych opisów. Samo wykonanie komend, sprawdzenie wyników, wykonanie screenów i weryfikacja działania aplikacji zostały wykonane w środowisku laboratoryjnym.
