@@ -2,47 +2,49 @@
 
 ## Zajęcia 01 - Git, SSH i przygotowanie repozytorium
 
-Celem pierwszych zajęć było przygotowanie środowiska do pracy z repozytorium GitHub. W ramach pracy skonfigurowano połączenie z maszyną wirtualną, sprawdzono dostęp przez SSH/SFTP, wygenerowano klucze SSH, dodano klucz publiczny do GitHuba oraz przygotowano własną gałąź do dalszej pracy.
+Celem pierwszych zajęć było przygotowanie środowiska do pracy z repozytorium GitHub. W ramach pracy sprawdziłem dostęp do maszyny wirtualnej, połączenie przez SSH i SFTP, skonfigurowałem narzędzia pomocnicze, wygenerowałem klucze SSH, dodałem klucz publiczny do GitHuba oraz przygotowałem własną gałąź do dalszej pracy.
 
 ---
 
 ### 1. Przygotowanie dostępu do maszyny wirtualnej
 
-Na początku przygotowałem połączenie z maszyną wirtualną. Do pracy używałem Visual Studio Code oraz rozszerzenia Remote - SSH, które pozwala wygodnie pracować na plikach znajdujących się na zdalnym systemie.
+Na początku sprawdziłem dostęp do maszyny wirtualnej. Po zalogowaniu do systemu można było wykonywać komendy bezpośrednio na Ubuntu i sprawdzić podstawowe informacje o maszynie, między innymi adres IP.
 
-![Przygotowanie VS Code i Remote SSH](./img/L0_Start.png)
+![Sprawdzenie maszyny i adresu IP](./img/L0_Start.png)
 
-Po skonfigurowaniu połączenia sprawdziłem, czy mogę zalogować się na maszynę przez SSH. Dzięki temu można było wykonywać komendy bezpośrednio na Ubuntu.
+Następnie sprawdziłem połączenie SSH z poziomu Windowsa. Po zaakceptowaniu hosta i wpisaniu hasła udało się zalogować na maszynę.
 
 ![Połączenie SSH z maszyną](./img/L0_Start_2.png)
 
-Dodatkowo sprawdziłem podstawowe informacje o połączeniu i adresie IP maszyny.
+Do pracy z plikami na zdalnej maszynie przygotowałem też Visual Studio Code z rozszerzeniem Remote - SSH.
 
-![Sprawdzenie połączenia i adresu IP](./img/L0_Start_3.png)
+![Instalacja rozszerzenia Remote SSH](./img/L0_Start_5_1.png)
+
+Po połączeniu przez Remote SSH mogłem pracować w VS Code bezpośrednio na plikach znajdujących się na maszynie wirtualnej.
+
+![Praca w VS Code przez SSH](./img/L0_Start_6.png)
 
 ---
 
 ### 2. Połączenie przez SFTP
 
-Oprócz pracy przez terminal sprawdziłem też połączenie przez FileZillę. Użyłem protokołu SFTP, żeby móc łatwiej przenosić pliki między komputerem lokalnym a maszyną wirtualną.
+Oprócz połączenia przez terminal sprawdziłem też dostęp przez FileZillę. Użyłem protokołu SFTP, żeby móc łatwiej przenosić pliki między komputerem lokalnym a maszyną wirtualną.
 
-![Konfiguracja połączenia SFTP](./img/L0_Start_4.png)
+![Konfiguracja połączenia SFTP](./img/L0_Start_3.png)
 
 Połączenie zostało nawiązane poprawnie, a po stronie zdalnej widoczny był katalog użytkownika.
 
-![Połączenie z katalogiem użytkownika](./img/L0_Start_5.png)
+![Połączenie z katalogiem użytkownika](./img/L0_Start_4.png)
 
 Następnie sprawdziłem listowanie katalogów i dostęp do plików na maszynie wirtualnej.
 
-![Widok katalogów przez FileZillę](./img/L0_Start_5_1.png)
+![Widok katalogów przez FileZillę](./img/L0_Start_5.png)
 
 ---
 
-### 3. Sprawdzenie pracy z terminalem
+### 3. Przygotowanie pracy z repozytorium
 
-Po poprawnym połączeniu można było pracować z terminalem na maszynie wirtualnej. W terminalu wykonywałem dalsze komendy związane z Gitem oraz konfiguracją repozytorium.
-
-![Terminal na maszynie wirtualnej](./img/L0_Start_6.png)
+Po sprawdzeniu dostępu do maszyny i narzędzi pomocniczych można było przejść do konfiguracji Gita, kluczy SSH oraz repozytorium. Dalsze komendy wykonywałem już w terminalu na maszynie wirtualnej.
 
 ---
 
@@ -184,6 +186,7 @@ Jak sprawdzić, czy obrazki w README mają poprawne ścieżki?
 ```
 
 Odpowiedzi zostały sprawdzone ręcznie przez porównanie z wykonanymi komendami oraz zrzutami ekranu.
+
 
 
 ## Zajęcia 02 - Docker i konteneryzacja
