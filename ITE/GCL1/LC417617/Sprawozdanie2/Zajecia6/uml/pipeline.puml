@@ -1,0 +1,24 @@
+@startuml
+start
+
+:Manual trigger albo commit;
+:Jenkins pobiera repozytorium;
+:Budowa obrazu testowego;
+:Uruchomienie testów cJSON;
+
+if (Testy OK?) then (tak)
+  :Budowa obrazu deploy;
+  :Uruchomienie smoke testu;
+  if (Smoke test OK?) then (tak)
+    :Zapis obrazu jako artefakt .tar;
+    :Zapis numeru builda i commita;
+    :Publikacja artefaktów w Jenkinsie;
+  else (nie)
+    :Przerwanie pipeline;
+  endif
+else (nie)
+  :Przerwanie pipeline;
+endif
+
+stop
+@enduml

@@ -1,50 +1,44 @@
 pipeline {
     agent any
-    
-    environment 
-    {
-        SCIEZKA_ROBOCZA = 'ITE/GCL1/LC417617/Sprawozdanie2/Zajecia6/cJSON'
-    }
 
     stages {
-        stage('Budowa i testy') 
-        {
-            steps 
-            {
-                dir(env.SCIEZKA_ROBOCZA) 
-                {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Budowa i testy') {
+            steps {
+                dir('ITE/GCL1/LC417617/Sprawozdanie2/Zajecia6/cJSON') {
                     sh 'docker build --target test -t cjson-app:test .'
                 }
             }
         }
-        
-        stage('Deploy') 
-        {
-            steps 
-            {
-                dir(env.SCIEZKA_ROBOCZA)
-                 {
+
+        stage('Deploy') {
+            steps {
+                dir('ITE/GCL1/LC417617/Sprawozdanie2/Zajecia6/cJSON') {
                     sh 'docker build --target deploy -t cjson-app:${BUILD_NUMBER} .'
                 }
             }
         }
-        
-        stage('Smoke Test') 
-        {
-            steps 
-            {
-                sh 'docker run --rm --name smoke_test_${BUILD_NUMBER} cjson-app:${BUILD_NUMBER}'
+
+        stage('Smoke Test') {
+            steps {
+                sh 'docker rm -f smoke_test || true'
+                sh 'docker run --rm --name smoke_test cjson-app:${BUILD_NUMBER}'
             }
         }
-        
-        stage('Publikacja artefaktu')
-        {
-            steps 
-            {
-                dir(env.SCIEZKA_ROBOCZA) 
-                {
-                    sh 'docker save -o cjson-artifact-${BUILD_NUMBER}.tar cjson-app:${BUILD_NUMBER}'
-                    archiveArtifacts artifacts: '*.tar', fingerprint: true
+
+        stage('Publikacja artefaktu') {
+            steps {
+                dir('ITE/GCL1/LC417617/Sprawozdanie2/Zajecia6/cJSON') {
+                    sh 'mkdir -p artifacts'
+                    sh 'docker save -o artifacts/cjson-artifact-${BUILD_NUMBER}.tar cjson-app:${BUILD_NUMBER}'
+                    sh 'git rev-parse HEAD > artifacts/git-commit-${BUILD_NUMBER}.txt'
+                    sh 'echo ${BUILD_NUMBER} > artifacts/build-number-${BUILD_NUMBER}.txt'
+                    archiveArtifacts artifacts: 'artifacts/*', fingerprint: true
                 }
             }
         }
