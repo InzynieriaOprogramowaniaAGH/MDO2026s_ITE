@@ -60,19 +60,7 @@ pipeline {
                     try {
                         echo "Verifying generated file output.json..."
                         sh '''
-                                ATTEMPTS=0
-                                MAX_ATTEMPTS=10
-                                
-                                until docker exec app-production-container test -f output.json; do
-                                    ATTEMPTS=$((ATTEMPTS+1))
-                                    if [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; then
-                                        echo "ERROR: Timed out waiting for output.json to be created!"
-                                        exit 1
-                                    fi
-                                    echo "Waiting for the result file... (Próba $ATTEMPTS/$MAX_ATTEMPTS)"
-                                    sleep 1
-                                done
-                                
+                                docker exec app-production-container test -f output.json
                                 echo "File output.json has been found! Running jq..."
                                 docker exec app-production-container jq -e '.status == "ok"' output.json
                             '''
