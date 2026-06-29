@@ -53,7 +53,8 @@ pipeline {
         }
         stage('Smoke Test'){
             steps{
-                dir('ITE/GCL1/MB421332/Sprawozdanie2'){
+                script{
+                    dir('ITE/GCL1/MB421332/Sprawozdanie2'){
                     echo "The app is running..."
                     sh 'docker logs app-production-container'
                     try {
@@ -63,6 +64,7 @@ pipeline {
                     } catch (Exception e) {
                         error("File output.json hasn't been created")
                     }
+                }
                 }
             }
         }
