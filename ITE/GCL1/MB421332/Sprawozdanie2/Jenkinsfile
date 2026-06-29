@@ -8,13 +8,25 @@ pipeline {
         }
         stage('Build') {
             steps{
-                sh 'docker build -t json-java-build:latest -f Dockerfile.builder .'
+                dir('ITE/GCL1/MB421332/Sprawozdanie2'){
+                    sh 'docker build -t json-java-build:latest -f Dockerfile.build .'
+                }
             }
         }
         stage('Test'){
             steps{
-                sh 'mvn test > test_results.log || true'
-                sh 'cat test_results.log'
+                dir('ITE/GCL1/MB421332/Sprawozdanie2'){
+                    sh '''
+                        docker build -t json-java-test:latest -f Dockerfile.test .
+                        docker run --name tester-run-${BUILD_NUMBER} json-java-test:latest
+                        docker cp tester-run-${BUILD_NUMBER}:/usr/src/mymaven/output.json ./output.json
+                    '''
+                }
+            }
+            post {
+                always {
+                    sh 'docker rm -f tester-run-${BUILD_NUMBER} || true'
+                }
             }
         }
     }

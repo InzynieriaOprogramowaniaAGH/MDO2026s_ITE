@@ -105,7 +105,7 @@ Za drugim uruchomieniem tylko 3.4 s. Związane jest to z cachem - Docker ma wbud
 ![drugi pipeline](<Lab5/Zrzut ekranu 2026-06-28 192157.png>)  
 
 
-Opracowałam pdf z wymaganym wstępnym środowiskiemm diagramem aktywności oraz wdrożeniowym -> json_java_CI.pdf.  
+Opracowałam pdf z wymaganym wstępnym środowiskiem diagramem aktywności oraz wdrożeniowym -> json_java_CI.pdf.  
  
 
 
@@ -125,4 +125,4 @@ Opracowałam pdf z wymaganym wstępnym środowiskiemm diagramem aktywności oraz
 AI używałam do rozwiązywania błędów oraz doprecyzowywania zagadnień, gdy nie rozumiałam w jaki sposób dane narzędzie działa:
 - Błędy związane z uruchomieniem docker pull
 - Jak działa cache w pipeline
-- 
+- Przekonwertuj tego jsona w stringa (przekazałam mu plik pobrany z internetu)
