@@ -33,7 +33,7 @@ public class Main {
             report.put("first_id_winner", chessJson.getJSONObject(0).getString("winner"));
         }
 
-        try(FileWriter file = new Filewiter("output.json")){
+        try(FileWriter file = new Filewriter("output.json")){
             file.write(report.toString(4));
             System.out.println("Success: File output.json has been created");
         } catch(IOException e){
