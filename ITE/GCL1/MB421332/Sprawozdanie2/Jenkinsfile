@@ -8,12 +8,13 @@ pipeline {
         }
         stage('Build') {
             steps{
-                sh 'docker build -t json-java-build:latest -f ITE/GCL1/MB421332/Sprawozdanie2/Dockerfile.builder .'
+                sh 'docker build -t json-java-build:latest -f Dockerfile.builder .'
             }
         }
         stage('Test'){
             steps{
-                echo 'test'
+                sh 'mvn test > test_results.log || true'
+                sh 'cat test_results.log'
             }
         }
     }
