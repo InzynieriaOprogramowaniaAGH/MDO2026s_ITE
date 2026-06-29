@@ -46,7 +46,7 @@ pipeline {
                         
                             docker stop app-production-container || true
                             docker rm app-production-container || true
-                            docker run --name app-production-container app-deploy:latest
+                            docker run --name app-production-container app-deploy:latest sh -c "java -jar app.jar; tail -f /dev/null"
                         '''
                 }
             }
