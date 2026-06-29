@@ -55,22 +55,40 @@ pipeline {
             steps{
                 script{
                     dir('ITE/GCL1/MB421332/Sprawozdanie2'){
-                    echo "The app is running..."
-                    sh 'docker logs app-production-container'
-                    try {
-                        echo "Verifying generated file output.json..."
-                        sh '''
-                                docker exec app-production-container test -f output.json
-                                echo "File output.json has been found! Running jq..."
-                                docker exec app-production-container jq -e '.status == "ok"' output.json
-                            '''
-                        sh 'docker cp app-production-container:/app/output.json ./output.json'
-                    } catch (Exception e) {
-                        error("File output.json hasn't been created")
+                        echo "The app is running..."
+                        sh 'docker logs app-production-container'
+                        try {
+                            echo "Verifying generated file output.json..."
+                            sh '''
+                                    docker exec app-production-container test -f output.json
+                                    echo "File output.json has been found! Running jq..."
+                                    docker exec app-production-container jq -e '.status == "ok"' output.json
+                                '''
+                            sh 'docker cp app-production-container:/app/output.json ./output.json'
+                        } catch (Exception e) {
+                            error("File output.json hasn't been created")
+                        }
                     }
                 }
+            }
+        }
+        stage('Publish'){
+            steps{
+                dir('ITE/GCL1/MB421332/Sprawozdanie2'){
+                    sh '''
+                            openssl genrsa -out private_key.pem 2048
+                            openssl dgst -sha256 -sign private_key.pem -out target/aplikacja.jar.sig target/aplikacja.jar
+                            
+                            echo "Artifact: JSON-java App with JQ verification" > target/metadata.txt
+                            echo "Jenkins build number: ${BUILD_NUMBER}" >> target/metadata.txt
+                            echo "Publication date: $(date)" >> target/metadata.txt
+                            echo "SHA256 checksum:" >> target/metadata.txt
+                            sha256sum target/aplikacja.jar >> target/metadata.txt
+                        '''
+                        archiveArtifacts artifacts: 'target/aplikacja.jar, target/*.sig, target/metadata.txt, output.json', fingerprint: true
                 }
             }
         }
     }
+    
 }
