@@ -105,8 +105,25 @@ Za drugim uruchomieniem tylko 3.4 s. Związane jest to z cachem - Docker ma wbud
 ![drugi pipeline](<Lab5/Zrzut ekranu 2026-06-28 192157.png>)  
 
 
-Opracowałam pdf z wymaganym wstępnym środowiskiem diagramem aktywności oraz wdrożeniowym -> json_java_CI.pdf.  
+Opracowałam pdf z wymaganym wstępnym środowiskiem do mojego projektu. Jest on związany z biblioteką JSON-java. W moim projekcie końcowym artefaktem będzie plik .jar z biblioteką i krótką aplikacją generującą plik JSON, w którym będą zapisane określone dane do weryfikacji, czy String poprawnie przekonwertował się do JSONa. W testach użyję narzędzia konsolowego *jq* do walidacji poprawności działania aplikacji.   
+
+![środowisko](<Lab5/Zrzut ekranu 2026-06-29 223626.png>)  
+
+Wykonałam diagramem aktywności.  
+
+![diagram aktywności](<Lab5/Zrzut ekranu 2026-06-29 223632.png>)  
+
+Oraz diagram wdrożeniowy.  
  
+![diagram wdrożeniowy](<Lab5/Zrzut ekranu 2026-06-29 223640.png>)  
+
+Na początku zdefiniowałam pierwszy krok pipeline'a *Collect*, dzięki któremu połączyłam się z repozytorium uczelnianym i dokonałam checkoutu pliku *Jenkinsfile*. Następnie napisałam odpowiednie pliki: Docker.build do kroku budowania, Docker.test do testowania, wcześniej opisaną krótką aplikację Main.java oraz bashowy skrypt jq_test, zapewniający weryfikację poprawności przekonwertowanego JSONa.  
+
+![Build&Test](<Lab5/Zrzut ekranu 2026-06-29 223640-1.png>)  
+
+Pipeline buduje się na dedykowanym DinD. Zapewnia to pełną izolację środowiska i bezpieczeństwo - gwarantuje build za każdym razem. Wadami jest jedynie sieciowy aspekt powiązany z koniecznością zarządzania certyfikatami TLS oraz wydajność. Gdyby z kolei kontener Jenkinsa współdzielił demona Dockera z hostem, zwiększyłaby się szybkość działania dzięki m.in. cache obrazów hosta. Wadą jest tu jednak kwestia bezpieczeństwa, gdyż wtedy kontener zyskuje uprawnienia roota na całym hoście (podatność na *code injection*).  
+
+
 
 
 
