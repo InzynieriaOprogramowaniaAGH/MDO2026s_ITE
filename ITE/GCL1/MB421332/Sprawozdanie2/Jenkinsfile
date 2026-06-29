@@ -51,5 +51,16 @@ pipeline {
                 }
             }
         }
+        stage('Smoke Test'){
+            echo "The app is running..."
+            sh 'docker logs app-production-container'
+            try {
+                echo "Verifying generated file output.json..."
+                sh "docker exec app-production-container jq -e '.status == \"ok\"' /app/output.json"
+                sh 'docker cp app-production-container:/app/output.json ./output.json'
+            } catch (Exception e) {
+                error("File output.json hasn't been created")
+            }
+        }
     }
 }
