@@ -29,5 +29,27 @@ pipeline {
                 }
             }
         }
+        stage('Deploy'){
+            steps{
+                dir('ITE/GCL1/MB421332/Sprawozdanie2'){
+                        sh '''
+                            docker create --name extract-container json-java-test:latest
+                            mkdir -p target/classes
+                            docker cp extract-container:/usr/src/mymaven/target/classes/org ./target/classes/
+                            docker cp extract-container:/usr/src/mymaven/Main.class ./target/classes/
+                            docker rm extract-container
+
+                            mkdir -p target
+                            docker run --rm -v $(pwd):/app -w /app eclipse-temurin:17-jdk jar cvfe target/aplikacja.jar Main -C target/classes . -C target/classes org
+
+                            docker build -t app-deploy:latest -f Dockerfile.deploy .
+                        
+                            docker stop app-production-container || true
+                            docker rm app-production-container || true
+                            docker run -d --name app-production-container app-deploy:latest
+                        '''
+                }
+            }
+        }
     }
 }
