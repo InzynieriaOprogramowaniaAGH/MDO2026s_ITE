@@ -46,7 +46,7 @@ pipeline {
                         
                             docker stop app-production-container || true
                             docker rm app-production-container || true
-                            docker run --name app-production-container app-deploy:latest
+                            docker run -d --name app-production-container app-deploy:latest
                         '''
                 }
             }
@@ -60,7 +60,6 @@ pipeline {
                     try {
                         echo "Verifying generated file output.json..."
                         sh '''
-                                sleep 15
                                 ATTEMPTS=0
                                 MAX_ATTEMPTS=10
                                 
