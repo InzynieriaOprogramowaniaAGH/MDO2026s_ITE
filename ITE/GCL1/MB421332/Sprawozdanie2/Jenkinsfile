@@ -90,5 +90,13 @@ pipeline {
             }
         }
     }
-    
+    post {
+        always {
+            dir('ITE/GCL1/MB421332/Sprawozdanie2') {
+                sh 'docker stop app-production-container || true'
+                sh 'docker rm app-production-container || true'
+                sh 'docker image prune -f'
+            }
+        }
+    }
 }
