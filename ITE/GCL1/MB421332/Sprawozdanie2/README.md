@@ -316,9 +316,48 @@ Pipeline zwrócił oczekiwany wynik. Po publishu dostępne są artefakty do pobr
 
 Kroki Jenkinsfile
 - Przepis dostarczam z SCM (krok *Collect*).
-- Przed każdym uruchomieniem kontenera produkcyjnego stosuję czyszczenie 
-![post clean](<Lab7/Zrzut ekranu 2026-06-30 163126.png>)
-- 
+- Przed każdym uruchomieniem kontenera produkcyjnego stosuję czyszczenie oraz po zakończeniu całego pipelinu również czyszczę kontener produkcyjny i wszytskie "wiszące" warstwy Docker.  
+![post clean](<Lab7/Zrzut ekranu 2026-06-30 163126.png>)  
+- Etap Build dysponuje repozytorium JSON-java i plikiem Dockerfile.build
+- Etap Build tworzy obraz buildowy json-java-build zawierający Mavena i JDK
+- Deploy nie jest wywodzony z obrazu Builda
+- Etap test przeprowadza testy jednostkowe z biblioteki oraz napisane przeze mnie *jq*.
+- Etap Deploy buduje obraz app-deploy:latest za pomocą Dockerfile.deploy, który bazuje na lekkim środowisku JRE. 
+- Etap Deploy uruchamia jako *detached* kontener produkcyjny app-deploy.
+- Etap Publish dodaje artefakt do historii builda.
+- Ponownie uruchomiony pipeline zwraca sukces.
+
+
+"Definition of done":
+- Tak, obraz produkcyjny app-deploy:latest został odizolowany od architektury Jenkinsa. Proces uruchomienia aplikacji jest zdefiniowany wewnątrz niego. Po wyeksportowaniu do zewnętrznego rejestru może zostać pobrany na dowolny komputer, generując od razu plik wynikowy, co udowadnia *Smoke Test*.
+- Tak, wyprodukowany przez potok artefakt to plik JAR, który może zostać uruchomiony na dowolnej maszynie zawierającej standardowe środowisko uruchomieniowe Java (wersja 17 lub nowsza).  
+
+<hr>
+Przygotowanie do zajęć: Ansible  
+
+Utworzyłam drugą maszynę wirtualną ubuntu server i zadbałam o obecność programu tar oraz serwera ssh.  
+
+![tar](<Lab7/Zrzut ekranu 2026-06-30 174736.png>)  
+
+Uruchomiłam serwer ssh.  
+
+![ssh server](<Lab7/Zrzut ekranu 2026-06-30 174835.png>)  
+
+Nadałam maszynie hostname ansible-target. Użytkownika utworzyłam przy instalacji, teraz dla wygody ustaliłam mu brak wymogu hasła przy poleceniach root.  
+
+![ansible-target](<Lab7/Zrzut ekranu 2026-06-30 180018.png>)  
+
+Zrobiłam migawkę systemu.  
+
+![migawka](<Lab7/Zrzut ekranu 2026-06-30 175548.png>)  
+
+Zainstalowałam ansible na głównej maszynie wirtualnej.  
+
+![ansible --v](<Lab7/Zrzut ekranu 2026-06-30 183414.png>)
+
+Wymieniłam klucz SSH tak, że logowanie przez ssh nie wymaga hasła.  
+
+![ansible ssh](<Lab7/Zrzut ekranu 2026-06-30 183418.png>)
 
 ## Promty AI
 AI używałam do rozwiązywania błędów oraz doprecyzowywania zagadnień, gdy nie rozumiałam w jaki sposób dane narzędzie działa:
