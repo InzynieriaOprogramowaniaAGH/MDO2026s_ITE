@@ -1,0 +1,91 @@
+# 1. Sanity check środowiska przed wdrożeniem
+- name: Sanity check - sprawdzenie dostępnego miejsca na dysku (min. 1GB)
+  ansible.builtin.assert:
+    that:
+      - (ansible_mounts | selectattr('mount', 'equalto', '/') | first).size_available > 1073741824
+    fail_msg: "Brak wystarczającej ilości miejsca na dysku!"
+  ignore_errors: true
+
+- name: Instalacja wymaganych pakietów systemowych
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - python3-pip
+    state: present
+    update_cache: yes
+
+- name: Dodanie klucza GPG Dockera
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Dodanie oficjalnego repozytorium Dockera
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+
+- name: Instalacja Docker Engine
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+    update_cache: yes
+
+- name: Upewnienie się, że usługa Docker jest uruchomiona
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Przygotowanie folderu na aplikację na maszynie docelowej
+  ansible.builtin.file:
+    path: /opt/my-app
+    state: directory
+    mode: '0755'
+
+- name: Wysłanie pliku binarnie (aplikacja.jar) ze struktury roli na maszynę docelową
+  ansible.builtin.copy:
+    src: aplikacja.jar
+    dest: /opt/my-app/app.jar
+    mode: '0755'
+
+- name: Oczyszczenie starego kontenera jeśli istniał
+  community.docker.docker_container:
+    name: app-production-container
+    state: absent
+
+- name: Uruchomienie kontenera Java i zamontowanie w nim przesłanego pliku JAR
+  community.docker.docker_container:
+    name: app-production-container
+    image: eclipse-temurin:17-jre
+    state: started
+    restart_policy: always
+    volumes:
+      - /opt/my-app:/app
+    working_dir: /app
+    command: 'sh -c "java -jar app.jar; tail -f /dev/null"'
+
+- name: Odczekanie 5 sekund na rozruch aplikacji
+  ansible.builtin.pause:
+    seconds: 5
+
+- name: Pobranie statusu działającego kontenera
+  community.docker.docker_container_info:
+    name: app-production-container
+  register: container_info
+
+- name: Weryfikacja czy kontener nie napotkał awarii i działa
+  ansible.builtin.assert:
+    that:
+      - container_info.container.State.Running == true
+    fail_msg: "Aplikacja z pliku JAR nie uruchomiła się poprawnie wewnątrz kontenera!"
+
+- name: Sprzątanie - usunięcie kontenera wdrożeniowego po udanym teście
+  community.docker.docker_container:
+    name: app-production-container
+    state: absent

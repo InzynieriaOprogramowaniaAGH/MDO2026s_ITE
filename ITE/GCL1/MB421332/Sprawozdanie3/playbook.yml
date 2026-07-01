@@ -1,0 +1,38 @@
+- name: Ping do wszystkich maszyn
+  hosts: all
+  become: true  
+  gather_facts: true 
+
+  tasks:
+    - name: Wysyłanie ping
+      ansible.builtin.ping:
+      become: false
+
+    - name: Kopiowanie pliku inwentaryzacji na endpointy
+      ansible.builtin.copy:
+        src: ./inventory
+        dest: /home/ansible/inventory_backup
+        owner: ansible
+        group: ansible
+        mode: '0644'
+      when: "'Endpoints' in group_names"
+
+    - name: Aktualizacja pakietów
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: safe
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian" and "Endpoints" in group_names
+
+    - name: Restart usługi sshd
+      ansible.builtin.systemd:
+        name: sshd
+        state: restarted
+      when: "'Endpoints' in group_names"
+
+    - name: Restart usługi rngd
+      ansible.builtin.systemd:
+        name: rngd
+        state: restarted
+      when: "'Endpoints' in group_names"
+      ignore_errors: true
