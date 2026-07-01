@@ -1,0 +1,7 @@
+- name: Wdrożenie aplikacji java-json za pomocą roli Docker
+  hosts: Endpoints
+  become: true
+  gather_facts: true
+
+  roles:
+    - docker_deploy

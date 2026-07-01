@@ -1,0 +1,82 @@
+- Ubuntu (ansible-target1, maszyna na Hyper-v)
+sudo hostnamectl set-hostname ansible-target1
+- Ubuntu (ansible-target2, maszyna na Hyper-v)
+sudo apt update
+sudo apt install tar -y
+tar --version
+echo "ansible ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ansible
+sudo apt install openssh-server -y
+sudo systemctl enable ssh
+sudo systemctl start ssh
+sudo hostnamectl set-hostname ansible-target
+sudo systemctl status ssh
+- Ubuntu (ansible-orchestrator, główna maszyna na Hyper-v)
+sudo hostnamectl set-hostname ansible-orchestrator
+ip a
+sudo nano /etc/hosts
+ssh-copy-id -i ~/.ssh/id_ed25519.pub ansible@ansible-target2
+ssh ansible@ansible-target2
+ssh ansible@ansible-target1
+mkdir lab8
+cd lab8
+nano inventory
+ansible all -i inventory -m ping
+nano playbook.yml
+ansible-playbook -i inventory playbook.yml
+sudo useradd -m -s /bin/bash ansible
+sudo passwd ansible
+echo "ansible ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ansible
+nano playbook.yml
+ansible-playbook -i inventory playbook.yml
+- Ubuntu (ansible-target1)
+sudo systemctl stop ssh
+sudo systemctl stop ssh.socet ssh
+- Ubuntu (ansible-orchestrator, główna maszyna na Hyper-v)
+ansible-playbook -i inventory playbook.yml
+ansible-galaxy role init docker_deploy
+cd docker_deploy
+cd meta
+nano main.yml
+cd ../
+cd tasks
+nano main.yml
+cd ../
+cd files
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie3/aplikacja.jar ./aplikacja.jar
+cd ../../
+nano java-json.yml
+ansible-playbook -i inventory java-json.yml
+ssh ansible@ansible-target1
+docker --version
+sudo docker ps -a
+ls -l /opt/my-app/
+cat /opt/my-app/output.json
+sudo docker run --rm -v /opt/my-app:/app -w /app eclipse-temurin:17-jre java -jar app.jar
+exit
+cp -r  docker_deploy/ /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie3/docker_deploy
+cp java-json.yml /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie3/java-json.yml
+LAB9: Automatyzacja i zdalne wykonywanie poleceń za pomocą Ansible
+mkdir ~/ks_folder
+cd ~/ks_folder
+python3 -m http.server 8000
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/anaconda-ks.cfg ./anaconda-ks.cfg
+python3 -m http.server 8000
+- Fedora (z aplikacją JSON-java)
+sudo cat /root/ks-post.log
+sudo systemctl status json-app.service
+sudo cat /root/ks-post.log
+LAB 10: Wdrażanie na zarządzalne kontenery: Kubernetes
+- Ubuntu (główna maszyna)
+kubectl --version
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+echo "alias minikubctl='minikube kubectl --'" >> ~/.bashrc
+source ~/.bashrc
+minikube start
+minikubctl config view
+minikubctl get nodes
+minikubctl create deployment test-nginx --image=nginx
+minikubctl get pods
+minikube dashboard

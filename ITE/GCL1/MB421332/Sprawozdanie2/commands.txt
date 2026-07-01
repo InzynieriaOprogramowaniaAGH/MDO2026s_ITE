@@ -1,0 +1,26 @@
+- Hyper-v (ubuntu-server)
+docker ps
+docker inspect --format='{{.State.Pid}}' 75bd40c70529
+kill -9 75bd40c70529
+docker run -d --name jenkins-blueocean --rm --network jenkins-net -p 8080:8080 -p 50000:50000 -e DOCKER_HOST=tcp://docker:2376 -e DOCKER_TLS_VERIFY=1 -e DOCKER_CERT_PATH=/certs/client -v jenkins-data:/var/jenkins_home -v jenkins-docker-certs:/certs/client:ro jenkins/jenkins:lts
+docker exec -it -u root jenkins-blueocean bash
+apt-get update && apt-get install -y docker.io
+exit
+- Hyper-v (ansible-target)
+sudo apt update
+sudo apt install tar -y
+tar --version
+sudo apt install openssh-server -y
+sudo systemctl enable ssh
+sudo systemctl start ssh
+sudo systemctl status ssh
+sudo hostnamectl set-hostname ansible-target
+echo "ansible ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ansible
+ip a
+- Hyper-v (ubuntu-server)
+sudo apt update
+sudo apt install ansible -y
+ansible --version
+sudo nano /etc/hosts
+ssh-copy-id -i ~/.ssh/id_ed25519.pub ansible@ansible-target
+ssh ansible@ansible-target

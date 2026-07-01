@@ -1,0 +1,10 @@
+FROM maven:3.9.6-eclipse-temurin-17
+RUN apt-get update && apt-get install -y git ca-certificates jq && rm -rf /var/lib/apt/lists/*
+WORKDIR /usr/src/mymaven
+RUN git clone https://github.com/stleary/JSON-java.git .
+RUN mvn compile
+COPY Main.java .
+COPY jq_test.sh .
+RUN javac -cp target/classes Main.java
+RUN chmod +x ./jq_test.sh
+CMD ["/bin/bash"]

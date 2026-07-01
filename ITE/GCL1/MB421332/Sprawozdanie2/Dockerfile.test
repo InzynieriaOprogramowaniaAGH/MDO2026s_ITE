@@ -1,0 +1,3 @@
+FROM json-java-build:latest
+WORKDIR /usr/src/mymaven
+CMD ["sh", "-c", "mvn test && java -cp .:target/classes Main && ./jq_test.sh"]

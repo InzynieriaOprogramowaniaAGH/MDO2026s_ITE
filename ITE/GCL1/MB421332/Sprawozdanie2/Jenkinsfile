@@ -1,0 +1,102 @@
+pipeline {
+    agent any
+    stages {
+        stage('Collect') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build') {
+            steps{
+                dir('ITE/GCL1/MB421332/Sprawozdanie2'){
+                    sh 'docker build -t json-java-build:latest -f Dockerfile.build .'
+                }
+            }
+        }
+        stage('Test'){
+            steps{
+                dir('ITE/GCL1/MB421332/Sprawozdanie2'){
+                    sh '''
+                        docker build -t json-java-test:latest -f Dockerfile.test .
+                        docker run --name tester-run-${BUILD_NUMBER} json-java-test:latest
+                        docker cp tester-run-${BUILD_NUMBER}:/usr/src/mymaven/output.json ./output.json
+                    '''
+                }
+            }
+            post {
+                always {
+                    sh 'docker rm -f tester-run-${BUILD_NUMBER} || true'
+                }
+            }
+        }
+        stage('Deploy'){
+            steps{
+                dir('ITE/GCL1/MB421332/Sprawozdanie2'){
+                        sh '''
+                            docker create --name extract-container json-java-test:latest
+                            mkdir -p target/classes
+                            docker cp extract-container:/usr/src/mymaven/target/classes/org ./target/classes/
+                            docker cp extract-container:/usr/src/mymaven/Main.class ./target/classes/
+                            docker rm extract-container
+
+                            mkdir -p target
+                            docker run --rm -v $(pwd):/app -w /app eclipse-temurin:17-jdk jar cvfe target/aplikacja.jar Main -C target/classes .
+
+                            docker build -t app-deploy:latest -f Dockerfile.deploy .
+                        
+                            docker stop app-production-container || true
+                            docker rm app-production-container || true
+                            docker run -d --name app-production-container app-deploy:latest sh -c "java -jar app.jar; tail -f /dev/null"
+                        '''
+                }
+            }
+        }
+        stage('Smoke Test'){
+            steps{
+                script{
+                    dir('ITE/GCL1/MB421332/Sprawozdanie2'){
+                        echo "The app is running..."
+                        sh 'docker logs app-production-container'
+                        try {
+                            echo "Verifying generated file output.json..."
+                            sh '''
+                                    docker exec app-production-container test -f output.json
+                                    echo "File output.json has been found! Running jq..."
+                                    docker exec app-production-container jq -e '.status == "ok"' output.json
+                                '''
+                            sh 'docker cp app-production-container:/app/output.json ./output.json'
+                        } catch (Exception e) {
+                            error("File output.json hasn't been created")
+                        }
+                    }
+                }
+            }
+        }
+        stage('Publish'){
+            steps{
+                dir('ITE/GCL1/MB421332/Sprawozdanie2'){
+                    sh '''
+                            openssl genrsa -out private_key.pem 2048
+                            openssl dgst -sha256 -sign private_key.pem -out target/aplikacja.jar.sig target/aplikacja.jar
+                            
+                            echo "Artifact: JSON-java App with JQ verification" > target/metadata.txt
+                            echo "Jenkins build number: ${BUILD_NUMBER}" >> target/metadata.txt
+                            echo "Publication date: $(date)" >> target/metadata.txt
+                            echo "SHA256 checksum:" >> target/metadata.txt
+                            sha256sum target/aplikacja.jar >> target/metadata.txt
+                        '''
+                        archiveArtifacts artifacts: 'target/aplikacja.jar, target/*.sig, target/metadata.txt, output.json', fingerprint: true
+                }
+            }
+        }
+    }
+    post {
+        always {
+            dir('ITE/GCL1/MB421332/Sprawozdanie2') {
+                sh 'docker stop app-production-container || true'
+                sh 'docker rm app-production-container || true'
+                sh 'docker image prune -f'
+            }
+        }
+    }
+}

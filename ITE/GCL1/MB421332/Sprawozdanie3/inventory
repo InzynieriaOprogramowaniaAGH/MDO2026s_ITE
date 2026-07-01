@@ -1,0 +1,8 @@
+[Orchestrators]
+ansible-orchestrator ansible_connection=local ansible_become=false
+
+[Endpoints]
+ansible-target1 ansible_user=ansible
+ansible-target2 ansible_user=ansible
+
+[Endpoints:vars]

@@ -1,0 +1,208 @@
+LAB1: Wprowadzenie, Git, Gałęzie, SSH
+- Windows PowerShell
+Set-Service -Name ssh-agent -StartupType Automatic
+Start-Service ssh-agent
+- Hyper-v
+sudo apt update && sudo apt install avahi-daemon avahi-utils
+- VS Code SSH
+git clone https://github.com/InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519
+cat ~/.ssh/id_ed25519.pub
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_with_pass
+cat ~/.ssh/id_ed25519_with_pass.pub
+ls
+ssh -i ~/.ssh/id_ed25519_with_pass -T git@github.com
+ssh -i ~/.ssh/id_ed25519_with_pass -T git@github.com
+git remote -v
+git config --global user.email "madziabiskup89@gmail.com"
+git config --global user.name "mbism"
+git remote set-url origin git@github.com:InzynieriaOprogramowaniaAGH/MDO2026s_ITE.git
+git remote -v
+ssh-add -D
+ssh -vT git@github.com
+hostname -I
+cd MDO2026s_ITE
+git checkout main
+git pull
+git checkout -b MB421332
+mkdir ITE
+cd ITE
+mkdir GCL1
+cd GCL1
+mkdir MB421332
+cd MB421332
+cd ../../../
+ls -l .git/hooks/
+nano .git/hooks/commit-msg.sample
+mv .git/hooks/commit-msg.sample .git/hooks/commit-msg.
+ls -l .git/hooks/
+mv .git/hooks/commit-msg. .git/hooks/commit-msg
+ls -l .git/hooks/
+chmod +x .git/hooks/commit-msg
+cat .git/hooks/commit-msg 
+git status
+git add .
+git commit -m "TEST"
+git commit -m "MB421332: TEST git hooka"
+git push
+
+
+LAB2: Git, Docker
+sudo apt docker
+sudo apt install docker.io docker-compose-v2 -y
+sudo usermod -aG docker $USER
+docker --version
+docker-compose --version
+groups
+docker ps
+docker container prune
+docker ps -a
+docker pull hello-world:linux
+docker run hello-world:linux
+docker ps -as
+docker images
+docker pull busybox:unstable-uclibc
+docker run busybox:unstable-uclibc
+docker ps -as
+docker images
+docker pull ubuntu:stonking
+docker run ubuntu:stonking
+docker ps -as
+docker images
+docker pull mariadb:13.0.1-rc
+docker run mariadb:13.0.1-rc
+docker ps -as
+docker images
+docker pull node:trixie
+docker run node:trixie
+docker ps -as
+docker images
+docker pull jetbrains/runtime:oraclelinux8_x64
+docker run jetbrains/runtime:oraclelinux8_x64
+docker ps -as
+docker images
+docker pull eclipse/aspnet:latest
+docker run eclipse/aspnet:latest
+docker ps -as
+docker images
+docker inspect --format='{{.State.ExitCode}}' d54c52d3a4f9
+docker pull oryd/sdk:latest
+docker run oryd/sdk:latest
+docker ps -as
+docker images
+docker ps
+docker stop d54c52d3a4f9
+sudo dmesg | grep -i apparmor
+docker inspect --format='{{.State.Pid}}' d54c52d3a4f9
+kill -9 11200
+docker ps
+docker inspect --format='{{.State.Pid}}' fecabe593739
+kill -9 11608
+docker inspect --format='{{.State.Pid}}' 0f0d124b13ee 
+kill -9 11200
+docker run busybox:unstable-uclibc 
+docker ps -a
+docker run -it busybox:unstable-uclibc sh
+busybox --version
+exit
+cd ../
+mkdir lab2
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/Dockerfile ./lab2/Dockerfile
+cd lab2
+docker build -t moj-kontener .
+docker run --rm -it moj-kontener
+git --version
+ls -la
+docker ps -a
+exit
+docker container prune
+docker ps -a
+
+LAB3: Dockerfiles, kontener jako definicja etapu
+mkdir lab3
+cd lab3
+git clone https://github.com/stleary/JSON-java.git
+cd JSON-java
+docker run --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.9.6-eclipse-temurin-17 mvn compile
+docker run --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.9.6-eclipse-temurin-17 mvn test
+docker run -it --name json-java maven:3.9.6-eclipse-temurin-17 bash
+apt-get update && apt-get install -y git
+git clone https://github.com/stleary/JSON-java.git
+cd JSON-java
+mvn compile
+mvn test
+exit
+cd ../
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/Dockerfile.build ./Dockerfile.build
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/Dockerfile.test ./Dockerfile.test
+docker build -f Dockerfile.build -t json-java-build .
+docker build -f Dockerfile.test -t json-java-test .
+docker run --rm json-java-test
+mkdir dyskusja
+cd dyskusja
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/dyskusja/Dockerfile ./Dockerfile
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/dyskusja/docker-compose.yml ./docker-compose.yml
+docker-compose up --build
+
+LAB4: Dodatkowa terminologia w konteneryzacji, instancja Jenkins
+mkdir lab4
+cd lab4
+mkdir wolumin_we
+cd wolumin_we
+git clone https://github.com/stleary/JSON-java.git
+docker volume create wolumin-wy
+docker run -it --rm -v "$(pwd)/wolumin_we/JSON-java":/app -v wolumin_wy:/app/target -w /app maven:3.9.6-eclipse-temurin-17 bash
+git --version
+apt-get remove -y git git-man && apt-get autoremove -y
+git --version
+mvn package -DskipTests
+exit
+docker run --rm -v wolumin_wy:/target alpine ls -la /target
+docker volume create wolumin_we
+docker run -it -v wolumin_we:/app -v wolumin_wy:/app/target -w /app maven:3.9.6-eclipse-temurin-17 bash
+git --version
+mvn package -DskipTests
+exit
+docker run -d --name iperf-server networkstatic/iperf3 -s
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iperf-server
+docker run --rm networkstatic/iperf3 -c 172.17.0.2
+docker network create my-network
+docker run -d --name iperf-net-server --network my-network networkstatic/iperf3 -s
+docker run --rm --network my-network networkstatic/iperf3 -c iperf-net-server
+docker run -d --name iperf-public-server -p 5201:5201 networkstatic/iperf3 -s
+iperf3 -c 127.0.0.1
+sudo apt install iperf3
+iperf3 -c 127.0.0.1
+iperf3 -c 172.22.165.111
+- Hyper-v
+ip a
+iperf3 -c 172.22.165.111
+- VS Code SSH
+docker logs iperf-public-server  > logi_iperf.txt
+cat logi_iperf.txt
+cp /home/mbism/MDO2026s_ITE/ITE/GCL1/MB421332/Sprawozdanie1/Dockerfile ./Dockerfile
+docker build -t ssh-container .
+docker run -d --name my-ssh -p 2222:22 ssh-container
+ssh root@127.0.0.1 -p 2222
+exit
+docker network create jenkins-net
+docker volume create jenkins-docker-certs
+docker volume create jenkins-data
+docker run -d --name jenkins-docker --rm --privileged --network jenkins-net --network-alias docker --env DOCKER_TLS_CERTDIR=/certs -v jenkins-docker-certs:/certs/client -v jenkins-data:/var/jenkins_home docker:dind --storage-driver overlay2
+docker run -d --name jenkins-server --rm --network jenkins-net -p 8080:8080 -p 50000:50000 -e DOCKER_HOST=tcp://docker:2376 -e DOCKER_TLS_VERIFY=1 -e DOCKER_CERT_PATH=/certs/client -v jenkins-data:/var/jenkins_home -v jenkins-docker-certs:/certs/client:ro jenkins/jenkins:lts
+docker ps
+docker logs jenkins-server
+docker ps
+docker inspect --format='{{.State.Pid}}' 692369043b46
+kill -9 20059
+docker inspect --format='{{.State.Pid}}' 70df8cccbe6f
+kill -9 15067
+docker inspect --format='{{.State.Pid}}' af9af3a40881
+kill -9 3859
+docker inspect --format='{{.State.Pid}}' a91eae2bb9dc
+kill -9 5920
+docker inspect --format='{{.State.Pid}}' 763c3e9c0040
+kill -9 13296
+docker inspect --format='{{.State.Pid}}' b8a9ff4edefa
+kill -9 5139
+docker logs jenkins-server
