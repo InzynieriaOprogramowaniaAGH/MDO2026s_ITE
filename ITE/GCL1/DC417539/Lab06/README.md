@@ -35,13 +35,13 @@ Planowany pipeline CI/CD obejmuje następujące etapy:
 - [x] Przygotowano wersjonowanie obrazu deploy jako `axios-runtime:v1.20.0`.
 - [x] Przygotowano pliki `Jenkinsfile` i `Dockerfile.runtime`.
 
-### Elementy oczekujące na końcową weryfikację w Jenkinsie
+### Elementy zweryfikowane w Jenkinsie
 
-- [ ] Zweryfikowanie archiwizacji numerowanego logu `build-${BUILD_NUMBER}.log`.
-- [ ] Zweryfikowanie wdrożenia obrazu `axios-runtime:v1.20.0`.
-- [ ] Zweryfikowanie smoke testu kontenera runtime.
-- [ ] Zweryfikowanie publikacji `axios-1.20.0.tgz` jako artefaktu buildu.
-- [ ] Zweryfikowanie fingerprintu i pochodzenia artefaktu.
+- [x] Zweryfikowano archiwizację numerowanego logu `build-12.log` w Jenkinsie.
+- [x] Zweryfikowano wdrożenie obrazu `axios-runtime:v1.20.0` w pipeline Jenkins.
+- [x] Zweryfikowano smoke test – `Axios version: 1.20.0`.
+- [x] Zweryfikowano publikację `axios-1.20.0.tgz` jako artefaktu buildu #12.
+- [x] Zweryfikowano fingerprint oraz pochodzenie artefaktu na podstawie `build-info-12.txt`.
 - [x] Porównano przygotowaną implementację z diagramem UML i opisano różnice.
 
 ## Decyzja dotycząca forka repozytorium
