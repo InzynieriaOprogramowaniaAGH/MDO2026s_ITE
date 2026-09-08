@@ -1,0 +1,127 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build') {
+            steps {
+                sh '''#!/bin/bash
+set -eo pipefail
+mkdir -p logs
+exec > >(tee -a "logs/build-${BUILD_NUMBER}.log") 2>&1
+
+echo "===== BUILD #${BUILD_NUMBER} - Build ====="
+
+    docker build \
+      -f ITE/GCL1/DC417539/Lab03/Dockerfile.build \
+      -t axios-build:jenkins \
+      -t axios-build:v1.20.0 \
+      .
+'''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh '''#!/bin/bash
+set -eo pipefail
+mkdir -p logs
+exec > >(tee -a "logs/build-${BUILD_NUMBER}.log") 2>&1
+
+echo "===== BUILD #${BUILD_NUMBER} - Test ====="
+
+    docker build \
+      -f ITE/GCL1/DC417539/Lab03/Dockerfile.test \
+      -t axios-test:jenkins \
+      .
+
+    docker run --rm axios-test:jenkins
+'''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''#!/bin/bash
+set -eo pipefail
+mkdir -p logs
+exec > >(tee -a "logs/build-${BUILD_NUMBER}.log") 2>&1
+
+echo "===== BUILD #${BUILD_NUMBER} - Deploy ====="
+
+    rm -rf runtime-context
+    mkdir -p runtime-context
+
+    docker rm -f axios-deploy-pack 2>/dev/null || true
+
+    docker create \
+      --name axios-deploy-pack \
+      axios-build:v1.20.0 \
+      npm pack
+
+    docker start -a axios-deploy-pack
+
+    docker cp \
+      axios-deploy-pack:/opt/axios/axios-1.20.0.tgz \
+      runtime-context/axios-1.20.0.tgz
+
+    docker rm axios-deploy-pack
+
+    docker build \
+      -f ITE/GCL1/DC417539/Lab06/Dockerfile.runtime \
+      -t axios-runtime:v1.20.0 \
+      runtime-context
+
+    docker run --rm axios-runtime:v1.20.0
+'''
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                sh '''#!/bin/bash
+set -eo pipefail
+mkdir -p logs
+exec > >(tee -a "logs/build-${BUILD_NUMBER}.log") 2>&1
+
+echo "===== BUILD #${BUILD_NUMBER} - Publish ====="
+
+    rm -rf artifacts
+    mkdir -p artifacts
+
+    docker rm -f axios-publish 2>/dev/null || true
+
+    docker create \
+      --name axios-publish \
+      axios-build:v1.20.0 \
+      npm pack
+
+    docker start -a axios-publish
+
+    docker cp \
+      axios-publish:/opt/axios/axios-1.20.0.tgz \
+      artifacts/axios-1.20.0.tgz
+
+    docker rm axios-publish
+
+    {
+        echo "Axios version: 1.20.0"
+        echo "Jenkins build: ${BUILD_NUMBER}"
+        echo "Git commit: ${GIT_COMMIT:-unknown}"
+    } > "artifacts/build-info-${BUILD_NUMBER}.txt"
+'''
+
+                archiveArtifacts artifacts: 'artifacts/*',
+                                 fingerprint: true
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: "logs/build-${env.BUILD_NUMBER}.log",
+                             fingerprint: true,
+                             allowEmptyArchive: true
+        }
+    }
+}
