@@ -230,7 +230,7 @@ CMD ["/bin/bash"]
 Obraz zbudowano poleceniem:
 
 ```bash
-docker build -t s1-z02-repo:1.0 .
+docker build -t moj-test .
 ```
 
 ![Budowanie własnego obrazu](screenshots/S1_Z02_06_budowanie-wlasnego-obrazu.png)
@@ -240,7 +240,7 @@ docker build -t s1-z02-repo:1.0 .
 Następnie uruchomiono kontener w trybie interaktywnym:
 
 ```bash
-docker run --name s1-z02-wlasny -it s1-z02-repo:1.0
+docker run --name wlasny -it moj-test
 ```
 
 W kontenerze potwierdzono obecność repozytorium w katalogu:
@@ -316,7 +316,9 @@ git checkout v1.20.0
 
 ![Wybór wersji Axios](screenshots/S1_Z03_01_wybor-wersji-axios.png)
 
-Projekt wymagał nowszej wersji Node.js niż dostępna domyślnie w repozytorium Ubuntu. Do wykonania zadania wykorzystano Node.js `26.8.1`.
+Na hoście `server` wykorzystano Node.js `v22.23.2` oraz npm `10.9.8`.
+
+![Wersje Node.js i npm](screenshots/S1_Z03_02_node-npm-wersje.png)
 
 Zależności projektu zostały zainstalowane na podstawie pliku `package-lock.json`:
 
