@@ -1,0 +1,12 @@
+services:
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    image: axios-build:v1.20.0
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    image: axios-test:v1.20.0

@@ -1,0 +1,11 @@
+FROM node:26.8.1-bookworm
+
+WORKDIR /opt
+
+RUN git clone https://github.com/axios/axios.git
+
+WORKDIR /opt/axios
+
+RUN git checkout v1.20.0
+RUN npm ci
+RUN npm run build
