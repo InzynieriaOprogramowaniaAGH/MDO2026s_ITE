@@ -1,0 +1,20 @@
+@startuml
+start
+
+:Collect\n(checkout SCM);
+:Build;
+:Test;
+
+if (Testy zakończone sukcesem?) then (tak)
+  :Report\n(wyniki testów i logi);
+  :Deploy;
+  :Publish;
+  :Archiwizacja artefaktu;
+  stop
+else (nie)
+  :Report\n(logi błędu);
+  :Zakończenie pipeline jako FAILURE;
+  stop
+endif
+
+@enduml

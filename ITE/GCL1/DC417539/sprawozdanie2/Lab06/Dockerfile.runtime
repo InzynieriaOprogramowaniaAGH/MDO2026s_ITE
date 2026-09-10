@@ -1,0 +1,10 @@
+FROM node:26.8.1-bookworm-slim
+
+WORKDIR /app
+
+COPY axios-1.20.0.tgz .
+
+RUN npm init -y && \
+    npm install ./axios-1.20.0.tgz
+
+CMD ["node", "-e", "const axios = require('axios'); console.log('Axios version:', axios.VERSION);"]
