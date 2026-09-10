@@ -67,21 +67,10 @@ Lab01/commit-msg
 
 Sprawdzono działanie hooka dla nieprawidłowego komunikatu:
 
-```bash
-printf '%s\n' "Dodanie pliku" > /tmp/commit-message-test
-.git/hooks/commit-msg /tmp/commit-message-test
-echo "Kod zakończenia: $?"
-```
-
 Hook odrzucił komunikat i zwrócił kod zakończenia `1`.
 
-Następnie wykonano test z prawidłowym komunikatem:
 
-```bash
-printf '%s\n' "DC417539 Dodanie pliku" > /tmp/commit-message-test
-.git/hooks/commit-msg /tmp/commit-message-test
-echo "Kod zakończenia: $?"
-```
+Następnie wykonano test z prawidłowym komunikatem:
 
 Hook zaakceptował komunikat i zwrócił kod zakończenia `0`.
 
@@ -529,84 +518,86 @@ potwierdził poprawne działanie przygotowanej kompozycji.
 
 ## Zajęcia 04 — Dodatkowa terminologia w konteneryzacji, instancja Jenkins
 
-Celem zajęć było zapoznanie się z mechanizmami przechowywania danych pomiędzy kolejnymi uruchomieniami kontenerów, komunikacją sieciową kontenerów, uruchamianiem usług wewnątrz kontenera oraz przygotowaniem skonteneryzowanej instancji serwera Jenkins współpracującej z pomocniczym kontenerem Docker-in-Docker.
+Podczas zajęć sprawdzono działanie woluminów Docker, komunikację sieciową między kontenerami, uruchamianie usługi SSHD w kontenerze oraz przygotowano instancję Jenkins współpracującą z Docker-in-Docker.
 
 ### Zachowywanie stanu między kontenerami
 
-Do realizacji pierwszej części przygotowano dwa nazwane woluminy Docker: `lab04-input` oraz `lab04-output`. Wolumin wejściowy służył do przechowywania kodu źródłowego projektu Axios, natomiast wolumin wyjściowy przeznaczono na artefakty powstałe w wyniku budowania projektu.
+Utworzono dwa nazwane woluminy: `lab04-input` oraz `lab04-output`. Pierwszy służył do przechowywania kodu źródłowego Axios, a drugi do zapisywania wyników builda.
 
-Kontener bazowy używany wcześniej do budowania projektu zawierał program Git. Ponieważ w pierwszym wariancie zadania Git nie powinien być dostępny w kontenerze budującym, na bazie obrazu `axios-build:v1.20.0` przygotowano dodatkowy obraz `axios-build-nogit:v1.20.0`, z którego usunięto pakiety `git` oraz `git-man`. Jednocześnie zachowano dostępność Node.js oraz npm.
+Na podstawie wcześniejszego obrazu przygotowano również wersję bez programu Git. Dzięki temu kod mógł zostać pobrany przez osobny kontener i zapisany na woluminie, a kontener buildowy zajmował się tylko budowaniem projektu.
 
 ![Weryfikacja obrazu budującego bez programu Git](screenshots/S1_Z04_01_obraz-bez-git.png)
 
-W pierwszym wariancie klonowanie repozytorium zostało wykonane za pomocą kontenera pomocniczego posiadającego Git. Do kontenera podłączono wolumin `lab04-input`, a repozytorium `https://github.com/axios/axios.git` w wersji `v1.20.0` sklonowano bezpośrednio na ten wolumin. Takie rozwiązanie pozwoliło całkowicie oddzielić operację pobrania kodu od właściwego procesu budowania. Kontener wykonujący build nie posiadał programu Git, ale dzięki współdzielonemu woluminowi miał dostęp do wcześniej pobranych źródeł.
+Repozytorium Axios zostało sklonowane na wolumin `lab04-input` przy pomocy osobnego kontenera.
 
 ![Klonowanie repozytorium na wolumin wejściowy](screenshots/S1_Z04_02_klonowanie-na-wolumin-wejsciowy.png)
 
-W kontenerze budującym wykonano instalację zależności projektu oraz polecenie `npm run build`. Powstały katalog `dist` został następnie skopiowany na wolumin `lab04-output`. Po zakończeniu kontenera budującego uruchomiono nowy kontener z podłączonym wyłącznie woluminem wyjściowym. Artefakty nadal były dostępne, co potwierdziło trwałość danych zapisanych w nazwanym woluminie niezależnie od cyklu życia kontenera.
+Następnie wykonano build projektu, a katalog `dist` zapisano na woluminie `lab04-output`. Po uruchomieniu kolejnego kontenera dane nadal były dostępne, co potwierdziło trwałość named volume niezależnie od kontenera.
 
 ![Trwałość danych na woluminie wyjściowym](screenshots/S1_Z04_03_trwalosc-woluminu-wyjsciowego.png)
 
-Następnie doświadczenie powtórzono w drugim wariancie. Tym razem wykorzystano kontener posiadający Git, a polecenie `git clone` wykonano bezpośrednio wewnątrz niego. Repozytorium ponownie zapisano na woluminie wejściowym, wykonano build projektu i skopiowano wynik na wolumin wyjściowy. Potwierdzono obecność programu Git w kontenerze, poprawny adres repozytorium i wersję projektu oraz obecność artefaktów na woluminie `lab04-output`.
+Sprawdzono również drugi wariant, w którym Git znajdował się bezpośrednio w kontenerze wykonującym build. Repozytorium zostało sklonowane, projekt zbudowany, a wynik ponownie zapisany na woluminie wyjściowym.
 
 ![Klonowanie wewnątrz kontenera i zapis wyniku budowania](screenshots/S1_Z04_04_git-wewnatrz-kontenera-i-build.png)
 
-Rozważono również możliwość realizacji podobnego procesu przy pomocy `docker build` oraz instrukcji `RUN --mount`. Mechanizm ten umożliwia tymczasowe zamontowanie danych podczas konkretnego kroku budowania obrazu, np. jako `type=bind`, `type=cache`, `type=secret` lub `type=ssh`. Nie jest on jednak bezpośrednim odpowiednikiem trwałego named volume wykorzystywanego podczas `docker run`. Do przekazywania wyników pomiędzy etapami budowania bardziej naturalne jest wykorzystanie wieloetapowego Dockerfile i instrukcji `COPY --from`.
-
 ### Eksponowanie portów i komunikacja między kontenerami
 
-Do testów komunikacji sieciowej przygotowano obraz `lab04-iperf:1.0` zawierający program `iperf3` oraz narzędzia `iproute2`. Pierwszy kontener uruchomiono jako serwer `iperf3`, a drugi jako klient.
+Do sprawdzenia komunikacji sieciowej wykorzystano `iperf3`.
 
-Początkowo oba kontenery korzystały z domyślnej sieci Docker `bridge`. Ustalono ich adresy IP i wykonano test połączenia z klienta do serwera po adresie IP. Dla pięciosekundowego testu uzyskano przepustowość około 25,8 Gbit/s.
+Najpierw dwa kontenery działały w domyślnej sieci `bridge`. Połączenie wykonano po adresie IP, uzyskując przepustowość około `25,8 Gbit/s`.
 
 ![Pomiar iperf3 w domyślnej sieci bridge](screenshots/S1_Z04_05_iperf-domyslna-siec-bridge.png)
 
-Następnie utworzono własną sieć mostkową `lab04-net` i podłączono do niej oba kontenery. W sieci użytkownika możliwe było wykorzystanie mechanizmu rozwiązywania nazw Dockera. Klient połączył się więc z serwerem za pomocą nazwy `lab04-iperf-server`, bez bezpośredniego podawania jego adresu IP. Pomiar w dedykowanej sieci wykazał przepustowość około 21,0 Gbit/s.
+Następnie utworzono własną sieć `lab04-net`. W tej sieci kontenery mogły komunikować się po nazwach, dlatego klient połączył się z serwerem jako `lab04-iperf-server`. Uzyskano około `21,0 Gbit/s`.
 
 ![Komunikacja po nazwie w dedykowanej sieci Docker](screenshots/S1_Z04_06_iperf-dedykowana-siec-po-nazwie.png)
 
-W kolejnym etapie port `5201` serwera `iperf3` został opublikowany na hoście. Z komputera znajdującego się poza maszyną `server` sprawdzono dostępność portu za pomocą PowerShell i `Test-NetConnection`. Uzyskany wynik `TcpTestSucceeded : True` potwierdził możliwość połączenia z usługą spoza hosta.
+Port `5201` został również opublikowany na hoście. Z komputera poza maszyną `server` sprawdzono jego dostępność przy pomocy `Test-NetConnection`.
 
 ![Połączenie do kontenera spoza hosta](screenshots/S1_Z04_07_polaczenie-spoza-hosta.png)
 
-Na hoście `server` zainstalowano również `iperf3` i wykonano właściwy pomiar host–kontener przez opublikowany port `5201`. Osiągnięto przepustowość około 17,7 Gbit/s.
+Na hoście wykonano także test `iperf3` do kontenera przez opublikowany port. Otrzymano wynik około `17,7 Gbit/s`.
 
 ![Pomiar przepustowości host-kontener](screenshots/S1_Z04_08_iperf-host-do-kontenera.png)
 
-Dodatkowo odczytano logi serwera `iperf3` bezpośrednio z kontenera. Widoczny był zaakceptowany klient oraz wynik ostatniego pomiaru z wartością około 17,7 Gbit/s. Wcześniejsze komunikaty o błędnych danych wynikały z testów samej dostępności portu wykonywanych bez użycia protokołu `iperf3`.
+Logi serwera `iperf3` potwierdziły wykonane połączenia i uzyskane wyniki.
 
 ![Log serwera iperf3](screenshots/S1_Z04_09_log-serwera-iperf.png)
 
+Najwyższy wynik uzyskano podczas komunikacji kontener-kontener w domyślnej sieci `bridge`. Nieco niższy wynik wystąpił w dedykowanej sieci Docker, a najniższy przy połączeniu host-kontener przez opublikowany port. Wszystkie warianty działały poprawnie.
+
 ### Usługa SSHD w kontenerze
 
-W kolejnym etapie przygotowano obraz oparty na Ubuntu 24.04 z zainstalowaną usługą `openssh-server`. Utworzono użytkownika testowego `labuser`, włączono możliwość uwierzytelniania hasłem, a proces `/usr/sbin/sshd -D` uruchomiono jako główny proces kontenera. Port `22` kontenera opublikowano na porcie `2222` hosta.
+Przygotowano obraz Ubuntu 24.04 z zainstalowanym `openssh-server`. W kontenerze utworzono użytkownika `labuser`, a port `22` udostępniono na porcie `2222` hosta.
 
-Z hosta wykonano połączenie:
+Połączenie wykonano poleceniem:
 
-`ssh -p 2222 labuser@127.0.0.1`
+```bash
+ssh -p 2222 labuser@127.0.0.1
+```
 
-Po zalogowaniu polecenia `whoami` i `hostname` potwierdziły, że sesja działa jako użytkownik `labuser` wewnątrz właściwego kontenera.
+Polecenia `whoami` oraz `hostname` potwierdziły, że połączenie działało wewnątrz właściwego kontenera.
 
 ![Połączenie SSH z kontenerem](screenshots/S1_Z04_10_sshd-polaczenie-do-kontenera.png)
 
-Uruchomienie SSHD w kontenerze może być przydatne w szczególnych przypadkach wymagających zdalnego dostępu administracyjnego i użycia istniejących narzędzi SSH. Podejście to ma jednak również wady: zwiększa rozmiar i złożoność obrazu, wymaga zarządzania użytkownikami, hasłami lub kluczami oraz zwiększa powierzchnię ataku. W typowym środowisku kontenerowym diagnostykę i administrację częściej wykonuje się przez `docker exec`, logi kontenera lub mechanizmy dostarczane przez orkiestrator.
+SSHD może być przydatny w niektórych przypadkach, ale w typowej pracy z kontenerami prostszym rozwiązaniem jest używanie `docker exec` oraz logów kontenera.
 
 ### Skonteneryzowana instancja Jenkins z Docker-in-Docker
 
-Ostatnim etapem było przygotowanie serwera Jenkins w środowisku kontenerowym. Utworzono dedykowaną sieć `jenkins` oraz trwałe woluminy `jenkins-data` i `jenkins-docker-certs`. Nazwy nie zostały powiązane wyłącznie z `Lab04`, ponieważ utworzona instancja Jenkins będzie wykorzystywana również podczas kolejnych zajęć.
+Na końcu przygotowano środowisko Jenkins działające w Dockerze. Utworzono sieć `jenkins` oraz woluminy na dane i certyfikaty.
 
-Jako pomocnika uruchomiono kontener `jenkins-docker` na obrazie `docker:dind`. Kontener pracuje w trybie uprzywilejowanym, wykorzystuje sterownik `overlay2` oraz udostępnia daemon Dockera w prywatnej sieci `jenkins`.
+Uruchomiono kontener `jenkins-docker` z obrazem `docker:dind`, który udostępnia daemon Dockera dla Jenkinsa.
 
-Dla właściwego Jenkinsa przygotowano własny obraz `myjenkins-blueocean:2.568.3-1` oparty na Jenkins LTS z JDK 21. Do obrazu doinstalowano Docker CLI oraz wymagane wtyczki Jenkinsa. Kontener `jenkins-blueocean` został uruchomiony w tej samej sieci co DIND i skonfigurowany do komunikacji z daemonem poprzez `DOCKER_HOST=tcp://docker:2376`. Port interfejsu WWW Jenkinsa został opublikowany jako `8080`, a port agentów jako `50000`.
+Właściwy Jenkins działał w kontenerze `jenkins-blueocean` na przygotowanym obrazie `myjenkins-blueocean:2.568.3-1`. Kontener został połączony z `jenkins-docker` i skonfigurowany do korzystania z jego daemona Docker.
 
 ![Działające kontenery Jenkins i Docker-in-Docker](screenshots/S1_Z04_11_jenkins-i-dind-kontenery.png)
 
-Poprawność połączenia pomiędzy kontenerami zweryfikowano, uruchamiając `docker info` wewnątrz kontenera Jenkins. Polecenie zwróciło zarówno część kliencką, jak i informacje o serwerze Docker działającym wewnątrz `jenkins-docker`, w tym wersję daemona i sterownik `overlay2`. Potwierdziło to, że Jenkins może korzystać z pomocniczego środowiska Docker-in-Docker.
+Połączenie sprawdzono przez wykonanie `docker info` wewnątrz kontenera Jenkins. Polecenie zwróciło informacje o daemonie działającym w `jenkins-docker`, co potwierdziło poprawną komunikację między kontenerami.
 
 ![Połączenie Jenkins z Docker-in-Docker](screenshots/S1_Z04_12_jenkins-polaczenie-z-dind.png)
 
-Po pierwszym uruchomieniu Jenkins został odblokowany hasłem inicjalizacyjnym, zainstalowano sugerowane wtyczki, utworzono konto administratora oraz skonfigurowano adres instancji. Po zakończeniu inicjalizacji uzyskano działający panel Jenkins. Po wylogowaniu wyświetlono właściwy ekran logowania pod adresem `http://172.28.157.163:8080/`.
+Po konfiguracji uzyskano działający panel Jenkins dostępny przez port `8080`.
 
 ![Ekran logowania Jenkins](screenshots/S1_Z04_13_jenkins-ekran-logowania.png)
 
-Instancja Jenkins, pomocniczy kontener `jenkins-docker`, sieć `jenkins` oraz woluminy z danymi i certyfikatami pozostawiono w systemie, ponieważ będą wykorzystywane podczas kolejnych zajęć.
+Instancję Jenkins oraz kontener Docker-in-Docker pozostawiono uruchomione, ponieważ były potrzebne podczas kolejnych zajęć.
