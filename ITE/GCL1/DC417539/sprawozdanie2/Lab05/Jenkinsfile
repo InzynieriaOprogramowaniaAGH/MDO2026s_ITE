@@ -1,0 +1,102 @@
+pipeline {
+    agent any
+
+    stages {
+    
+
+        stage('Build') {
+            steps {
+                sh '''
+                    docker build \
+                      -f ITE/GCL1/DC417539/Lab03/Dockerfile.build \
+                      -t axios-build:jenkins \
+                      -t axios-build:v1.20.0 \
+                      .
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh '''
+                    docker build \
+                      -f ITE/GCL1/DC417539/Lab03/Dockerfile.test \
+                      -t axios-test:jenkins \
+                      .
+
+                    docker run --rm axios-test:jenkins
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    rm -rf runtime-context
+                    mkdir -p runtime-context
+
+                    docker rm -f axios-deploy-pack 2>/dev/null || true
+
+                    docker create \
+                      --name axios-deploy-pack \
+                      axios-build:v1.20.0 \
+                      npm pack
+
+                    docker start -a axios-deploy-pack
+
+                    docker cp \
+                      axios-deploy-pack:/opt/axios/axios-1.20.0.tgz \
+                      runtime-context/axios-1.20.0.tgz
+
+                    docker rm axios-deploy-pack
+
+                    cat > runtime-context/Dockerfile <<'RUNTIME_EOF'
+FROM node:26.8.1-bookworm-slim
+
+WORKDIR /app
+
+COPY axios-1.20.0.tgz .
+
+RUN npm init -y && \
+    npm install ./axios-1.20.0.tgz
+
+CMD ["node", "-e", "const axios = require('axios'); console.log('Axios version:', axios.VERSION);"]
+RUNTIME_EOF
+
+                    docker build \
+                      -t axios-runtime:v1.20.0 \
+                      runtime-context
+
+                    docker run --rm axios-runtime:v1.20.0
+                '''
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                sh '''
+                    rm -rf artifacts
+                    mkdir -p artifacts
+
+                    docker rm -f axios-publish 2>/dev/null || true
+
+                    docker create \
+                      --name axios-publish \
+                      axios-build:v1.20.0 \
+                      npm pack
+
+                    docker start -a axios-publish
+
+                    docker cp \
+                      axios-publish:/opt/axios/axios-1.20.0.tgz \
+                      artifacts/axios-1.20.0.tgz
+
+                    docker rm axios-publish
+                '''
+
+                archiveArtifacts artifacts: 'artifacts/*.tgz',
+                                 fingerprint: true
+            }
+        }
+    }
+}

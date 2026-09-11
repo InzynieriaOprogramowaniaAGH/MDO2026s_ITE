@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: lab10-nginx-recreate
+
+spec:
+  replicas: 4
+
+  strategy:
+    type: Recreate
+
+  selector:
+    matchLabels:
+      app: lab10-nginx-recreate
+
+  template:
+    metadata:
+      labels:
+        app: lab10-nginx-recreate
+
+    spec:
+      containers:
+        - name: lab10-nginx
+          image: lab10-nginx:v2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+

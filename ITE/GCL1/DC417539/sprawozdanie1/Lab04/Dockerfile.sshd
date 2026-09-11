@@ -1,0 +1,15 @@
+FROM ubuntu:24.04
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /run/sshd
+
+RUN useradd -m -s /bin/bash labuser \
+    && echo 'labuser:lab04pass' | chpasswd
+
+RUN echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
+
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D"]

@@ -1,0 +1,23 @@
+@startuml
+title Planowany pipeline CI/CD dla Axios
+
+start
+
+:Commit / ręczne uruchomienie pipeline'u;
+
+:Clone / checkout repozytorium Axios;
+
+:Build Axios\nw kontenerze build;
+
+:Testy Axios\nw kontenerze testowym;
+
+:Utworzenie wersjonowanego\nkontenera deploy;
+
+:Uruchomienie kontenera deploy;
+
+:Smoke test Axios;
+
+:Publikacja artefaktów\n(.tgz, logi, informacje o buildzie);
+
+stop
+@enduml

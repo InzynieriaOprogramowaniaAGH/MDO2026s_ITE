@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab11-nginx
+spec:
+  replicas: 36
+  selector:
+    matchLabels:
+      app: lab11-nginx
+  template:
+    metadata:
+      labels:
+        app: lab11-nginx
+    spec:
+      containers:
+        - name: nginx
+          image: lab10-nginx:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80

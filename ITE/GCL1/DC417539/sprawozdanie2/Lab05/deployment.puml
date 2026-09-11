@@ -1,0 +1,32 @@
+@startuml
+
+node "Maszyna server" {
+  node "Jenkins container\njenkins-blueocean" {
+    component "Pipeline\nJenkinsfile" as pipeline
+    artifact "Workspace" as workspace
+  }
+
+  node "Docker-in-Docker\njenkins-docker" {
+    node "Builder\naxios-build:v1.20.0" as builder
+    node "Tester\naxios-test:jenkins" as tester
+    node "Runtime\naxios-runtime:v1.20.0" as runtime
+  }
+}
+
+cloud "GitHub\nMDO2026s_ITE" as github
+artifact "axios-1.20.0.tgz" as package
+artifact "Jenkins artifact archive" as archive
+
+github --> pipeline : checkout SCM
+pipeline --> builder : build
+builder --> tester : image bazowy
+tester --> pipeline : wyniki testów / logi
+
+builder --> package : npm pack
+package --> runtime : instalacja pakietu
+runtime --> pipeline : Axios version 1.20.0
+
+pipeline --> archive : archiveArtifacts
+package --> archive
+
+@enduml
