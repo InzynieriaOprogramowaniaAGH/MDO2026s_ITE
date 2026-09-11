@@ -215,17 +215,11 @@ Blue Ocean jest dodatkowym interfejsem Jenkinsa, który ułatwia przeglądanie i
 
 Przygotowano diagram aktywności procesu CI:
 
-```text
-activity.puml
-activity.png
-```
+![Diagram aktywności procesu CI](Lab05/activity.png)
 
 oraz diagram wdrożeniowy:
 
-```text
-deployment.puml
-deployment.png
-```
+![Diagram wdrożeniowy](Lab05/deployment.png)
 
 Diagram aktywności przedstawia przebieg:
 
@@ -339,6 +333,8 @@ W ramach zadania nie są modyfikowane źródła biblioteki Axios. Przygotowywane
 
 ## Kontener Deploy / Runtime
 
+
+
 Obraz Buildera nie został wykorzystany jako końcowy obraz deploy.
 
 Zawiera on pełne repozytorium, zależności oraz narzędzia potrzebne podczas budowania i testowania, które nie są wymagane w środowisku wykonawczym.
@@ -370,6 +366,14 @@ axios-1.20.0.tgz
 a następnie instalowany przy użyciu `npm`.
 
 Takie rozwiązanie rozdziela środowisko budowania od środowiska uruchomieniowego i pozwala sprawdzić, czy przygotowany artefakt może zostać wykorzystany niezależnie od obrazu Buildera.
+
+
+## Uzasadnienie formy Deploy
+
+Axios jest biblioteką npm, a nie samodzielną aplikacją serwerową. Z tego powodu etap Deploy nie polega na uruchomieniu usługi dostępnej na konkretnym porcie. Zamiast tego przygotowany pakiet axios-1.20.0.tgz jest instalowany w osobnym, czystym środowisku runtime.
+
+Takie rozwiązanie pozwala sprawdzić, czy artefakt przygotowany w etapie Build może zostać poprawnie wykorzystany poza środowiskiem Buildera. Uruchomienie obrazu i odczyt wersji Axios pełni rolę prostego smoke testu wdrożenia.
+
 
 ## Lokalna weryfikacja Deploy
 
@@ -438,6 +442,12 @@ build-info-12.txt
 Pakiet `axios-1.20.0.tgz` jest końcowym artefaktem przeznaczonym do dalszej dystrybucji projektu.
 
 ![Artefakty buildu 12](screenshots/S2_Z06_02_build12-artifacts.png)
+
+## Uzasadnienie formy Publish
+
+Końcowym artefaktem wybrano pakiet axios-1.20.0.tgz, ponieważ Axios jest biblioteką przeznaczoną do instalowania jako zależność npm. Taki format odpowiada sposobowi, w jaki biblioteka może być później przekazana i wykorzystana przez użytkownika lub inne środowisko.
+
+Obraz axios-runtime służy jedynie do sprawdzenia poprawności wdrożenia, dlatego nie jest traktowany jako główny artefakt publikacji. Właściwym wynikiem pipeline'u jest paczka npm archiwizowana przez Jenkins.
 
 ## Numerowane logi
 
@@ -511,7 +521,6 @@ Axios version: 1.20.0
 
 Poprawne wykonanie etapu `Deploy` oraz całego buildu numer 12 potwierdza działanie przygotowanego obrazu runtime.
 
-Nie przygotowywano osobnego zrzutu ekranu dla tego kroku, ponieważ poprawne wykonanie całego etapu `Deploy` jest widoczne na zrzucie przedstawiającym zakończony sukcesem pipeline, natomiast użyta wersja Axios została dodatkowo zapisana w `build-info-12.txt`.
 
 ## Porównanie UML z implementacją
 
