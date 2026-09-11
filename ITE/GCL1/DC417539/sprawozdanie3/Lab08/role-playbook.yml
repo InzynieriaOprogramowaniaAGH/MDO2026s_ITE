@@ -1,0 +1,7 @@
+---
+- name: Wdrozenie Axios za pomoca roli Ansible
+  hosts: Endpoints
+  become: true
+
+  roles:
+    - axios_deploy

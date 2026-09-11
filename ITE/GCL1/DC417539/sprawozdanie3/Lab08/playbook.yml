@@ -1,0 +1,183 @@
+---
+- name: Test lacznosci ze wszystkimi maszynami
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Ping
+      ansible.builtin.ping:
+
+- name: Kopiowanie inventory na maszyny Endpoints
+  hosts: Endpoints
+  gather_facts: false
+
+  tasks:
+    - name: Skopiuj plik inventory
+      ansible.builtin.copy:
+        src: inventory.ini
+        dest: /home/ansible/inventory.ini
+        mode: "0644"
+
+- name: Aktualizacja pakietow na maszynach Endpoints
+  hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Aktualizuj cache APT
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Aktualizuj zainstalowane pakiety
+      ansible.builtin.apt:
+        upgrade: dist
+
+
+- name: Instalacja i restart wymaganych uslug
+  hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Zainstaluj rng-tools5
+      ansible.builtin.apt:
+        name: rng-tools5
+        state: present
+
+    - name: Zrestartuj usluge SSH
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+
+    - name: Zrestartuj usluge rngd
+      ansible.builtin.service:
+        name: rngd
+        state: restarted
+
+- name: Przygotowanie artefaktu na maszynie docelowej
+  hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Utworz katalog dla aplikacji
+      ansible.builtin.file:
+        path: /opt/axios-app
+        state: directory
+        owner: ansible
+        group: ansible
+        mode: "0755"
+
+    - name: Wyslij artefakt Axios
+      ansible.builtin.copy:
+        src: artifacts/axios-1.20.0.tgz
+        dest: /opt/axios-app/axios-1.20.0.tgz
+        owner: ansible
+        group: ansible
+        mode: "0644"
+
+- name: Instalacja i uruchomienie Dockera
+  hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Zainstaluj Docker
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+
+    - name: Uruchom i wlacz usluge Docker
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+
+- name: Przygotowanie kontenera Axios
+  hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Wyslij Dockerfile
+      ansible.builtin.copy:
+        src: Dockerfile
+        dest: /opt/axios-app/Dockerfile
+        owner: ansible
+        group: ansible
+        mode: "0644"
+
+    - name: Wyslij skrypt weryfikacyjny
+      ansible.builtin.copy:
+        src: verify-axios.js
+        dest: /opt/axios-app/verify-axios.js
+        owner: ansible
+        group: ansible
+        mode: "0644"
+
+- name: Sanity check przed wdrozeniem
+  hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Sprawdz czy Docker dziala
+      ansible.builtin.command: docker info
+      register: docker_check
+      changed_when: false
+      failed_when: false
+
+    - name: Sprawdz czy artefakt istnieje
+      ansible.builtin.stat:
+        path: /opt/axios-app/axios-1.20.0.tgz
+      register: artifact_check
+
+    - name: Pokaz wynik sanity check
+      ansible.builtin.debug:
+        msg:
+          - "Docker dostepny: {{ docker_check.rc == 0 }}"
+          - "Artefakt istnieje: {{ artifact_check.stat.exists }}"
+
+- name: Budowanie obrazu Axios
+  hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Zbuduj obraz kontenera Axios
+      ansible.builtin.command:
+        cmd: docker build -t axios-artifact:1.20.0 /opt/axios-app
+      register: docker_build
+
+- name: Uruchomienie i weryfikacja kontenera Axios
+  hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Uruchom kontener Axios
+      ansible.builtin.command:
+        cmd: docker run --rm --name axios-verification axios-artifact:1.20.0
+      register: axios_container
+      changed_when: false
+
+    - name: Pokaz wynik dzialania Axios
+      ansible.builtin.debug:
+        var: axios_container.stdout_lines
+
+- name: Czyszczenie wdrozonej aplikacji
+  hosts: Endpoints
+  become: true
+
+  tasks:
+    - name: Usun kontener Axios jesli istnieje
+      ansible.builtin.command:
+        cmd: docker rm -f axios-verification
+      register: remove_container
+      failed_when: false
+      changed_when: remove_container.rc == 0
+
+    - name: Usun obraz Axios
+      ansible.builtin.command:
+        cmd: docker image rm -f axios-artifact:1.20.0
+      register: remove_image
+      failed_when: false
+      changed_when: remove_image.rc == 0
+
+    - name: Usun katalog aplikacji
+      ansible.builtin.file:
+        path: /opt/axios-app
+        state: absent

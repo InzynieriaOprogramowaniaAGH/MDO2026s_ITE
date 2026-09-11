@@ -1,0 +1,97 @@
+---
+- name: Sprawdz czy Docker dziala
+  ansible.builtin.command: docker info
+  register: docker_check
+  changed_when: false
+  failed_when: false
+
+- name: Pokaz wynik wstepnego sprawdzenia Dockera
+  ansible.builtin.debug:
+    msg: "Docker dostepny przed wdrozeniem: {{ docker_check.rc == 0 }}"
+
+- name: Zainstaluj Docker
+  ansible.builtin.apt:
+    name: docker.io
+    state: present
+    update_cache: true
+
+- name: Uruchom i wlacz usluge Docker
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Utworz katalog aplikacji
+  ansible.builtin.file:
+    path: "{{ axios_app_dir }}"
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: "0755"
+
+- name: Wyslij artefakt Axios
+  ansible.builtin.copy:
+    src: "{{ axios_artifact_name }}"
+    dest: "{{ axios_app_dir }}/{{ axios_artifact_name }}"
+    owner: ansible
+    group: ansible
+    mode: "0644"
+
+- name: Wyslij Dockerfile
+  ansible.builtin.copy:
+    src: Dockerfile
+    dest: "{{ axios_app_dir }}/Dockerfile"
+    owner: ansible
+    group: ansible
+    mode: "0644"
+
+- name: Wyslij skrypt weryfikacyjny
+  ansible.builtin.copy:
+    src: verify-axios.js
+    dest: "{{ axios_app_dir }}/verify-axios.js"
+    owner: ansible
+    group: ansible
+    mode: "0644"
+
+- name: Sprawdz czy artefakt istnieje
+  ansible.builtin.stat:
+    path: "{{ axios_app_dir }}/{{ axios_artifact_name }}"
+  register: artifact_check
+
+- name: Pokaz wynik sprawdzenia artefaktu
+  ansible.builtin.debug:
+    msg: "Artefakt istnieje: {{ artifact_check.stat.exists }}"
+
+- name: Zbuduj obraz kontenera Axios
+  ansible.builtin.command:
+    cmd: "docker build -t {{ axios_image_name }}:{{ axios_image_tag }} {{ axios_app_dir }}"
+
+- name: Uruchom kontener Axios
+  ansible.builtin.command:
+    cmd: "docker run --rm --name {{ axios_container_name }} {{ axios_image_name }}:{{ axios_image_tag }}"
+  register: axios_container
+  changed_when: false
+
+- name: Pokaz wynik dzialania Axios
+  ansible.builtin.debug:
+    var: axios_container.stdout_lines
+
+- name: Usun kontener Axios jesli istnieje
+  ansible.builtin.command:
+    cmd: "docker rm -f {{ axios_container_name }}"
+  register: remove_container
+  failed_when: false
+  changed_when: remove_container.rc == 0
+
+- name: Usun obraz Axios
+  ansible.builtin.command:
+    cmd: "docker image rm -f {{ axios_image_name }}:{{ axios_image_tag }}"
+  register: remove_image
+  failed_when: false
+  changed_when: remove_image.rc == 0
+
+- name: Usun katalog aplikacji
+  ansible.builtin.file:
+    path: "{{ axios_app_dir }}"
+    state: absent
+      
